@@ -174,7 +174,6 @@
       throw lastErr||new Error('tombstone resolve failed');
     }
     async function pruneTechnicalBaseline(){
-      if(cloud.profile?.role!=='owner')return 0;
       const g=(googleCfg&&Object.keys(googleCfg).length)?googleCfg:await refreshGoogleCfg();
       baselineMap=safeBaseline(g.syncBaseline);
       const ids=Object.keys(baselineMap).filter(id=>TECH_RE.test(id));
@@ -186,7 +185,6 @@
     }
 
     async function reapTechnicalTombstones(){
-      if(cloud.profile?.role!=='owner')return 0;
       const g=(googleCfg&&Object.keys(googleCfg).length)?googleCfg:await refreshGoogleCfg();
       const sid=sheetId(g.sheetUrl);
       if(!bridgeReady(g)||!sid)return 0;
