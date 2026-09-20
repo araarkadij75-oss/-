@@ -420,6 +420,14 @@
       cloud.integrationHealth=async function(){
         const h=await originalHealth();
         h.version='18.17.16 Spark';
+        const vg=await refreshGoogleCfg();
+        try{
+          const sid=sheetId(vg.sheetUrl);
+          if(bridgeReady(vg)){
+            const p=await bridgePost({action:'ping',secret:vg.secret,spreadsheetId:sid});
+            h.google={...(h.google||{}),...p,configured:true,ok:true,message:p&&p.message||'Связь работает',bridgeProtocol:2};
+          }else h.google={...(h.google||{}),configured:false,ok:false,message:'Google Bridge v2 не настроен',bridgeProtocol:2};
+        }catch(e){h.google={...(h.google||{}),configured:true,ok:false,message:String(e&&e.message||e),bridgeProtocol:2}}
         h.syncState={...(h.syncState||{}),quotaSafeReads:true,deltaRealtime:['delta','bootstrap_delta'].includes(diag.mode),deltaCursor:diag.lastCursor,cacheRows:diag.cacheRows,deltaReads:diag.deltaReads,bridgeMode:'direct_upsert_delete',bridgeDeltaPushes:diag.bridgePushes,bridgeDeltaDeletes:diag.bridgeDeletes,bridgeDeltaErrors:diag.bridgeErrors,bridgePendingRows:pushRows.size,bridgePendingDeletes:pushDeletes.size,deltaRetryCount:diag.deltaRetryCount,deltaDeadLetter:diag.deltaDeadLetter,recoveredDirty:diag.recoveredDirty,lockDeferrals:diag.lockDeferrals,fullReconcileMode:'manual_only',legacyAutoFullSyncBlocked:true,autoCoordinator:['owner'],googleCoordinator:['owner'],autoFlushOnOpen:false,autoFlushDirect:true,eventDriven:true,queueCoalescing:true,focusPull:false,retryLimit:5,busyRetryLimit:0,pendingDurableDeletes:(Array.isArray(googleCfg.deletedOrders)?googleCfg.deletedOrders.length:0),integrationE2EBridge:true,bridgeProtocol:2,legacyBridgeEndpointDisabled:!!googleCfg.bridgeUrlV2&&!googleCfg.bridgeUrl,manualReconcileCanonical:'firestore_to_google',patch:PATCH};
         return h;
       };
