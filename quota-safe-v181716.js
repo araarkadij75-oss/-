@@ -284,8 +284,9 @@
         for(const id of mismatches)await bridgePost({action:'upsert',secret:g.secret,spreadsheetId:sid,order:canonical.get(id)});
         baselineMap={};for(const [id,row] of canonical)baselineMap[id]=rowHash(row);
         const counts={firestoreSent:orders.length,bridgeReturned:incoming.length,canonical:orders.length,duplicates:0,missingIds:0,extrasRemoved:extras.length,canonicalRepairs:mismatches.length,deletionsSent:tombstones.length,deletionsResolved:tombstones.length,deletionsPending:0,dryRun:false,bridgeProtocol:2};
-        await fs.setDoc(googleRef,{deletedOrders:[],syncBaseline:baselineMap,syncBaselineVersion:1,lastSuccessAt:new Date().toISOString(),lastError:'',retryCount:0,deadLetter:false,lastCounts:counts,lastReason:String(opts.reason||'manual_v2'),lastStartedAt:started,bridgeProtocol:2,legacyBridgeDisabled:true,bridgeUrl:''},{merge:true});
-        googleCfg={...g,deletedOrders:[],syncBaseline:baselineMap,syncBaselineVersion:1,bridgeProtocol:2,legacyBridgeDisabled:true,bridgeUrl:''};
+        const activate=String(window.MASTER_AI_BUILD||'').includes('18.17.16-CURRENT'),endpoint=bridgeEndpoint(g);
+        await fs.setDoc(googleRef,{deletedOrders:[],syncBaseline:baselineMap,syncBaselineVersion:1,lastSuccessAt:new Date().toISOString(),lastError:'',retryCount:0,deadLetter:false,lastCounts:counts,lastReason:String(opts.reason||'manual_v2'),lastStartedAt:started,bridgeProtocol:2,legacyBridgeDisabled:activate,bridgeUrl:activate?'':endpoint,bridgeUrlV2:endpoint},{merge:true});
+        googleCfg={...g,deletedOrders:[],syncBaseline:baselineMap,syncBaselineVersion:1,bridgeProtocol:2,legacyBridgeDisabled:activate,bridgeUrl:activate?'':endpoint,bridgeUrlV2:endpoint};
         return{ok:true,count:orders.length,...counts};
       }catch(e){
         try{await fs.setDoc(googleRef,{lastFailureAt:new Date().toISOString(),lastError:String(e&&e.message||e).slice(0,1200)},{merge:true})}catch(_){}
@@ -398,11 +399,11 @@
     };
     cloud.saveGoogle=async function(x={}){
       if(cloud.profile?.role!=='owner')throw new Error('Только владелец');
-      const cur=await refreshGoogleCfg(),endpoint=String(x.bridgeUrlV2||x.bridgeUrl||bridgeEndpoint(cur)||'').trim();
+      const cur=await refreshGoogleCfg(),endpoint=String(x.bridgeUrlV2||x.bridgeUrl||bridgeEndpoint(cur)||'').trim(),activate=String(window.MASTER_AI_BUILD||'').includes('18.17.16-CURRENT');
       if(!endpoint)throw new Error('URL Google Bridge не задан');
-      await fs.setDoc(googleRef,{sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:'',secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:true,bridgeProtocolUpdatedAt:new Date().toISOString(),updatedAt:fs.serverTimestamp()},{merge:true});
-      googleCfg={...cur,sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:'',secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:true};
-      return{ok:true,bridgeProtocol:2};
+      await fs.setDoc(googleRef,{sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:activate?'':endpoint,secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:activate,bridgeProtocolUpdatedAt:new Date().toISOString(),updatedAt:fs.serverTimestamp()},{merge:true});
+      googleCfg={...cur,sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:activate?'':endpoint,secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:activate};
+      return{ok:true,bridgeProtocol:2,legacyBridgeDisabled:activate};
     };
     cloud.testGoogle=async function(){
       const g=await refreshGoogleCfg(),sid=sheetId(g.sheetUrl);
