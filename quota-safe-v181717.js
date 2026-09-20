@@ -417,7 +417,8 @@
 
     if(originalQueue){
       cloud.queueSync=function(orders,deleted,settings,role){
-        const ret=originalQueue(orders,deleted,settings,role);
+        const safeDeleted=Array.isArray(deleted)?deleted.filter(x=>!TECH_RE.test(String(x&&x.orderId||''))):deleted;
+        const ret=originalQueue(orders,safeDeleted,settings,role);
         if(String(role||'')==='owner'&&Array.isArray(deleted)&&deleted.length){
           const ds=deleted.map(x=>({orderId:String(x&&x.orderId||''),deletedAt:String(x&&x.deletedAt||new Date().toISOString()),source:'crm'})).filter(x=>x.orderId);
           rememberDeletes(ds);enqueueBridgeDeletes(ds);
