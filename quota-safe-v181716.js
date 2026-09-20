@@ -97,11 +97,13 @@
         const d=await fs.getDoc(googleRef);
         let x=d.exists()?d.data():{};
         if(cloud.profile?.role==='owner'){
-          const legacy=String(x.bridgeUrl||''),v2=String(x.bridgeUrlV2||'');
+          const legacy=String(x.bridgeUrl||''),v2=String(x.bridgeUrlV2||''),activate=String(window.MASTER_AI_BUILD||'').includes('18.17.16-CURRENT');
           if(!v2&&legacy){
-            await fs.setDoc(googleRef,{bridgeUrlV2:legacy,bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true,bridgeProtocolUpdatedAt:new Date().toISOString()},{merge:true});
-            x={...x,bridgeUrlV2:legacy,bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true};
-          }else if(v2&&legacy){
+            const patch={bridgeUrlV2:legacy,bridgeProtocol:2,legacyBridgeDisabled:activate,bridgeProtocolUpdatedAt:new Date().toISOString()};
+            if(activate)patch.bridgeUrl='';
+            await fs.setDoc(googleRef,patch,{merge:true});
+            x={...x,...patch};
+          }else if(v2&&legacy&&activate){
             await fs.setDoc(googleRef,{bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true,bridgeProtocolUpdatedAt:new Date().toISOString()},{merge:true});
             x={...x,bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true};
           }
@@ -330,7 +332,7 @@
         googleUnsub=fs.onSnapshot(googleRef,d=>{
           const before=new Set(knownDeleted);
           googleCfg=d.exists()?d.data():{};baselineMap=safeBaseline(googleCfg.syncBaseline);
-          if(role==='owner'&&googleCfg.bridgeUrlV2&&googleCfg.bridgeUrl){
+          if(role==='owner'&&String(window.MASTER_AI_BUILD||'').includes('18.17.16-CURRENT')&&googleCfg.bridgeUrlV2&&googleCfg.bridgeUrl){
             fs.setDoc(googleRef,{bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true,bridgeProtocolUpdatedAt:new Date().toISOString()},{merge:true}).catch(e=>console.warn('Bridge v2 legacy endpoint kill-switch deferred',e));
           }
           const pendingDeletes=(Array.isArray(googleCfg.deletedOrders)?googleCfg.deletedOrders:[]).map(x=>({orderId:String(x&&x.orderId||''),deletedAt:String(x&&x.deletedAt||''),source:String(x&&x.source||'recovery')})).filter(x=>x.orderId);
