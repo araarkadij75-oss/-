@@ -326,6 +326,13 @@
       };
     }
 
+    /* Hard gate legacy automatic full reconciliation. Explicit manual reconciliation
+       remains available through MASTER_AI_QUOTA_SAFE.forcePull() / syncGoogleNow(). */
+    cloud.requestGoogleSync=function(reason='auto_blocked'){
+      diag.fullPullSkips++;
+      return Promise.resolve({ok:true,skipped:true,reason:String(reason||'auto_blocked'),mode:'manual_only'});
+    };
+
     if(originalHealth){
       cloud.integrationHealth=async function(){
         const h=await originalHealth();
