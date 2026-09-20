@@ -1,8 +1,8 @@
 # MASTER AI — RELEASE STATUS
 
 ## CURRENT
-- Version: **18.17.15-CURRENT**
-- Release date: 2026-09-20
+- Version: **18.17.17-CURRENT**
+- Date: 2026-09-21
 - Web: https://araarkadij75-oss.github.io/-/
 - Firebase project: `master-ai-beta-9440599`
 - Workspace: `master-ai-beta`
@@ -10,53 +10,67 @@
 - Canonical orders source: Firestore `workspaces/master-ai-beta/orders`
 - Google mirror: spreadsheet `1BA1Lwmpk62xacOBvX_EW02gBhIJvOfW5EOTYFWeOD0o`, sheet `Заказы`
 
-## RELEASE GATE EVIDENCE
-- Main source/static gate: **18/18 PASS**
-- Exact bootstrap unit test:
-  - empty cache -> one bounded Firestore snapshot, then delta realtime: **PASS**
-  - warm cache -> zero full bootstrap reads, direct delta realtime: **PASS**
-- Runtime owner ping: **PASS**
-- Firestore orders: **1145**
+## CURRENT DATA STATE
 - Google rows: **1145**
-- Google unique IDs: **1145**
+- Google unique order IDs: **1145**
 - Duplicate IDs: **0**
 - Technical E2E/self-test IDs in Google: **0**
-- Google Bridge: **configured / OK**
-- Pending bridge rows: **0**
-- Pending bridge deletes: **0**
-- Delta dead-letter: **false**
-- Durable pending deletes: **0**
+- Last failed diagnostic E2E ID `INTEG-E2E-260921-181717-FINAL`: absent from Google and canonical Firestore.
+- Bridge Protocol: **v2**
+- Legacy Bridge endpoint: **disabled**
+- Automatic legacy full reconciliation: **blocked**
 - Full reconciliation: **manual_only**
-- Legacy automatic full sync: **blocked**
-- Auto full sync on open: **false**
-- Focus full pull: **false**
-- Delta realtime: **true**
-- Repeated owner restart: auto full-sync requests remained **0**
-- Dispatcher-logistic page: **smoke PASS**
-- Master page: **smoke PASS**
+- Production project `master-ai-9440599`: frozen / not a target.
+- Blaze/billing: **not enabled**
 
-## IMPORTANT FIX IN 18.17.15
-18.17.14 still had a first-run fallback: when the local IndexedDB cache contained fewer than 500 orders, the quota-safe patch could return to the legacy subscriber. The legacy subscriber could request full Google reconciliation on coordinator open, focus, Firestore changes, and every 15 minutes.
+## KNOWN RELEASE HOLD
+18.17.17 exposed a delete-path defect during a technical E2E: its diagnostic override referenced the obsolete/nonexistent `phoneAccess` path while the real phone mirror is `masterPhones`. The canonical Firestore order and Google row were deleted, but the diagnostic returned `permission-denied` during auxiliary cleanup.
 
-18.17.15 removes that fallback. A cold client now performs one bounded Firestore bootstrap snapshot and immediately switches to delta realtime. The legacy `requestGoogleSync()` automatic path is also hard-blocked; explicit manual reconciliation remains available.
+The embedded legacy owner delete path also performs canonical + mirror deletions in one `Promise.all`. That can report the whole deletion as failed when an auxiliary mirror delete fails even after the canonical order is already removed.
 
-## DATA SAFETY
-- Direct Google synchronization is idempotent `upsert/delete`.
-- Technical IDs are filtered.
-- Retry is bounded to 5 attempts with dead-letter state.
-- Owner is the Google write coordinator.
-- Full reconciliation is manual-only.
-- No Blaze/billing was enabled.
+Because Firebase Console currently reports the Spark daily usage limit exceeded, no additional live Firestore E2E should be created until quota recovers.
 
-### Observation: order 260919-001
-The pre-cleanup Google backup contains order `260919-001`, but the current canonical Firestore and current Google mirror both do not contain it. The release did **not** recreate it automatically because that would risk resurrecting a legitimately deleted order. The backup row is still recoverable if a later audit proves the deletion was accidental.
+## CANDIDATE
+- Version: **18.17.18-CANDIDATE**
+- Branch: `candidate/v18.17.18-delete-safety`
+- Rollback before candidate work: `backup/v18.17.17-current`
+- Static release gate: **29/29 PASS**
+- Exact delete-function unit scenarios: **5/5 PASS**
+
+### 18.17.18 delete safety
+- Legacy owner deletion receives `deleted=[]`; the quota-safe path becomes the single delete coordinator.
+- Durable tombstone is persisted before destructive deletion.
+- Canonical `orders/{orderId}` deletion is mandatory and retried at most 3 times.
+- Auxiliary mirrors `dispatcherOrders`, `masterAssignments`, `masterPhones` use `Promise.allSettled`; their failure cannot falsely undo a successful canonical deletion.
+- Google delete is queued only after canonical deletion succeeds.
+- Permanent canonical failure does **not** queue Google deletion and is recorded in delete diagnostics/dead-letter.
+- Wrong `phoneAccess` path is absent from the candidate.
+- Direct Google synchronization remains idempotent `upsert/delete`.
+- Full reconciliation remains Firestore -> Google and manual-only.
+- Bridge retry remains bounded to 5 attempts with dead-letter.
+
+## LIVE GATE STILL REQUIRED FOR 18.17.18
+After Spark daily quota recovers:
+1. Open candidate owner preview.
+2. Run one technical E2E create.
+3. Confirm exactly one Firestore canonical order and one Google row.
+4. Run delete.
+5. Confirm canonical Firestore order absent.
+6. Confirm Google row absent.
+7. Confirm pending durable deletes = 0.
+8. Confirm bridge queues = 0 and delete dead-letter = false.
+9. Confirm full-reconcile `lastSuccessAt` did not move because of the E2E.
+10. Re-read Google count/unique count and require 1145/1145 with zero technical IDs before promotion.
+
+## DATA SAFETY OBSERVATION
+The pre-cleanup Google backup contains order `260919-001`, but current canonical Firestore and current Google mirror both do not contain it. It is intentionally not recreated automatically; doing so could resurrect a legitimately deleted order.
 
 ## VERSION LAYOUT
-- CURRENT: `main` -> 18.17.15
-- CANDIDATE: `candidate/v18.17.15-bootstrap-delta`
+- CURRENT: `main` -> 18.17.17
+- CANDIDATE: `candidate/v18.17.18-delete-safety`
+- BACKUP: `backup/v18.17.17-current`
+- Previous backups: `backup/v18.17.16-current`, `backup/v18.17.15-current`, `backup/v18.17.14-current`
 - ARCHIVE: `archive/v18.17.14`
-- BACKUP / rollback: `backup/v18.17.14-current`
-- Exact pre-18.17.15 rollback commit: `8eecc7a4954bc23c6c0ed3e7bcd1e750a2e888e3`
 
 ## ROLLBACK
-If 18.17.15 shows a release regression, restore root application files from `backup/v18.17.14-current`. Do not modify Firestore data during a code rollback unless a separate data audit proves it is necessary.
+For a frontend regression, restore root application files from the appropriate backup branch. Do not modify Firestore data during a code rollback unless a separate data audit proves a data repair is necessary.
