@@ -173,6 +173,18 @@
       console.warn('resolve Google delete tombstones deferred',lastErr);
       throw lastErr||new Error('tombstone resolve failed');
     }
+    async function pruneTechnicalBaseline(){
+      if(cloud.profile?.role!=='owner')return 0;
+      const g=(googleCfg&&Object.keys(googleCfg).length)?googleCfg:await refreshGoogleCfg();
+      baselineMap=safeBaseline(g.syncBaseline);
+      const ids=Object.keys(baselineMap).filter(id=>TECH_RE.test(id));
+      if(!ids.length)return 0;
+      for(const id of ids)delete baselineMap[id];
+      await fs.setDoc(googleRef,{syncBaseline:baselineMap,syncBaselineVersion:1,technicalBaselinePrunedAt:new Date().toISOString()},{merge:true});
+      googleCfg={...g,syncBaseline:baselineMap,syncBaselineVersion:1};
+      return ids.length;
+    }
+
     async function reapTechnicalTombstones(){
       if(cloud.profile?.role!=='owner')return 0;
       const g=(googleCfg&&Object.keys(googleCfg).length)?googleCfg:await refreshGoogleCfg();
@@ -344,7 +356,7 @@
       try{googleUnsub&&googleUnsub()}catch(e){}
       if(cloud.googlePeriodicTimer){clearInterval(cloud.googlePeriodicTimer);cloud.googlePeriodicTimer=null}
       return (async()=>{
-        if(role==='owner'){await refreshGoogleCfg();await reapTechnicalTombstones()}
+        if(role==='owner'){await refreshGoogleCfg();await pruneTechnicalBaseline();await reapTechnicalTombstones()}
         const cached=await readCache();
         let cachedRows=validRows(cached&&cached.orders,cached&&cached.deletedOrders),bootstrapped=false;
         if(cachedRows.length<500){
