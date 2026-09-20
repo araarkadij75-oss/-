@@ -331,7 +331,7 @@
 
     cloud.__quotaSafePatch=PATCH;
     window.MASTER_AI_QUOTA_SAFE={version:PATCH,diag,forcePull:()=>maybeFullPull('quota_safe_manual',true),flush:flushBridge};
-    window.MASTER_AI_BUILD='18.17.14-CANDIDATE';
+    window.MASTER_AI_BUILD='18.17.14-CURRENT';
     console.info('MASTER AI quota-safe patch installed',PATCH);
   }
 
