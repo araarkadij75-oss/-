@@ -156,15 +156,22 @@
     }
     async function resolveDeleteTombstones(ids){
       ids=[...new Set((ids||[]).map(String).filter(Boolean))];
-      if(!ids.length||cloud.profile?.role!=='owner')return;
+      if(!ids.length)return 0;
       const dead=new Set(ids);
-      try{
-        await fs.runTransaction(db,async tx=>{
-          const d=await tx.get(googleRef),x=d.exists()?d.data():{};
-          const pending=(Array.isArray(x.deletedOrders)?x.deletedOrders:[]).filter(t=>!dead.has(String(t&&t.orderId||'')));
-          tx.set(googleRef,{deletedOrders:pending,updatedAt:fs.serverTimestamp()},{merge:true});
-        });
-      }catch(e){console.warn('resolve Google delete tombstones deferred',e)}
+      let lastErr=null;
+      for(let attempt=1;attempt<=3;attempt++){
+        try{
+          const d=await fs.getDoc(googleRef),x=d.exists()?d.data():{},current=Array.isArray(x.deletedOrders)?x.deletedOrders:[];
+          const pending=current.filter(t=>!dead.has(String(t&&t.orderId||'')));
+          if(pending.length!==current.length)await fs.updateDoc(googleRef,{deletedOrders:pending,updatedAt:fs.serverTimestamp()});
+          const v=await fs.getDoc(googleRef),left=(v.exists()&&Array.isArray(v.data().deletedOrders)?v.data().deletedOrders:[]).filter(t=>dead.has(String(t&&t.orderId||''))).length;
+          if(!left)return current.length-pending.length;
+          lastErr=new Error('tombstone verify left='+left);
+        }catch(e){lastErr=e}
+        await sleep(150*attempt);
+      }
+      console.warn('resolve Google delete tombstones deferred',lastErr);
+      throw lastErr||new Error('tombstone resolve failed');
     }
     async function reapTechnicalTombstones(){
       if(cloud.profile?.role!=='owner')return 0;
