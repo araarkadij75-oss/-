@@ -246,11 +246,57 @@
         googleCfg={...g,deletedHistory};
       }catch(e){console.warn('delete history deferred',e)}
     }
+    async function manualReconcileV2(opts={}){
+      if(!cloud.connected||cloud.profile?.role!=='owner')throw new Error('Ручная сверка доступна только владельцу');
+      const g=await refreshGoogleCfg(),sid=sheetId(g.sheetUrl);
+      if(!bridgeReady(g))throw new Error('Google Bridge v2 не настроен');
+      let rows=Array.isArray(cloud.ownerRows)&&cloud.ownerRows.length?cloud.ownerRows.map(r=>({...r})):null;
+      if(!rows){const snap=await fs.getDocs(ordersCol);rows=snap.docs.map(d=>({orderId:d.id,...d.data()}));diag.deltaReads+=snap.size}
+      const dead=new Set([...(Array.isArray(g.deletedOrders)?g.deletedOrders:[]),...(Array.isArray(g.deletedHistory)?g.deletedHistory:[])].map(x=>String(x&&x.orderId||'')).filter(Boolean));
+      const canonical=new Map();
+      for(const r0 of rows||[]){const r={...(r0||{})},id=String(r.orderId||'').trim();if(id&&!TECH_RE.test(id)&&!dead.has(id))canonical.set(id,r)}
+      const orders=[...canonical.values()];
+      if(opts.dryRun){
+        const p=await bridgePost({action:'ping',secret:g.secret,spreadsheetId:sid});
+        return{ok:true,dryRun:true,canonical:orders.length,bridgeProtocol:2,ping:!!(p&&p.ok)};
+      }
+      const token='v2-'+Date.now()+'-'+Math.random().toString(36).slice(2),started=new Date().toISOString();
+      await fs.runTransaction(db,async tx=>{
+        const d=await tx.get(googleRef),x=d.exists()?d.data():{},until=Number(x.syncLockUntilMs)||0;
+        if(x.syncLockToken&&until>Date.now()){const e=new Error('Google sync busy');e.code='SYNC_BUSY';throw e}
+        tx.set(googleRef,{syncLockToken:token,syncLockUntilMs:Date.now()+90000,syncLockOwner:'18.17.16-v2',syncLockAt:started},{merge:true});
+      });
+      try{
+        const tombstones=(Array.isArray(g.deletedOrders)?g.deletedOrders:[]).filter(x=>String(x&&x.orderId||'').trim());
+        if(tombstones.length>50)throw new Error('Safety stop: pending deletes='+tombstones.length);
+        for(const t of tombstones)await bridgePost({action:'delete',secret:g.secret,spreadsheetId:sid,orderId:String(t.orderId||'')});
+        const j=await bridgePost({action:'merge',secret:g.secret,spreadsheetId:sid,orders,deleted:[],members:[],audit:[],source:{app:'MASTER AI',build:window.MASTER_AI_BUILD||'',reason:String(opts.reason||'manual_v2'),bridgeProtocol:2,canonical:'firestore'}});
+        const incoming=Array.isArray(j&&j.orders)?j.orders:[],seen=new Map(),duplicates=[],missing=[];
+        for(const row of incoming){const id=String(row&&row.orderId||'').trim();if(!id){missing.push(row);continue}if(seen.has(id))duplicates.push(id);else seen.set(id,row)}
+        if(missing.length)throw new Error('Bridge вернул строки без ID: '+missing.length);
+        if(duplicates.length)throw new Error('Bridge вернул дубли ID: '+[...new Set(duplicates)].slice(0,10).join(', '));
+        const extras=[...seen.keys()].filter(id=>!canonical.has(id)),mismatches=[];
+        for(const [id,row] of canonical){const got=seen.get(id);if(!got||rowHash(got)!==rowHash(row))mismatches.push(id)}
+        if(extras.length>50||mismatches.length>50)throw new Error('Safety stop: extras='+extras.length+', mismatches='+mismatches.length);
+        for(const id of extras)await bridgePost({action:'delete',secret:g.secret,spreadsheetId:sid,orderId:id});
+        for(const id of mismatches)await bridgePost({action:'upsert',secret:g.secret,spreadsheetId:sid,order:canonical.get(id)});
+        baselineMap={};for(const [id,row] of canonical)baselineMap[id]=rowHash(row);
+        const counts={firestoreSent:orders.length,bridgeReturned:incoming.length,canonical:orders.length,duplicates:0,missingIds:0,extrasRemoved:extras.length,canonicalRepairs:mismatches.length,deletionsSent:tombstones.length,deletionsResolved:tombstones.length,deletionsPending:0,dryRun:false,bridgeProtocol:2};
+        await fs.setDoc(googleRef,{deletedOrders:[],syncBaseline:baselineMap,syncBaselineVersion:1,lastSuccessAt:new Date().toISOString(),lastError:'',retryCount:0,deadLetter:false,lastCounts:counts,lastReason:String(opts.reason||'manual_v2'),lastStartedAt:started,bridgeProtocol:2,legacyBridgeDisabled:true,bridgeUrl:''},{merge:true});
+        googleCfg={...g,deletedOrders:[],syncBaseline:baselineMap,syncBaselineVersion:1,bridgeProtocol:2,legacyBridgeDisabled:true,bridgeUrl:''};
+        return{ok:true,count:orders.length,...counts};
+      }catch(e){
+        try{await fs.setDoc(googleRef,{lastFailureAt:new Date().toISOString(),lastError:String(e&&e.message||e).slice(0,1200)},{merge:true})}catch(_){}
+        throw e;
+      }finally{
+        try{await fs.runTransaction(db,async tx=>{const d=await tx.get(googleRef),x=d.exists()?d.data():{};if(String(x.syncLockToken||'')===token)tx.set(googleRef,{syncLockToken:'',syncLockUntilMs:0,syncLockOwner:'',syncLockReleasedAt:new Date().toISOString()},{merge:true})})}catch(e){console.warn('manual v2 lock release',e)}
+      }
+    }
     async function maybeFullPull(reason,force){
-      if(!originalRequest||!cloud.connected||cloud.profile?.role!=='owner')return null;
+      if(!cloud.connected||cloud.profile?.role!=='owner')return null;
       if(!force){diag.fullPullSkips++;return null}
       diag.fullPulls++;
-      return originalRequest(reason||'quota_safe_manual_reconcile');
+      return manualReconcileV2({reason:reason||'quota_safe_manual_reconcile'});
     }
 
     cloud.subscribe=function(profile,onRows){
@@ -344,6 +390,25 @@
       };
     }
 
+    cloud.getGoogle=async function(){
+      const g=await refreshGoogleCfg();
+      return{...g,bridgeUrl:bridgeEndpoint(g),bridgeProtocol:2,legacyBridgeDisabled:true};
+    };
+    cloud.saveGoogle=async function(x={}){
+      if(cloud.profile?.role!=='owner')throw new Error('Только владелец');
+      const cur=await refreshGoogleCfg(),endpoint=String(x.bridgeUrlV2||x.bridgeUrl||bridgeEndpoint(cur)||'').trim();
+      if(!endpoint)throw new Error('URL Google Bridge не задан');
+      await fs.setDoc(googleRef,{sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:'',secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:true,bridgeProtocolUpdatedAt:new Date().toISOString(),updatedAt:fs.serverTimestamp()},{merge:true});
+      googleCfg={...cur,sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:'',secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:true};
+      return{ok:true,bridgeProtocol:2};
+    };
+    cloud.testGoogle=async function(){
+      const g=await refreshGoogleCfg(),sid=sheetId(g.sheetUrl);
+      if(!bridgeReady(g))throw new Error('Google Bridge v2 не настроен');
+      return bridgePost({action:'ping',secret:g.secret,spreadsheetId:sid});
+    };
+    cloud.syncGoogleNow=manualReconcileV2;
+
     /* Hard gate legacy automatic full reconciliation. Explicit manual reconciliation
        remains available through MASTER_AI_QUOTA_SAFE.forcePull() / syncGoogleNow(). */
     cloud.requestGoogleSync=function(reason='auto_blocked'){
@@ -355,13 +420,13 @@
       cloud.integrationHealth=async function(){
         const h=await originalHealth();
         h.version='18.17.16 Spark';
-        h.syncState={...(h.syncState||{}),quotaSafeReads:true,deltaRealtime:['delta','bootstrap_delta'].includes(diag.mode),deltaCursor:diag.lastCursor,cacheRows:diag.cacheRows,deltaReads:diag.deltaReads,bridgeMode:'direct_upsert_delete',bridgeDeltaPushes:diag.bridgePushes,bridgeDeltaDeletes:diag.bridgeDeletes,bridgeDeltaErrors:diag.bridgeErrors,bridgePendingRows:pushRows.size,bridgePendingDeletes:pushDeletes.size,deltaRetryCount:diag.deltaRetryCount,deltaDeadLetter:diag.deltaDeadLetter,recoveredDirty:diag.recoveredDirty,lockDeferrals:diag.lockDeferrals,fullReconcileMode:'manual_only',legacyAutoFullSyncBlocked:true,autoCoordinator:['owner'],googleCoordinator:['owner'],autoFlushOnOpen:false,autoFlushDirect:true,eventDriven:true,queueCoalescing:true,focusPull:false,retryLimit:5,busyRetryLimit:0,pendingDurableDeletes:(Array.isArray(googleCfg.deletedOrders)?googleCfg.deletedOrders.length:0),integrationE2EBridge:true,patch:PATCH};
+        h.syncState={...(h.syncState||{}),quotaSafeReads:true,deltaRealtime:['delta','bootstrap_delta'].includes(diag.mode),deltaCursor:diag.lastCursor,cacheRows:diag.cacheRows,deltaReads:diag.deltaReads,bridgeMode:'direct_upsert_delete',bridgeDeltaPushes:diag.bridgePushes,bridgeDeltaDeletes:diag.bridgeDeletes,bridgeDeltaErrors:diag.bridgeErrors,bridgePendingRows:pushRows.size,bridgePendingDeletes:pushDeletes.size,deltaRetryCount:diag.deltaRetryCount,deltaDeadLetter:diag.deltaDeadLetter,recoveredDirty:diag.recoveredDirty,lockDeferrals:diag.lockDeferrals,fullReconcileMode:'manual_only',legacyAutoFullSyncBlocked:true,autoCoordinator:['owner'],googleCoordinator:['owner'],autoFlushOnOpen:false,autoFlushDirect:true,eventDriven:true,queueCoalescing:true,focusPull:false,retryLimit:5,busyRetryLimit:0,pendingDurableDeletes:(Array.isArray(googleCfg.deletedOrders)?googleCfg.deletedOrders.length:0),integrationE2EBridge:true,bridgeProtocol:2,legacyBridgeEndpointDisabled:!!googleCfg.bridgeUrlV2&&!googleCfg.bridgeUrl,manualReconcileCanonical:'firestore_to_google',patch:PATCH};
         return h;
       };
     }
 
     cloud.__quotaSafePatch=PATCH;
-    window.MASTER_AI_QUOTA_SAFE={version:PATCH,diag,forcePull:()=>maybeFullPull('quota_safe_manual',true),flush:flushBridge};
+    window.MASTER_AI_QUOTA_SAFE={version:PATCH,diag,forcePull:()=>manualReconcileV2({reason:'quota_safe_manual_v2'}),flush:flushBridge,reconcile:manualReconcileV2};
     window.MASTER_AI_BUILD='18.17.16-CANDIDATE';
     console.info('MASTER AI quota-safe patch installed',PATCH);
   }
