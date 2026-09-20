@@ -291,7 +291,17 @@
     async function deleteCanonicalAndMirrors(item){
       const id=String(item&&item.orderId||'').trim();
       if(!id)return{ok:false,id:'',auxFailures:[]};
-      await fs.deleteDoc(fs.doc(db,'workspaces',ws,'orders',id));
+      let canonicalErr=null;
+      for(let attempt=1;attempt<=3;attempt++){
+        try{
+          await fs.deleteDoc(fs.doc(db,'workspaces',ws,'orders',id));
+          canonicalErr=null;break;
+        }catch(e){
+          canonicalErr=e;
+          if(attempt<3)await sleep(250*attempt);
+        }
+      }
+      if(canonicalErr)throw canonicalErr;
       diag.canonicalDeletes++;
       const aux=await Promise.allSettled([
         fs.deleteDoc(fs.doc(db,'workspaces',ws,'dispatcherOrders',id)),
