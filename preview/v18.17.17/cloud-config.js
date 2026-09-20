@@ -3,4 +3,4 @@ window.MASTER_AI_BUILD='18.17.17-CANDIDATE';
 window.MASTER_AI_BETA=true;
 window.MASTER_AI_BETA_ONLINE=true;
 /* Load quota-safe patch before embedded Firebase adapter. */
-document.write('<scr'+'ipt src="./quota-safe-v181717.js?v=181717r3">'+'<'+ '/scr'+'ipt>');
+document.write('<scr'+'ipt src="./quota-safe-v181717.js?v=181717r4">'+'<'+ '/scr'+'ipt>');
