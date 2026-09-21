@@ -4,40 +4,45 @@
 Open:
 https://araarkadij75-oss.github.io/-/
 
-Use the existing online owner session/login. The header must show the online application and orders should load from the shared Firestore workspace.
-
 ## Dispatcher-logistic
 Open:
 https://araarkadij75-oss.github.io/-/dispatcher-logistic.html
-
-Sign in with the existing dispatcher-logistic account/PIN.
 
 ## Master
 Open:
 https://araarkadij75-oss.github.io/-/master.html
 
-Sign in with the existing master account/PIN.
+## Normal operation
+The working release is **18.17.18-CURRENT**.
 
-## Normal synchronization
-No manual full synchronization is required for ordinary work. Changes use Firestore realtime plus direct idempotent Google `upsert/delete`.
+Ordinary synchronization is:
+- Firestore realtime
+- direct idempotent Google `upsert/delete`
+- no automatic full Google merge on open, focus, timer, or Firestore change
 
-Use full reconciliation only as an explicit diagnostic/recovery action after checking counts and backups.
+Do not use manual full reconciliation during normal daily work.
 
 ## Quick health check
-Owner diagnostic URL:
+Owner diagnostic:
 https://araarkadij75-oss.github.io/-/index.html?integrationDiag=ping
 
-Healthy 18.17.15 should report:
-- build `18.17.15-CURRENT`
-- Firestore orders equal Google rows
+Healthy state should show:
+- build `18.17.18-CURRENT`
+- Firestore orders = Google rows
+- currently expected count: `1145`
 - Google `ok: true`
+- `bridgeProtocol: 2`
+- `legacyBridgeEndpointDisabled: true`
 - `bridgePendingRows: 0`
 - `bridgePendingDeletes: 0`
+- `pendingDurableDeletes: 0`
 - `deltaDeadLetter: false`
+- `deleteDeadLetter: false`
+- `canonicalDeleteSafety: true`
 - `fullReconcileMode: manual_only`
 - `legacyAutoFullSyncBlocked: true`
 - `autoFlushOnOpen: false`
 - `focusPull: false`
 
 ## Billing
-Keep Firebase on Spark/no-billing. Do not enable Blaze unless separately approved by the owner.
+Keep Firebase on Spark / no billing. Do not enable Blaze unless separately approved by the owner.
