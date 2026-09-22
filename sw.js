@@ -1,4 +1,4 @@
-const CACHE='master-ai-18.17.19-shell-v3';
+const CACHE='master-ai-18.17.19-shell-v4';
 const SHELL=[
   './',
   './index.html',
@@ -9,7 +9,8 @@ const SHELL=[
   './manifest-master.json',
   './icon.svg',
   './cloud-config.js',
-  './quota-safe-v181719.js'
+  './quota-safe-v181719.js',
+  './premium-v181721.css'
 ];
 
 self.addEventListener('install',event=>{
