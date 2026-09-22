@@ -18,8 +18,8 @@ must(state.baseCurrent === '18.17.18-CURRENT', 'candidate must be based on 18.17
 must(state.environment.firebaseProject === 'master-ai-beta-9440599', 'wrong Firebase project');
 must(state.environment.workspace === 'master-ai-beta', 'wrong workspace');
 must(state.environment.billing === 'Spark / NO BILLING', 'billing policy drift');
-must(cfg.includes("projectId:'master-ai-beta-9440599'") || cfg.includes('projectId:"master-ai-beta-9440599"'), 'cloud-config project drift');
-must(cfg.includes("workspaceId:'master-ai-beta'") || cfg.includes('workspaceId:"master-ai-beta"'), 'cloud-config workspace drift');
+must(/["']?projectId["']?\s*:\s*["']master-ai-beta-9440599["']/.test(cfg), 'cloud-config project drift');
+must(/["']?workspaceId["']?\s*:\s*["']master-ai-beta["']/.test(cfg), 'cloud-config workspace drift');
 must(cfg.includes("MASTER_AI_BUILD='18.17.18-CURRENT'") || cfg.includes('MASTER_AI_BUILD="18.17.18-CURRENT"'), 'base build drift');
 must(cfg.includes('quota-safe-v181718.js'), '18.17.18 quota-safe patch missing');
 must(!/\bphoneAccess\b/.test(owner + dispatcher + master + patch), 'obsolete phoneAccess reference');
@@ -39,8 +39,12 @@ for (const [file,start] of manifests) {
 }
 
 for (const [name,html] of [['owner',owner],['dispatcher',dispatcher],['master',master]]) {
-  must(html.includes("if('serviceWorker' in navigator"), name + ': PWA hook missing');
+  must(html.includes("navigator.serviceWorker.register('./sw.js'"), name + ': service worker registration missing');
   must(!/master-ai-9440599\.web\.app/.test(html), name + ': legacy PROD hosting URL leaked into executable HTML');
+  if (name === 'owner') {
+    must(!/\['ping','dry','read','sync'/.test(html), 'mutating diagnostic URL mode leaked');
+    must(html.includes("['ping','dry','read'].includes(integrationDiagRequested)"), 'owner diagnostic URL allowlist missing');
+  }
 }
 
 console.log('STATIC BASELINE GATE: PASS');
