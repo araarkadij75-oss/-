@@ -75,3 +75,32 @@ The old backup contains order `260919-001`, while current canonical Firestore an
 
 ## ROLLBACK
 For a frontend regression, restore root application files from `backup/v18.17.18-current` only if rolling back changes made after this release. For rollback specifically to the prior verified release, use `backup/v18.17.16-current`. Do not modify Firestore data during a code rollback unless a separate data audit proves a data repair is required.
+
+
+## CANDIDATE — 18.17.19
+- Status: **CANDIDATE / DO NOT PROMOTE YET**
+- Branch: `candidate/v18.17.19-certification`
+- Green checkpoint: `8886caa8f8d0eff6db06e43fba508413884d3339`
+- Candidate backup: `backup/v18.17.19-candidate-green`
+- Draft PR: #1 — `MASTER AI 18.17.19 — certification candidate`
+- Isolated preview: https://araarkadij75-oss.github.io/-/preview/v18.17.19/
+- Root CURRENT remains **18.17.18-CURRENT**
+
+Candidate gates already passed:
+- GitHub Actions Static + unit: **PASS**
+- Firestore Rules emulator RBAC matrix: **PASS**
+- executable JavaScript syntax gate: **PASS**
+- PWA manifest gate: **PASS**
+- candidate service worker: **PASS**
+- mutating URL diagnostic modes blocked: **PASS**
+- isolated preview deployment: **PASS**
+- live Google mirror after candidate work: **1145 rows / 1145 unique IDs / 0 duplicates / 0 technical IDs**
+
+Promotion remains blocked until:
+- current live Firestore Rules are captured/backed up;
+- candidate Rules are deployed with rollback available;
+- authenticated owner / dispatcher-logistic / master live E2E passes;
+- final Firestore ↔ Google parity is rechecked after live gate;
+- isolated restore proof is completed.
+
+Do not merge PR #1 or replace root CURRENT merely because candidate CI is green.
