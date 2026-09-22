@@ -26,7 +26,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
       - run: npm install --ignore-scripts
       - run: npm run gate:static
       - run: npm run test:unit
@@ -40,7 +39,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
