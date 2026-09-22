@@ -34,6 +34,14 @@ test('role entrypoints are pinned', () => {
   assert.match(read('master.html'), /MASTER_AI_FORCED_ROLE="master"/);
 });
 
+test('master workflow uses its permitted assignment document', () => {
+  for (const file of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
+    const html = read(file);
+    assert.match(html, /sourceRef=cloud\.profile\?\.role==='master'\?masterDoc\(orderId\):orderDoc\(orderId\)/);
+    assert.doesNotMatch(html, /await window\.MasterAICloud\.cleanupTechnicalArtifacts\?\.\(\)/);
+  }
+});
+
 test('legacy production project is absent from runtime cloud config', () => {
   const c = read('cloud-config.js');
   assert.match(c, /master-ai-beta-9440599/);
