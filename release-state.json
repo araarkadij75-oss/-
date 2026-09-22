@@ -18,6 +18,20 @@
   },
   "promotion": {
     "allowed": false,
-    "reason": "Candidate certification work in progress. Do not promote before CI, rules, browser E2E, parity and restore gates pass."
+    "reason": "Do not promote until live rules backup/deploy, authenticated role E2E, parity and restore gates pass."
+  },
+  "gates": {
+    "staticUnit": "pass",
+    "firestoreRulesEmulator": "pass",
+    "pwaServiceWorker": "implemented_candidate",
+    "mutatingUrlDiagnostics": "blocked_candidate",
+    "liveRulesCaptured": "pending",
+    "liveRulesDeployed": "pending",
+    "authenticatedBrowserE2E": "pending",
+    "googleParityAfterPromotion": "pending",
+    "isolatedRestore": "pending",
+    "authHardening": "pending",
+    "bridgeSecretServerSide": "pending",
+    "autonomousGoogleDelivery": "pending"
   }
 }
