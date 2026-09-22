@@ -39,3 +39,22 @@ test('legacy production project is absent from runtime cloud config', () => {
   assert.match(c, /master-ai-beta-9440599/);
   assert.doesNotMatch(c, /projectId\s*:\s*["']master-ai-9440599["']/);
 });
+
+
+test('service worker pins the candidate patch and avoids stale runtime cache', () => {
+  const sw = read('sw.js');
+  assert.match(sw, /quota-safe-v181719\\.js/);
+  assert.doesNotMatch(sw, /quota-safe-v181718\\.js/);
+  assert.match(sw, /cloud-config\\.js/);
+  assert.match(sw, /network|fetch/);
+});
+
+test('non-owner privileged hydration is short-circuited in client adapter', () => {
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html = read(file);
+    assert.match(html, /if\(!\['owner','dispatcher_logistic','logistic'\]\.includes\(cloud\.profile\?\.role\|\|''\)\)return\[\]/);
+    assert.match(html, /if\(cloud\.profile\?\.role!=='owner'\)return\{\}/);
+  }
+  const patch = read('quota-safe-v181719.js');
+  assert.match(patch, /cloud\.getGoogle=async function\(\)\{[\s\S]*?cloud\.profile\?\.role!=='owner'/);
+});
