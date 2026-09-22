@@ -47,7 +47,7 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  const critical=/\/(?:cloud-config\.js|quota-safe-v181718\.js)$/.test(url.pathname);
+  const critical=/\/(?:cloud-config\.js|quota-safe-v181719\.js)$/.test(url.pathname);
   if(critical){
     event.respondWith(
       fetch(req).then(res=>{
