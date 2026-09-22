@@ -66,3 +66,43 @@ test('non-owner privileged hydration is short-circuited in client adapter', () =
   const patch = read('quota-safe-v181719.js');
   assert.match(patch, /cloud\.getGoogle=async function\(\)\{[\s\S]*?cloud\.profile\?\.role!=='owner'/);
 });
+
+
+test('all executable JavaScript parses', () => {
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html = read(file);
+    const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+      .map(m => m[1])
+      .filter(s => s.trim());
+    assert.ok(scripts.length >= 3, file + ': expected inline scripts');
+    for (const [i, script] of scripts.entries()) {
+      assert.doesNotThrow(() => new Function(script), file + ': inline script ' + i + ' syntax');
+    }
+  }
+  for (const file of ['cloud-config.js','quota-safe-v181719.js','sw.js']) {
+    assert.doesNotThrow(() => new Function(read(file)), file + ': syntax');
+  }
+});
+
+test('all PWA manifests parse and use role-correct start URLs', () => {
+  const expected = {
+    'manifest.json':'./index.html',
+    'manifest-dispatcher-logistic.json':'./dispatcher-logistic.html',
+    'manifest-master.json':'./master.html'
+  };
+  for (const [file,start] of Object.entries(expected)) {
+    const m = JSON.parse(read(file));
+    assert.equal(m.start_url, start);
+    assert.equal(m.display, 'standalone');
+    assert.ok(Array.isArray(m.icons) && m.icons.length > 0);
+  }
+});
+
+test('candidate patch identity is internally consistent', () => {
+  const cfg=read('cloud-config.js');
+  const patch=read('quota-safe-v181719.js');
+  assert.match(cfg,/18\.17\.19-CANDIDATE/);
+  assert.match(cfg,/quota-safe-v181719\.js/);
+  assert.match(patch,/18\.17\.19-CANDIDATE/);
+  assert.doesNotMatch(patch,/18\.17\.18-CURRENT/);
+});
