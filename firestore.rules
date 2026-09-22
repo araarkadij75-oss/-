@@ -1,0 +1,150 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function allowedWorkspace(workspace) {
+      return workspace == 'master-ai-beta';
+    }
+
+    function memberPath(workspace) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/members/$(request.auth.uid);
+    }
+
+    function hasActiveMember(workspace) {
+      return signedIn()
+        && allowedWorkspace(workspace)
+        && exists(memberPath(workspace))
+        && get(memberPath(workspace)).data.active != false;
+    }
+
+    function role(workspace) {
+      return hasActiveMember(workspace) ? get(memberPath(workspace)).data.role : '';
+    }
+
+    function isOwner(workspace) {
+      return role(workspace) == 'owner';
+    }
+
+    function isOps(workspace) {
+      return role(workspace) in ['owner', 'dispatcher_logistic', 'logistic'];
+    }
+
+    function isDispatcher(workspace) {
+      return role(workspace) == 'dispatcher';
+    }
+
+    function isMaster(workspace) {
+      return role(workspace) == 'master';
+    }
+
+    function assignmentPath(workspace, orderId) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/masterAssignments/$(orderId);
+    }
+
+    function ownsAssignment(workspace, orderId) {
+      return isMaster(workspace)
+        && exists(assignmentPath(workspace, orderId))
+        && get(assignmentPath(workspace, orderId)).data.masterUid == request.auth.uid;
+    }
+
+    function dispatcherFields() {
+      return [
+        'orderId','direction','city','callDate','callTime','visitDate','visitTime',
+        'name','phone','address','request','dispatcher','review','_status',
+        '_createdAt','_updatedAt','_createdBy','_createdByName','_createdByShift'
+      ];
+    }
+
+    function masterMutableFields() {
+      return [
+        '_masterStage','_updatedAt','_acceptedAt','_enrouteAt','_arrivedAt',
+        '_workAt','_doneAt','_status','_closeReviewState',
+        '_masterReportedTotal','_masterReportedParts','_masterReportedReview',
+        '_masterNote','_masterReportAt','_workCompletedAt','_reviewSubmittedAt',
+        '_requiresCloseApproval','closeDate'
+      ];
+    }
+
+    match /workspaces/{workspace}/members/{uid} {
+      allow get: if signedIn() && allowedWorkspace(workspace)
+                 && (uid == request.auth.uid || isOwner(workspace) || isOps(workspace));
+      allow list: if isOwner(workspace) || isOps(workspace);
+      allow create, update, delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/orders/{orderId} {
+      allow get: if isOps(workspace) || ownsAssignment(workspace, orderId);
+      allow list: if isOps(workspace);
+
+      allow create: if isOwner(workspace)
+                    || role(workspace) == 'dispatcher_logistic'
+                    || (isDispatcher(workspace)
+                        && request.resource.data.keys().hasOnly(dispatcherFields()));
+
+      allow update: if isOwner(workspace)
+                    || role(workspace) in ['dispatcher_logistic','logistic']
+                    || (isDispatcher(workspace)
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields()))
+                    || (ownsAssignment(workspace, orderId)
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields()));
+
+      allow delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/dispatcherOrders/{orderId} {
+      allow read: if hasActiveMember(workspace)
+                  && role(workspace) in ['owner','dispatcher','dispatcher_logistic','logistic'];
+      allow create, update: if hasActiveMember(workspace)
+                            && role(workspace) in ['owner','dispatcher','dispatcher_logistic','logistic'];
+      allow delete: if isOwner(workspace) || role(workspace) in ['dispatcher_logistic','logistic'];
+    }
+
+    match /workspaces/{workspace}/masterAssignments/{orderId} {
+      allow read: if isOps(workspace)
+                  || (isMaster(workspace) && resource.data.masterUid == request.auth.uid);
+
+      allow create, delete: if isOps(workspace);
+
+      allow update: if isOps(workspace)
+                    || (isMaster(workspace)
+                        && resource.data.masterUid == request.auth.uid
+                        && request.resource.data.masterUid == request.auth.uid
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields()));
+    }
+
+    match /workspaces/{workspace}/masterPhones/{orderId} {
+      allow get: if isOps(workspace)
+                 || (isMaster(workspace)
+                     && resource.data.masterUid == request.auth.uid
+                     && (resource.data.earlyAccess == true || resource.data.unlockAt <= request.time));
+      allow list: if isOps(workspace);
+      allow create, update, delete: if isOps(workspace);
+    }
+
+    match /workspaces/{workspace}/config/public {
+      allow read: if hasActiveMember(workspace);
+      allow write: if isOps(workspace);
+    }
+
+    match /workspaces/{workspace}/config/ui {
+      allow read: if hasActiveMember(workspace);
+      allow write: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/config/google {
+      allow read, write: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/uiChanges/{changeId} {
+      allow read, write: if isOwner(workspace);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
