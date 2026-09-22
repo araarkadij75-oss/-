@@ -112,7 +112,7 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181723/);
+    assert.match(read(file), /premium-v181721\.css\?v=181724/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
@@ -129,6 +129,21 @@ test('dashboard uses decision-oriented KPI definitions', () => {
     assert.match(html, /Оборот и касса во времени/);
     assert.match(html, /renderExecutiveSummary\(k\)/);
   }
+});
+
+test('dispatcher identity is account-bound across clients and rules', () => {
+  const rules = read('firestore.rules');
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html = read(file);
+    assert.match(html, /function lockedDispatcher\(/);
+    assert.match(html, /id="staffLogin"/);
+    assert.match(html, /id="presetSergey"/);
+    assert.match(html, /id="presetArtem"/);
+    assert.match(html, /_updatedByName:currentUser\(\)\.name/);
+  }
+  assert.match(rules, /function validCreatorIdentity\(/);
+  assert.match(rules, /function validUpdateIdentity\(/);
+  assert.match(rules, /creatorIdentityUnchanged\(\)/);
 });
 
 test('candidate patch identity is internally consistent', () => {

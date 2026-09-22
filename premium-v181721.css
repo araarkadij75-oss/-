@@ -69,3 +69,11 @@ body:before{opacity:.7;background-size:32px 32px}
 .mobile-order-card{border-left:4px solid #2774e8;background:#fff}.mobile-order-meta div{background:#eef3f9;border:1px solid #d5dfeb}
 @media(max-width:800px){body{background:#edf2f8}.tabs{background:#dce5f1}.tab.active{box-shadow:0 5px 13px rgba(22,91,207,.26)}.executive-kpis .kpi{min-height:120px}.kpi .v{font-size:23px}.chart-card{border-top-width:3px}}
 @media(max-width:480px){.executive-kpis{gap:9px}.executive-kpis .kpi{padding:14px 12px}.kpi .l{font-size:9px}.kpi .v{font-size:21px}.top{border-color:#bdccdf}}
+
+/* Account-bound shifts and immutable order attribution */
+.identity-locked{padding-left:36px!important;border-color:#9bb6dd!important;background:#eaf2ff!important;color:#173f79!important;font-weight:800}
+.identity-locked+ .help{color:#245da8;font-weight:700}
+#orderCreatorIdentity:before{content:"●";margin-right:6px;color:#1473e6}
+.staff-login{display:block;margin-top:3px;color:#526a8e;font-family:"Cascadia Mono",Consolas,monospace;font-size:10px;font-weight:700}
+#presetSergey{color:#075fae;border-color:#91bee8;background:#eaf5ff}
+#presetArtem{color:#6236b5;border-color:#bea9e7;background:#f3efff}

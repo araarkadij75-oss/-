@@ -55,8 +55,32 @@ service cloud.firestore {
       return [
         'orderId','direction','city','callDate','callTime','visitDate','visitTime',
         'name','phone','address','request','dispatcher','review','_status',
-        '_createdAt','_updatedAt','_createdBy','_createdByName','_createdByShift'
+        '_createdAt','_updatedAt','_createdBy','_createdByName','_createdByShift',
+        '_updatedBy','_updatedByName','_updatedByShift'
       ];
+    }
+
+    function validCreatorIdentity(workspace, orderId) {
+      let member = get(memberPath(workspace)).data;
+      return request.resource.data.orderId == orderId
+        && request.resource.data._createdBy == member.id
+        && request.resource.data._createdByName == member.name
+        && request.resource.data._createdByShift == member.shift
+        && request.resource.data.dispatcher == member.name
+        && validUpdateIdentity(workspace);
+    }
+
+    function validUpdateIdentity(workspace) {
+      let member = get(memberPath(workspace)).data;
+      return request.resource.data._updatedBy == member.id
+        && request.resource.data._updatedByName == member.name
+        && request.resource.data._updatedByShift == member.shift;
+    }
+
+    function creatorIdentityUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'orderId','_createdAt','_createdBy','_createdByName','_createdByShift','dispatcher'
+      ]);
     }
 
     function masterMutableFields() {
@@ -81,14 +105,20 @@ service cloud.firestore {
       allow list: if isOps(workspace);
 
       allow create: if isOwner(workspace)
-                    || role(workspace) == 'dispatcher_logistic'
+                    || (role(workspace) == 'dispatcher_logistic'
+                        && validCreatorIdentity(workspace, orderId))
                     || (isDispatcher(workspace)
-                        && request.resource.data.keys().hasOnly(dispatcherFields()));
+                        && request.resource.data.keys().hasOnly(dispatcherFields())
+                        && validCreatorIdentity(workspace, orderId));
 
       allow update: if isOwner(workspace)
-                    || role(workspace) in ['dispatcher_logistic','logistic']
+                    || (role(workspace) in ['dispatcher_logistic','logistic']
+                        && creatorIdentityUnchanged()
+                        && validUpdateIdentity(workspace))
                     || (isDispatcher(workspace)
-                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields()))
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields())
+                        && creatorIdentityUnchanged()
+                        && validUpdateIdentity(workspace))
                     || (ownsAssignment(workspace, orderId)
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields()));
 
@@ -98,8 +128,13 @@ service cloud.firestore {
     match /workspaces/{workspace}/dispatcherOrders/{orderId} {
       allow read: if hasActiveMember(workspace)
                   && role(workspace) in ['owner','dispatcher','dispatcher_logistic','logistic'];
-      allow create, update: if hasActiveMember(workspace)
-                            && role(workspace) in ['owner','dispatcher','dispatcher_logistic','logistic'];
+      allow create: if isOwner(workspace)
+                    || (role(workspace) in ['dispatcher','dispatcher_logistic']
+                        && validCreatorIdentity(workspace, orderId));
+      allow update: if isOwner(workspace)
+                    || (role(workspace) in ['dispatcher','dispatcher_logistic','logistic']
+                        && creatorIdentityUnchanged()
+                        && validUpdateIdentity(workspace));
       allow delete: if isOwner(workspace) || role(workspace) in ['dispatcher_logistic','logistic'];
     }
 

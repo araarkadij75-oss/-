@@ -35,9 +35,9 @@ before(async () => {
     const db = ctx.firestore();
     const members = [
       ['owner-uid', {role:'owner', active:true, login:'owner'}],
-      ['dispatch-uid', {role:'dispatcher', active:true, login:'dispatch'}],
-      ['ops-uid', {role:'dispatcher_logistic', active:true, login:'ops'}],
-      ['logistic-uid', {role:'logistic', active:true, login:'logistic'}],
+      ['dispatch-uid', {id:'sergey', name:'Сергей', shift:'sergey', role:'dispatcher', active:true, login:'sergey'}],
+      ['ops-uid', {id:'artem', name:'Артём', shift:'artem', role:'dispatcher_logistic', active:true, login:'artem'}],
+      ['logistic-uid', {id:'logistic', name:'Логист', shift:'sergey', role:'logistic', active:true, login:'logistic'}],
       ['master-uid', {role:'master', active:true, login:'master', master:'Иван'}],
       ['master2-uid', {role:'master', active:true, login:'master2', master:'Петр'}],
       ['inactive-uid', {role:'dispatcher_logistic', active:false, login:'inactive'}]
@@ -105,24 +105,41 @@ test('dispatcher can create intake fields but cannot assign master or edit money
   const db=dbFor('dispatch-uid');
   await assertSucceeds(setDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {
     orderId:'TEST-DISPATCH-CREATE', name:'Новый', phone:'70000000000', request:'Диагностика',
+    dispatcher:'Сергей', _createdBy:'sergey', _createdByName:'Сергей', _createdByShift:'sergey',
+    _updatedBy:'sergey', _updatedByName:'Сергей', _updatedByShift:'sergey',
     _status:'В работе', _updatedAt:new Date().toISOString()
   }));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {master:'Иван'}));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {total:5000}));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE')));
+  const actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {dispatcher:'Артём',...actor}));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {_createdBy:'artem',...actor}));
 });
 
 test('dispatcher-logistic can operate but cannot canonical-delete', async () => {
   const db=dbFor('ops-uid');
   await assertSucceeds(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
-  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {master:'Иван', total:11000}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
+    master:'Иван', total:11000, _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
+  await assertSucceeds(setDoc(doc(db,'workspaces',ws,'orders','TEST-OPS-CREATE'), {
+    orderId:'TEST-OPS-CREATE', dispatcher:'Артём',
+    _createdBy:'artem', _createdByName:'Артём', _createdByShift:'artem',
+    _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OPS-CREATE'), {
+    _createdByName:'Сергей', _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
 });
 
 test('logistic cannot create or delete canonical order', async () => {
   const db=dbFor('logistic-uid');
   await assertFails(setDoc(doc(db,'workspaces',ws,'orders','TEST-LOG-CREATE'), {orderId:'TEST-LOG-CREATE'}));
-  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {total:12000}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
+    total:12000, _updatedBy:'logistic', _updatedByName:'Логист', _updatedByShift:'sergey'
+  }));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
 });
 
