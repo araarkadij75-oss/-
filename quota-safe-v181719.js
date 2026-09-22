@@ -68,10 +68,11 @@
       throw new Error('quota-safe patch refused: unexpected staging target');
     }
     const appMod=await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js');
+    const authMod=await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js');
     const fs=await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js');
     let app=(appMod.getApps&&appMod.getApps().find(a=>a.options&&a.options.projectId===cfg.firebaseConfig.projectId))||null;
     if(!app)app=appMod.initializeApp(cfg.firebaseConfig,'quota_safe_'+Date.now());
-    const db=fs.getFirestore(app),ws=cfg.workspaceId;
+    const db=fs.getFirestore(app),auth=authMod.getAuth(app),ws=cfg.workspaceId;
     const ordersCol=fs.collection(db,'workspaces',ws,'orders');
     const googleRef=fs.doc(db,'workspaces',ws,'config','google');
 
@@ -81,8 +82,9 @@
     const originalHealth=cloud.integrationHealth&&cloud.integrationHealth.bind(cloud);
 
     const diag=cloud.quotaSafeDiag={patch:PATCH,mode:'pending',cacheRows:0,deltaReads:0,deltaEvents:0,bridgePushes:0,bridgeDeletes:0,bridgeErrors:0,fullPulls:0,fullPullSkips:0,lastBridgeError:'',lastBridgeSuccessAt:'',lastCursor:'',recoveredDirty:0,recoverySkipped:0,lockDeferrals:0,deltaRetryCount:0,deltaDeadLetter:false,canonicalDeletes:0,auxDeleteFailures:0,deleteErrors:0,deleteDeadLetter:false,lastDeleteError:'',lastFlush:null,installedAt:new Date().toISOString()};
-    let googleCfg={},googleUnsub=null,pullTimer=null,pushTimer=null,bridgeFlushing=false,bridgeRetryAttempt=0,baselineMap={},tombstoneSnapshotReady=false;
+    let googleCfg={},googleUnsub=null,pullTimer=null,pushTimer=null,bridgeFlushing=false,bridgeRetryAttempt=0,baselineMap={},tombstoneSnapshotReady=false,authPushTimer=null,authPushBusy=false;
     const pushRows=new Map(),pushDeletes=new Map(),knownDeleted=new Set();
+    const authPushRows=new Map();
     const GOOGLE_KEYS=['orderId','_status','direction','city','callDate','callTime','visitDate','visitTime','name','phone','address','request','master','dispatcher','_assignedByName','_createdByShift','pp','parts','cleanCheck','total','masterAmount','companyShare','review','closeDate','_masterStage','_acceptedAt','_enrouteAt','_arrivedAt','_workAt','_doneAt','_cashReceivedAt','_workflow','_workflowCreatedAt','_requiresCloseApproval','_closeReviewState','_reviewSubmittedAt','_workCompletedAt','_reviewReturnedAt','_reviewReturnedByName','_closeReviewNote','_closeApprovedAt','_closeApprovedByName'];
     const DAY_KEYS=new Set(['callDate','visitDate','closeDate']),TIME_KEYS=new Set(['callTime','visitTime']),NUMBER_KEYS=new Set(['pp','parts','cleanCheck','total','masterAmount','companyShare','_masterReportedTotal','_masterReportedParts']),BOOL_KEYS=new Set(['_requiresCloseApproval','_showPhoneToMaster','_masterReportedReview']);
     function fnv(v){let h=2166136261>>>0;for(const ch of String(v)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return h.toString(16).padStart(8,'0')}
@@ -135,6 +137,35 @@
         if(!j||!j.ok)throw new Error(j&&j.error||'Google Bridge error');
         return j;
       }finally{clearTimeout(timer)}
+    }
+    function scheduleAuthenticatedFlush(delay=700){
+      clearTimeout(authPushTimer);
+      authPushTimer=setTimeout(flushAuthenticatedRows,Math.max(250,delay));
+    }
+    function enqueueAuthenticatedRows(rows){
+      for(const row of rows||[]){
+        const id=String(row&&row.orderId||'').trim();
+        if(id&&!TECH_RE.test(id)&&!knownDeleted.has(id))authPushRows.set(id,true);
+      }
+      if(authPushRows.size)scheduleAuthenticatedFlush();
+    }
+    async function flushAuthenticatedRows(){
+      authPushTimer=null;
+      if(authPushBusy||cloud.profile?.role==='owner'||!authPushRows.size)return;
+      const endpoint=String(cfg.googleBridgeUrl||'').trim(),user=auth.currentUser;
+      if(!endpoint||!user){scheduleAuthenticatedFlush(2000);return}
+      authPushBusy=true;
+      try{
+        for(const id of [...authPushRows.keys()]){
+          const token=await user.getIdToken();
+          const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'authUpsert',idToken:token,orderId:id})});
+          const text=await r.text();let j;
+          try{j=JSON.parse(text)}catch(e){throw new Error('Google Bridge вернул не-JSON ответ')}
+          if(!r.ok||!j||!j.ok)throw new Error(j&&j.error||('Google Bridge HTTP '+r.status));
+          authPushRows.delete(id);diag.bridgePushes++;diag.lastBridgeSuccessAt=new Date().toISOString();
+        }
+      }catch(e){diag.bridgeErrors++;diag.lastBridgeError=String(e&&e.message||e).slice(0,500);scheduleAuthenticatedFlush(5000)}
+      finally{authPushBusy=false}
     }
     function enqueueBridgeRows(rows){
       for(const r0 of rows||[]){
@@ -478,6 +509,7 @@
           cloud.ownerRows=[...cacheMap.values()];cloud.ownerSeenReady=true;
           onRows(cloud.ownerRows);
           if(!initial&&role==='owner'&&changedRows.length)enqueueBridgeRows(changedRows);
+          if(!initial&&role!=='owner'&&changedRows.length)enqueueAuthenticatedRows(changedRows);
           if(initial&&role==='owner')setTimeout(()=>recoverDirtyFromBaseline([...cacheMap.values()]).catch(e=>console.warn('baseline recovery',e)),700);
           initial=false;
         },err=>{

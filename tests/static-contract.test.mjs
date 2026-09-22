@@ -48,6 +48,17 @@ test('legacy production project is absent from runtime cloud config', () => {
   assert.doesNotMatch(c, /projectId\s*:\s*["']master-ai-9440599["']/);
 });
 
+test('employees can push authenticated order updates to Google without a shared secret', () => {
+  const c = read('cloud-config.js');
+  const p = read('quota-safe-v181719.js');
+  assert.match(c, /googleBridgeUrl:\s*"https:\/\/script\.google\.com\/macros\/s\//);
+  assert.doesNotMatch(c, /MASTER_AI_SECRET|bridgeSecret|secret\s*:/);
+  assert.match(p, /firebase-auth\.js/);
+  assert.match(p, /getIdToken\(\)/);
+  assert.match(p, /action:'authUpsert'/);
+  assert.match(p, /role!=='owner'.*enqueueAuthenticatedRows/);
+});
+
 
 test('service worker pins the candidate patch and avoids stale runtime cache', () => {
   const sw = read('sw.js');
