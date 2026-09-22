@@ -9,7 +9,7 @@ const SHELL=[
   './manifest-master.json',
   './icon.svg',
   './cloud-config.js',
-  './quota-safe-v181718.js'
+  './quota-safe-v181719.js'
 ];
 
 self.addEventListener('install',event=>{
