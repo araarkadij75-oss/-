@@ -41,6 +41,33 @@ service cloud.firestore {
       return role(workspace) == 'master';
     }
 
+    function isShiftCloser(workspace) {
+      return role(workspace) in ['dispatcher_logistic', 'logistic'];
+    }
+
+    function payrollPath(workspace) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/config/payroll;
+    }
+
+    function validShiftReport(workspace, reportId) {
+      let member = get(memberPath(workspace)).data;
+      let configured = exists(payrollPath(workspace));
+      let basePay = configured ? get(payrollPath(workspace)).data.shiftBasePay : 2000;
+      let threshold = configured ? get(payrollPath(workspace)).data.shiftCashThreshold : 20000;
+      let rate = configured ? get(payrollPath(workspace)).data.shiftCashRate : 10;
+      let expected = request.resource.data.cash > threshold
+        ? request.resource.data.cash * rate / 100
+        : basePay;
+      return request.resource.data.id == reportId
+        && request.resource.data.closedBy == member.id
+        && request.resource.data.closedByName == member.name
+        && request.resource.data.shift == member.shift
+        && request.resource.data.serverClosedAt == request.time
+        && request.resource.data.salary == expected
+        && request.resource.data.orders >= 0
+        && request.resource.data.cash >= 0;
+    }
+
     function assignmentPath(workspace, orderId) {
       return /databases/$(database)/documents/workspaces/$(workspace)/masterAssignments/$(orderId);
     }
@@ -172,6 +199,17 @@ service cloud.firestore {
 
     match /workspaces/{workspace}/config/google {
       allow read, write: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/config/payroll {
+      allow read: if hasActiveMember(workspace);
+      allow create, update, delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/shiftReports/{reportId} {
+      allow read: if isOwner(workspace) || isShiftCloser(workspace);
+      allow create: if isShiftCloser(workspace) && validShiftReport(workspace, reportId);
+      allow update, delete: if isOwner(workspace);
     }
 
     match /workspaces/{workspace}/uiChanges/{changeId} {

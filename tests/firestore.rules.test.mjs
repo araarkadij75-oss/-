@@ -12,6 +12,7 @@ import {
   getDoc,
   getDocs,
   query,
+  serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
@@ -78,6 +79,7 @@ before(async () => {
     await setDoc(doc(db,'workspaces',ws,'config','public'), {phoneEveningTime:'18:00'});
     await setDoc(doc(db,'workspaces',ws,'config','ui'), {theme:{density:'compact'}});
     await setDoc(doc(db,'workspaces',ws,'config','google'), {sheetUrl:'test'});
+    await setDoc(doc(db,'workspaces',ws,'config','payroll'), {shiftBasePay:2000,shiftCashThreshold:20000,shiftCashRate:10});
   });
 });
 
@@ -188,4 +190,25 @@ test('UI config is readable by active users but writable only by owner', async (
   await assertSucceeds(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','ui')));
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','ui'), {'theme.density':'spacious'}));
   await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','ui'), {'theme.density':'spacious'}));
+});
+
+test('payroll settings are visible to staff but owner-controlled', async () => {
+  await assertSucceeds(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll')));
+  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:9000}));
+  await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:2000}));
+});
+
+test('dispatcher-logistic closes only own shift with server-calculated salary', async () => {
+  const db=dbFor('ops-uid');
+  const ref=doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem-artem');
+  const valid={id:'2026-09-23-artem-artem',date:'2026-09-23',closedBy:'artem',closedByName:'Артём',shift:'artem',cash:50000,salary:5000,orders:8,serverClosedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(ref,valid));
+  await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','wrong-pay'),{...valid,id:'wrong-pay',salary:2000,serverClosedAt:serverTimestamp()}));
+  await assertFails(updateDoc(ref,{salary:9000}));
+  await assertSucceeds(getDoc(ref));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports','2026-09-23-artem-artem')));
+});
+
+test('dispatcher cannot close a shift report', async () => {
+  await assertFails(setDoc(doc(dbFor('dispatch-uid'),'workspaces',ws,'shiftReports','forged'),{id:'forged',date:'2026-09-23',closedBy:'sergey',closedByName:'Сергей',shift:'sergey',cash:1000,salary:2000,orders:1,serverClosedAt:serverTimestamp()}));
 });

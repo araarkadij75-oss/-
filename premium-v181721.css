@@ -4,6 +4,14 @@
   --border:#dde4ee;--accent:#246bfd;--accent2:#1557d9;--ok:#139b5f;--warn:#d97706;
   --bad:#d13c3c;--shadow:0 10px 30px rgba(31,45,74,.07);--shadow-lg:0 24px 70px rgba(31,45,74,.18);
 }
+
+/* Shift close center */
+.shift-close-card{background:linear-gradient(145deg,var(--surface,#fff),color-mix(in srgb,var(--accent,#2563eb) 5%,var(--surface,#fff)));overflow:hidden}
+.shift-live-head,.shift-report-title{display:flex;align-items:center;justify-content:space-between;gap:16px}.shift-live-head strong{display:block;font-size:1.25rem;margin-top:3px}.shift-state,.integrity{font-size:.78rem;font-weight:800;padding:6px 10px;border-radius:999px}.shift-state.open{background:#dbeafe;color:#1d4ed8}.shift-state.closed,.integrity.ok{background:#dcfce7;color:#166534}.integrity.warn{background:#fef3c7;color:#92400e}
+.shift-live-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.shift-live-grid>div{padding:14px;border:1px solid var(--line,#e5e7eb);border-radius:14px;background:color-mix(in srgb,var(--surface,#fff) 92%,transparent)}.shift-live-grid span,.shift-live-grid small{display:block;color:var(--muted,#64748b)}.shift-live-grid b{display:block;font-size:1.25rem;margin:4px 0}.shift-live-grid .salary{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border:0}.shift-live-grid .salary span,.shift-live-grid .salary small{color:#bfdbfe}
+.shift-owner-summary{display:flex;flex-direction:column;gap:5px;padding:14px;border-radius:14px;background:color-mix(in srgb,var(--accent,#2563eb) 7%,transparent)}.shift-report-card{display:grid;gap:10px;margin-top:10px;padding:14px;border:1px solid var(--line,#e5e7eb);border-radius:14px;background:var(--surface,#fff)}.shift-report-title span{display:block;color:var(--muted,#64748b);font-size:.82rem;margin-top:2px}.shift-report-kpis{display:flex;gap:8px;flex-wrap:wrap}.shift-report-kpis>span{padding:6px 9px;border-radius:9px;background:var(--soft,#f1f5f9);font-size:.84rem}.shift-report-kpis .pay{background:#dbeafe;color:#1e3a8a}.empty-state.compact{padding:18px;text-align:center}.role-dispatcher_logistic .owner-payroll,.role-logistic .owner-payroll,.role-dispatcher .owner-payroll,.role-master .owner-payroll{display:none!important}
+@media(max-width:760px){.shift-live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shift-report-title{align-items:flex-start}.integrity{white-space:nowrap}}
+@media(max-width:430px){.shift-live-grid{grid-template-columns:1fr}.shift-live-head{align-items:flex-start}}
 html{background:var(--bg)}
 body{background:radial-gradient(circle at 8% -10%,rgba(36,107,253,.10),transparent 30rem),var(--bg);color:var(--text)}
 body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(20,33,61,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(20,33,61,.018) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,#000,transparent 38rem)}
