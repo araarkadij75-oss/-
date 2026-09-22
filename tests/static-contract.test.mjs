@@ -112,11 +112,23 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181721/);
+    assert.match(read(file), /premium-v181721\.css\?v=181722/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(read('sw.js'), /premium-v181721\.css/);
+});
+
+test('dashboard uses decision-oriented KPI definitions', () => {
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html = read(file);
+    assert.match(html, /completionRate:eligible\?closed\/eligible\*100/);
+    assert.match(html, /reviewRate:closed\?reviewN\/closed\*100/);
+    assert.match(html, /Активные заказы/);
+    assert.match(html, /Фокус руководителя/);
+    assert.match(html, /Оборот и касса во времени/);
+    assert.match(html, /renderExecutiveSummary\(k\)/);
+  }
 });
 
 test('candidate patch identity is internally consistent', () => {
