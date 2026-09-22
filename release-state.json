@@ -1,0 +1,23 @@
+{
+  "candidate": "18.17.19-CANDIDATE",
+  "baseCurrent": "18.17.18-CURRENT",
+  "environment": {
+    "firebaseProject": "master-ai-beta-9440599",
+    "workspace": "master-ai-beta",
+    "billing": "Spark / NO BILLING",
+    "canonicalOrders": "workspaces/master-ai-beta/orders",
+    "googleSheetId": "1BA1Lwmpk62xacOBvX_EW02gBhIJvOfW5EOTYFWeOD0o"
+  },
+  "syncContract": {
+    "mode": "direct_upsert_delete",
+    "bridgeProtocol": 2,
+    "fullReconcile": "manual_only",
+    "legacyAutoFullSyncBlocked": true,
+    "focusPull": false,
+    "retryLimit": 5
+  },
+  "promotion": {
+    "allowed": false,
+    "reason": "Candidate certification work in progress. Do not promote before CI, rules, browser E2E, parity and restore gates pass."
+  }
+}
