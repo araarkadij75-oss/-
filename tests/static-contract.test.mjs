@@ -17,8 +17,8 @@ test('release state pins safe environment', () => {
   assert.equal(s.promotion.allowed, false);
 });
 
-test('18.17.18 safety patch keeps delta/delete invariants', () => {
-  const p = read('quota-safe-v181718.js');
+test('18.17.19 safety patch keeps delta/delete invariants', () => {
+  const p = read('quota-safe-v181719.js');
   assert.match(p, /canonicalDeleteSafety:true/);
   assert.match(p, /fullReconcileMode:'manual_only'/);
   assert.match(p, /legacyAutoFullSyncBlocked:true/);
