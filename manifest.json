@@ -1,6 +1,7 @@
 {
   "name": "MASTER AI",
   "short_name": "MASTER AI",
+  "id": "./?app=owner",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

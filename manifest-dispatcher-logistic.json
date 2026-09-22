@@ -1,6 +1,7 @@
 {
   "name": "MASTER AI — Диспетчер‑логист",
-  "short_name": "MASTER AI",
+  "short_name": "MASTER AI Логист",
+  "id": "./?app=dispatcher-logistic",
   "start_url": "./dispatcher-logistic.html",
   "scope": "./",
   "display": "standalone",
