@@ -86,3 +86,5 @@ body:before{opacity:.7;background-size:32px 32px}
 .staff-login{display:block;margin-top:3px;color:#526a8e;font-family:"Cascadia Mono",Consolas,monospace;font-size:10px;font-weight:700}
 #presetSergey{color:#075fae;border-color:#91bee8;background:#eaf5ff}
 #presetArtem{color:#6236b5;border-color:#bea9e7;background:#f3efff}
+
+.role-dispatcher_logistic .owner-finance,.role-logistic .owner-finance,.role-dispatcher .owner-finance,.role-master .owner-finance{display:none!important}
