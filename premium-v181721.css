@@ -133,3 +133,4 @@ html,body,.input,.select,.textarea,.btn{font-family:var(--font-family)}.order-fo
 .roster-actions{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}.master-roster-item>div:first-child{min-width:0}.master-roster-item b,.master-roster-item small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:1050px){.staff-access-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.staff-access-form{grid-template-columns:1fr}.staff-directory-item{grid-template-columns:38px 1fr auto}.staff-directory-item .btn{grid-column:2/-1}.staff-state{align-self:start}}
+.mobile-order-card{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(36,107,253,.12)}.mobile-order-card:active{transform:scale(.992);border-color:#6e9ef4}.mobile-order-card:focus-visible{outline:3px solid rgba(36,107,253,.28);outline-offset:2px}
