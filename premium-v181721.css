@@ -216,6 +216,7 @@ body:has(.modal.open) .mobile-bottom-nav{display:none!important}
 .daily-cash-date b,.daily-cash-date span,.daily-cash-metric span,.daily-cash-metric b{display:block}.daily-cash-date b{font-size:14px;color:#172b4d}.daily-cash-date span{margin-top:3px;color:#68778c;font-size:11px}
 .daily-cash-track{height:9px;border-radius:999px;background:#e8eef5;overflow:hidden}.daily-cash-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#48c28b,#0b8b5c)}
 .daily-cash-metric{min-width:0;text-align:right}.daily-cash-metric span{color:#68778c;font-size:10px}.daily-cash-metric b{margin-top:3px;color:#1b2e4c;font-size:13px;white-space:nowrap}.daily-cash-metric.cash b{color:#08704a;font-size:15px}
+.tabs{position:relative!important;top:auto!important;z-index:auto!important}
 @media(max-width:900px){.daily-cash-row{grid-template-columns:90px minmax(70px,1fr) repeat(2,minmax(92px,auto))}.daily-cash-metric:nth-last-child(-n+2){display:none}}
 @media(max-width:560px){.daily-cash-card .section-head{align-items:flex-start}.daily-cash-row{grid-template-columns:78px minmax(50px,1fr) minmax(96px,auto);gap:8px;padding:10px}.daily-cash-metric{display:none}.daily-cash-metric.cash{display:block}.daily-cash-date b{font-size:12px}.daily-cash-track{height:8px}}
 
