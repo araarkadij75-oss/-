@@ -205,3 +205,46 @@ body:has(.modal.open) .mobile-bottom-nav{display:none!important}
   .report-kpis{grid-template-columns:1fr!important}
   [data-panel="reports"]>.section-head{padding:14px}
 }
+
+/* UI recovery — deliberately simple, sharp and predictable. */
+:root{--font-ui:Arial,"Helvetica Neue",Helvetica,sans-serif;--font-display:Arial,"Helvetica Neue",Helvetica,sans-serif}
+html,body,button,input,select,textarea{font-family:Arial,"Helvetica Neue",Helvetica,sans-serif!important;-webkit-font-smoothing:auto!important;-moz-osx-font-smoothing:auto!important;text-rendering:auto!important;font-synthesis:weight style}
+body{font-weight:400;letter-spacing:0}
+.brand h1,.chart-title,.modal-title,.kpi .v,.mini .v,.quality .v,.workflow-card .v{font-family:Arial,"Helvetica Neue",Helvetica,sans-serif!important;font-weight:700;letter-spacing:-.015em}
+.tab,.btn,.field label,.table th,.badge,.pill,.status-pill,.stage{font-weight:700}
+.modal-card{height:auto;max-height:calc(100dvh - 24px);display:flex;flex-direction:column}
+.modal-head,.modal-footer{flex:0 0 auto}.modal-scroll{flex:1 1 auto;min-height:0;overflow:auto}
+#orderModal .modal-body-grid{min-width:0}#orderModal .order-form{min-width:0}#orderModal .field{min-width:0}
+@media(max-width:680px){
+  #orderModal{display:none;position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;padding:0!important;align-items:stretch!important;overflow:hidden!important}
+  #orderModal.open{display:flex!important}
+  #orderModal .modal-card{position:relative!important;inset:auto!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;border:0!important;border-radius:0!important}
+  #orderModal .modal-head{min-height:58px;padding:10px 12px!important}
+  #orderModal .modal-scroll{flex:1 1 0!important;min-height:0!important;height:auto!important;padding:12px 10px 18px!important;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch}
+  #orderModal .modal-body-grid{display:block!important;width:100%!important}
+  #orderModal .modal-side{position:static!important;width:100%!important;margin-top:12px}
+  #orderModal .order-form{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+  #orderModal .order-form>*{grid-column:1/-1!important;min-width:0!important}
+  #orderModal .modal-footer{position:static!important;display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important;min-height:0!important;padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;background:#fff!important}
+  #orderModal .modal-footer .btn{width:100%!important;min-height:44px!important}
+  #orderModal .modal-footer .btn.primary{grid-column:1/-1!important;grid-row:1}
+}
+
+/* Verified root-cause fix: transformed ancestors break fixed modal geometry. */
+.app{animation:none!important;transform:none!important}
+.section.active{animation:none!important;transform:none!important}
+.top,.tabs,.modal-footer{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.top{background:#fff!important}.tabs{background:#e5ebf4!important}.modal-footer{background:#fff!important}
+.btn,.tab,.field label,.chart-title,.modal-title{font-variation-settings:normal!important}
+.input,.select,.textarea{min-height:44px;font-size:15px;line-height:1.35;border:1px solid #b8c6d8}.field label{font-size:12px;line-height:1.35}
+#orderModal{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important}
+#orderModal .modal-card{display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;width:min(1180px,calc(100vw - 30px))!important;height:min(92dvh,940px)!important;max-height:calc(100dvh - 16px)!important;overflow:hidden!important}
+#orderModal .modal-head,#orderModal .modal-footer{position:relative!important;inset:auto!important;z-index:2}
+#orderModal .modal-scroll{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;padding:16px 20px 20px!important}
+@media(max-width:680px){
+  .input,.select,.textarea{font-size:16px}
+  #orderModal{padding:0!important}
+  #orderModal .modal-card{width:100%!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important}
+  #orderModal .modal-scroll{padding:12px!important}
+  #orderModal .modal-footer{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important}
+}
