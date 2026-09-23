@@ -112,7 +112,7 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181726/);
+    assert.match(read(file), /premium-v181721\.css\?v=181727/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
@@ -128,6 +128,17 @@ test('dashboard uses decision-oriented KPI definitions', () => {
     assert.match(html, /Фокус руководителя/);
     assert.match(html, /Оборот и касса во времени/);
     assert.match(html, /renderExecutiveSummary\(k\)/);
+  }
+});
+
+test('dashboard shows every day in the selected cash period', () => {
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html = read(file);
+    assert.match(html, /id="dailyCash"/);
+    assert.match(html, /function renderDailyCash\(rows\)/);
+    assert.match(html, /while\(cursor<=end&&days\.length<366\)/);
+    assert.match(html, /renderDailyCash\(rows\)/);
+    assert.match(html, /Касса по дням/);
   }
 });
 
