@@ -112,7 +112,7 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181728/);
+    assert.match(read(file), /premium-v181721\.css\?v=181729/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
@@ -151,6 +151,10 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = read(file);
     assert.match(html, /id="closeShiftBtn"/);
+    assert.match(html, /id="dailyShiftReports"/);
+    assert.match(html, /id="addRosterMaster"/);
+    assert.match(html, /function removeRosterMaster\(/);
+    assert.match(html, /\.slice\(0,14\)/);
     assert.match(html, /function shiftPayroll\(/);
     assert.match(html, /function shiftSnapshot\(/);
     assert.match(html, /salary:shiftPayroll\(cash\)/);
