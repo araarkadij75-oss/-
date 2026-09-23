@@ -175,3 +175,33 @@ body:before{opacity:.42;background-size:36px 36px}
 @media(max-width:520px){.top-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:1fr 1fr}.order-form{grid-template-columns:1fr}.order-form>.field,.order-form>.span2,.order-form>.span3{grid-column:1}.kpis,.executive-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{padding:13px}.kpi .v{font-size:22px}.money-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.table th,.table td{padding:9px 10px}.modal-footer{display:grid;grid-template-columns:1fr 1fr}.modal-footer .btn.primary{grid-column:1/-1}.barrow{grid-template-columns:minmax(80px,1fr) minmax(54px,1.1fr) minmax(58px,auto);font-size:11px}}
 @media(max-width:360px){.filters,.kpis,.executive-kpis,.money-preview{grid-template-columns:1fr}.top-actions{grid-template-columns:1fr}.top-actions>*{grid-column:1!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.toast,.modal-card{animation:none}}
+
+/* High-definition typography: crisp text and one-pixel geometry on dense displays. */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision}
+body{font-weight:450;letter-spacing:-.005em}
+button,input,select,textarea{font-synthesis:none;text-rendering:geometricPrecision}
+.brand h1,.chart-title,.modal-title,.kpi .v,.mini .v,.quality .v,.workflow-card .v{font-weight:800;letter-spacing:-.025em}
+.tab,.btn,.field label,.table th,.badge,.pill,.status-pill,.stage{font-weight:700;letter-spacing:0}
+.chart-sub,.help,.metric-note,.source-note,.kpi .s{color:#56667d}
+.field label,.table th{font-size:11px}.input,.select,.textarea{color:#10213e}
+.table td{font-size:12.5px}.table th{color:#33445e}
+@media(min-resolution:2dppx){.card,.top,.tabs,.input,.select,.textarea,.table-wrap{border-width:1px}.table th,.table td{border-bottom-width:1px}}
+
+/* Perfection audit fixes */
+.mobile-bottom-nav{display:none!important}
+.role-master .mobile-bottom-nav{display:flex!important}
+body:has(.modal.open) .mobile-bottom-nav{display:none!important}
+[data-panel="reports"]>.section-head{padding:16px 18px;border:1px solid var(--border);border-radius:var(--radius);background:rgba(255,255,255,.97);box-shadow:var(--shadow)}
+.report-kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important}.report-kpis .kpi{min-width:0!important;overflow:hidden}
+.report-kpis .kpi .v{font-size:clamp(20px,2vw,27px);overflow-wrap:anywhere}
+.user-badge small,.mobile-bottom-nav button,.kpi .l{font-size:11px;line-height:1.3}
+@media(max-width:680px){
+  #orderModal{inset:0!important;padding:0!important;align-items:stretch!important}
+  #orderModal .modal-card{width:100%!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;margin:0!important}
+  #orderModal .modal-scroll{min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain}
+  #orderModal .modal-head,#orderModal .modal-footer{flex:0 0 auto}
+  .tab{min-height:44px;scroll-snap-align:center}.tabs{scroll-snap-type:x proximity;scroll-padding-inline:14px}
+  .btn,.badge,.admin-switch select{min-height:44px}
+  .report-kpis{grid-template-columns:1fr!important}
+  [data-panel="reports"]>.section-head{padding:14px}
+}
