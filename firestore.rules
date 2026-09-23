@@ -212,6 +212,11 @@ service cloud.firestore {
       allow update, delete: if isOwner(workspace);
     }
 
+    match /workspaces/{workspace}/masterShifts/{date} {
+      allow read: if hasActiveMember(workspace);
+      allow create, update, delete: if isOps(workspace);
+    }
+
     match /workspaces/{workspace}/uiChanges/{changeId} {
       allow read, write: if isOwner(workspace);
     }
