@@ -1,4 +1,6 @@
 (()=>{
+// Avito integration is intentionally disabled before any UI or network setup.
+return;
 const GATEWAY='https://master-ai-avito.vercel.app';
 let leads=[],selected='',messages=[],pulling=false;
 const okRole=()=>['owner','dispatcher_logistic'].includes(window.MasterAICloud?.profile?.role||'');

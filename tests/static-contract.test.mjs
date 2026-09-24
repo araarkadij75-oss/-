@@ -199,15 +199,16 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('Avito inbox resolves its own account and refreshes visible sessions', () => {
+test('Avito integration is disabled before client or server network access', () => {
   const lib=read('avito-gateway/api/_lib.mjs');
   const pull=read('avito-gateway/api/pull.mjs');
   const client=read('avito-crm-v1.js');
-  assert.match(lib,/\/core\/v1\/accounts\/self/);
-  assert.match(pull,/const ownId=await account\(\)/);
-  assert.match(pull,/attention:lastInbound/);
-  assert.match(client,/document\.visibilityState==='visible'/);
-  assert.match(client,/pulling=false/);
+  assert.match(lib,/integrationEnabled=\(\)=>false/);
+  assert.match(pull,/!integrationEnabled\(\).*410/);
+  assert.match(client,/^\(\(\)=>\{\s*\/\/ Avito integration is intentionally disabled[^]*?\sreturn;/);
+  for(const file of ['index.html','dispatcher-logistic.html','master.html','sw.js']){
+    assert.doesNotMatch(read(file),/avito-crm-v1\.js/);
+  }
 });
 
 test('candidate patch identity is internally consistent', () => {

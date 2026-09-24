@@ -1,8 +1,9 @@
-import {reply,preflight,authorize,avito,account} from './_lib.mjs';
+import {reply,preflight,authorize,avito,account,integrationEnabled} from './_lib.mjs';
 const asArray=value=>Array.isArray(value)?value:[];
 export default async function handler(req,res){
   const origin=String(req.headers.origin||'');
   if(preflight(req,res))return;
+  if(!integrationEnabled())return reply(res,410,{ok:false,error:'integration_disabled'},origin);
   if(req.method!=='GET')return reply(res,405,{ok:false,error:'method'},origin);
   if(!await authorize(req,res))return;
   try{

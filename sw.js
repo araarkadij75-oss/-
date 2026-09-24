@@ -1,4 +1,4 @@
-const CACHE='master-ai-18.17.20-shell-v24';
+const CACHE='master-ai-18.17.20-shell-v25';
 const SHELL=[
   './',
   './index.html',
@@ -10,8 +10,7 @@ const SHELL=[
   './icon.svg',
   './cloud-config.js',
   './quota-safe-v181719.js',
-  './premium-v181721.css',
-  './avito-crm-v1.js'
+  './premium-v181721.css'
 ];
 
 self.addEventListener('install',event=>{

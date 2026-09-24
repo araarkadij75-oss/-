@@ -452,7 +452,10 @@
       return (async()=>{
         if(role==='owner'){await refreshGoogleCfg();await pruneTechnicalBaseline();await reapTechnicalTombstones()}
         const cached=await readCache();
-        let cachedRows=validRows(cached&&cached.orders,cached&&cached.deletedOrders),bootstrapped=false;
+        /* All role entrypoints share IndexedDB. Never reuse a filtered role
+           snapshot as the canonical orders cache. */
+        const canonicalCache=!!(cached&&cached.cacheScope==='canonical');
+        let cachedRows=canonicalCache?validRows(cached.orders,cached.deletedOrders):[],bootstrapped=false;
         if(cachedRows.length<500){
           diag.mode='bootstrap_full_safe';diag.cacheRows=cachedRows.length;
           try{

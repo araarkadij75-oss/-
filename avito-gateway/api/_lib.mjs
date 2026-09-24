@@ -1,4 +1,5 @@
 const ALLOWED_ORIGINS=new Set(['https://araarkadij75-oss.github.io']);
+export const integrationEnabled=()=>false;
 let cachedToken='',tokenUntil=0,cachedAccount='',accountUntil=0;
 
 export function reply(res,status,data,origin=''){
