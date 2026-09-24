@@ -1,4 +1,4 @@
-const CACHE='master-ai-18.17.20-shell-v22';
+const CACHE='master-ai-18.17.20-shell-v23';
 const SHELL=[
   './',
   './index.html',
@@ -74,4 +74,5 @@ self.addEventListener('fetch',event=>{
     })
   );
 });
+
 
