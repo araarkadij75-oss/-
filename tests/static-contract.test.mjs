@@ -186,6 +186,19 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
   assert.match(rules, /shiftReports/);
 });
 
+test('master clients cannot open or submit the generic order editor', () => {
+  const rules = read('firestore.rules');
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html = read(file);
+    assert.match(html, /if\(currentRole\(\)==='master'\)\{toast\('Изменение заказа мастеру недоступно'\);return\}/);
+    assert.match(html, /if\(id==='orderModal'\)applyOrderFormPermissions\(\)/);
+    assert.match(html, /if\(!can\('edit'\)\)\{toast\('Недостаточно прав для изменения заказа'\);return\}/);
+    assert.match(html, /if\(role==='master'\)\{\$\$\('#orderForm input,#orderForm select,#orderForm textarea,#orderForm button'\)/);
+  }
+  assert.match(rules, /ownsAssignment\(workspace, orderId\)/);
+  assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
+});
+
 test('candidate patch identity is internally consistent', () => {
   const cfg=read('cloud-config.js');
   const patch=read('quota-safe-v181719.js');

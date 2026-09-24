@@ -145,11 +145,11 @@ test('logistic cannot create or delete canonical order', async () => {
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
 });
 
-test('master reads only own assignment and own canonical order', async () => {
+test('master reads only own sanitized assignment and no canonical order', async () => {
   const db=dbFor('master-uid');
   await assertSucceeds(getDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-OWN')));
   await assertFails(getDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-OTHER')));
-  await assertSucceeds(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
+  await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
   await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OTHER')));
 });
 
@@ -167,6 +167,14 @@ test('master can update workflow fields but not money/client identity', async ()
   }));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {total:1}));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {phone:'70000000001'}));
+});
+
+test('master cannot skip workflow stages or close an order directly', async () => {
+  const db=dbFor('master2-uid');
+  const ref=doc(db,'workspaces',ws,'orders','TEST-OTHER');
+  await assertFails(updateDoc(ref, {_masterStage:'done', _status:'Выполнен', _doneAt:new Date().toISOString(), _updatedAt:new Date().toISOString()}));
+  await assertFails(updateDoc(ref, {_masterStage:'review_pending', _status:'На проверке', _requiresCloseApproval:false, closeDate:'24.09.2026', _updatedAt:new Date().toISOString()}));
+  await assertFails(updateDoc(ref, {closeDate:'24.09.2026'}));
 });
 
 test('phone is server-time gated for master', async () => {
@@ -192,8 +200,10 @@ test('UI config is readable by active users but writable only by owner', async (
   await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','ui'), {'theme.density':'spacious'}));
 });
 
-test('payroll settings are visible to staff but owner-controlled', async () => {
-  await assertSucceeds(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll')));
+test('payroll settings are owner-only', async () => {
+  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll')));
+  await assertFails(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','payroll')));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll')));
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:9000}));
   await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:2000}));
 });

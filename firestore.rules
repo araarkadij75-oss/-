@@ -120,6 +120,37 @@ service cloud.firestore {
       ];
     }
 
+    function validMasterTransition() {
+      let from = resource.data.get('_masterStage', '');
+      let to = request.resource.data.get('_masterStage', '');
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return (
+        ((from == null || from == '' || from == 'assigned') && to == 'accepted'
+          && changed.hasOnly(['_masterStage','_updatedAt','_acceptedAt']))
+        || (from == 'accepted' && to == 'enroute'
+          && changed.hasOnly(['_masterStage','_updatedAt','_enrouteAt']))
+        || (from == 'enroute' && to == 'arrived'
+          && changed.hasOnly(['_masterStage','_updatedAt','_arrivedAt']))
+        || ((from == 'arrived' || from == 'revision_requested') && to == 'work'
+          && request.resource.data._status == 'В работе'
+          && changed.hasOnly(['_masterStage','_updatedAt','_workAt','_status','_closeReviewState']))
+        || ((from == 'work' || from == 'revision_requested') && to == 'review_pending'
+          && request.resource.data._status == 'На проверке'
+          && request.resource.data._requiresCloseApproval == true
+          && request.resource.data.closeDate == ''
+          && changed.hasOnly(['_masterStage','_updatedAt','_status','_closeReviewState',
+            '_masterReportedTotal','_masterReportedParts','_masterReportedReview',
+            '_masterNote','_masterReportAt','_workCompletedAt','_reviewSubmittedAt',
+            '_requiresCloseApproval','closeDate']))
+        || (resource.data._workflow != 'master_review_v1' && from == 'work' && to == 'done'
+          && request.resource.data._status == 'Выполнен'
+          && changed.hasOnly(['_masterStage','_updatedAt','_doneAt','_status']))
+        || (from == 'work' && to == 'work'
+          && changed.hasOnly(['_updatedAt','_masterReportedTotal','_masterReportedParts',
+            '_masterReportedReview','_masterNote','_masterReportAt']))
+      );
+    }
+
     match /workspaces/{workspace}/members/{uid} {
       allow get: if signedIn() && allowedWorkspace(workspace)
                  && (uid == request.auth.uid || isOwner(workspace) || isOps(workspace));
@@ -128,7 +159,7 @@ service cloud.firestore {
     }
 
     match /workspaces/{workspace}/orders/{orderId} {
-      allow get: if isOps(workspace) || ownsAssignment(workspace, orderId);
+      allow get: if isOps(workspace);
       allow list: if isOps(workspace);
 
       allow create: if isOwner(workspace)
@@ -147,7 +178,8 @@ service cloud.firestore {
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
                     || (ownsAssignment(workspace, orderId)
-                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields()));
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields())
+                        && validMasterTransition());
 
       allow delete: if isOwner(workspace);
     }
@@ -175,7 +207,8 @@ service cloud.firestore {
                     || (isMaster(workspace)
                         && resource.data.masterUid == request.auth.uid
                         && request.resource.data.masterUid == request.auth.uid
-                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields()));
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields())
+                        && validMasterTransition());
     }
 
     match /workspaces/{workspace}/masterPhones/{orderId} {
@@ -202,7 +235,7 @@ service cloud.firestore {
     }
 
     match /workspaces/{workspace}/config/payroll {
-      allow read: if hasActiveMember(workspace);
+      allow read: if isOwner(workspace);
       allow create, update, delete: if isOwner(workspace);
     }
 
