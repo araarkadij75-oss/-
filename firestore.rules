@@ -217,6 +217,11 @@ service cloud.firestore {
       allow create, update, delete: if isOps(workspace);
     }
 
+    match /workspaces/{workspace}/avitoLeads/{leadId} {
+      allow read, create, update: if isOps(workspace);
+      allow delete: if isOwner(workspace);
+    }
+
     match /workspaces/{workspace}/uiChanges/{changeId} {
       allow read, write: if isOwner(workspace);
     }
