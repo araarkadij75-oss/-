@@ -11,12 +11,20 @@ export function preflight(req,res,methods='GET,POST,OPTIONS'){
   if(!ALLOWED_ORIGINS.has(origin))return reply(res,403,{ok:false},origin);
   res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Access-Control-Allow-Methods',methods);res.setHeader('Access-Control-Allow-Headers','Authorization,Content-Type');res.setHeader('Vary','Origin');res.status(204).end();return true;
 }
-export async function authorize(req,res){
+export async function authorize(req,res,roles=['owner','dispatcher_logistic']){
   const origin=String(req.headers.origin||'');if(!ALLOWED_ORIGINS.has(origin)){reply(res,403,{ok:false,error:'origin'},origin);return null}
   const idToken=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');const key=process.env.FIREBASE_WEB_API_KEY;
   if(!key||!idToken){reply(res,401,{ok:false,error:'auth'},origin);return null}
   const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({idToken})});
-  if(!r.ok){reply(res,401,{ok:false,error:'auth'},origin);return null}const data=await r.json();if(!data.users?.[0]){reply(res,401,{ok:false,error:'auth'},origin);return null}return{origin,user:data.users[0]};
+  if(!r.ok){reply(res,401,{ok:false,error:'auth'},origin);return null}const data=await r.json();const user=data.users?.[0];if(!user){reply(res,401,{ok:false,error:'auth'},origin);return null}
+  const project=process.env.FIREBASE_PROJECT_ID||'master-ai-beta-9440599',workspace='master-ai-beta';
+  const memberUrl=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(project)}/databases/(default)/documents/workspaces/${workspace}/members/${encodeURIComponent(user.localId)}`;
+  const memberResponse=await fetch(memberUrl,{headers:{Authorization:`Bearer ${idToken}`}});
+  const member=memberResponse.ok?await memberResponse.json():null;
+  const role=member?.fields?.role?.stringValue||'';
+  const active=member?.fields?.active?.booleanValue!==false;
+  if(!active||!roles.includes(role)){reply(res,403,{ok:false,error:'role'},origin);return null}
+  return{origin,user,role};
 }
 async function token(){
   if(cachedToken&&Date.now()<tokenUntil)return cachedToken;
