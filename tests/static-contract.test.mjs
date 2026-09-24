@@ -199,6 +199,17 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
+test('Avito inbox resolves its own account and refreshes visible sessions', () => {
+  const lib=read('avito-gateway/api/_lib.mjs');
+  const pull=read('avito-gateway/api/pull.mjs');
+  const client=read('avito-crm-v1.js');
+  assert.match(lib,/\/core\/v1\/accounts\/self/);
+  assert.match(pull,/const ownId=await account\(\)/);
+  assert.match(pull,/attention:lastInbound/);
+  assert.match(client,/document\.visibilityState==='visible'/);
+  assert.match(client,/pulling=false/);
+});
+
 test('candidate patch identity is internally consistent', () => {
   const cfg=read('cloud-config.js');
   const patch=read('quota-safe-v181719.js');

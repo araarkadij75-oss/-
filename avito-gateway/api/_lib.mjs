@@ -1,5 +1,5 @@
 const ALLOWED_ORIGINS=new Set(['https://araarkadij75-oss.github.io']);
-let cachedToken='',tokenUntil=0;
+let cachedToken='',tokenUntil=0,cachedAccount='',accountUntil=0;
 
 export function reply(res,status,data,origin=''){
   if(ALLOWED_ORIGINS.has(origin)){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin')}
@@ -33,5 +33,17 @@ async function token(){
   const d=await r.json();cachedToken=d.access_token;tokenUntil=Date.now()+Math.max(60,(Number(d.expires_in)||3600)-120)*1000;return cachedToken;
 }
 export async function avito(path,options={}){const t=await token();const r=await fetch('https://api.avito.ru'+path,{...options,headers:{Authorization:`Bearer ${t}`,'Content-Type':'application/json','X-Source':'master-ai',...(options.headers||{})}});if(!r.ok)throw new Error(`Avito ${r.status}`);return r.status===204?{}:r.json()}
-export const account=()=>String(process.env.AVITO_ACCOUNT_ID||'');
+export async function account(){
+  if(cachedAccount&&Date.now()<accountUntil)return cachedAccount;
+  try{
+    const self=await avito('/core/v1/accounts/self');
+    cachedAccount=String(self?.id||self?.user_id||'');
+  }catch(error){
+    cachedAccount=String(process.env.AVITO_ACCOUNT_ID||'');
+    if(!cachedAccount)throw error;
+  }
+  if(!cachedAccount)throw new Error('Avito account id is unavailable');
+  accountUntil=Date.now()+3600e3;
+  return cachedAccount;
+}
 export const safeId=v=>{const s=String(v||'');return /^[A-Za-z0-9_-]{1,160}$/.test(s)?s:''};
