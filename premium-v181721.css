@@ -293,3 +293,33 @@ body{font-weight:400;letter-spacing:0}
   #orderModal .modal-scroll{padding:12px!important}
   #orderModal .modal-footer{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important}
 }
+
+/* Workspace clarity: one surface palette, semantic status colors, no paint-heavy chrome. */
+[hidden]{display:none!important}
+body{background:linear-gradient(135deg,#edf3fb,#f4f2fa);background-attachment:scroll}
+body:before{display:none}
+.top .brand h1{color:#172b4d;font-size:22px;white-space:nowrap}
+.top .brand p{color:#596b83;letter-spacing:.02em}
+.top .admin-switch{background:#f2f5fa;border:1px solid #ccd7e5;color:#425570;gap:7px;flex-wrap:wrap;padding:6px;border-radius:12px;max-width:100%}
+.top .admin-switch .select{background:#fff;color:#172b4d;border-color:#bdccdf;min-height:36px;max-width:100%}
+.top .admin-switch .btn{color:#23436c;background:#fff;border-color:#c4d1e2}
+.top .btn{box-shadow:none;transform:none}
+.top .btn.primary{background:#1d62d8;color:#fff;border-color:#1d62d8}
+.tab{gap:5px;font-size:13px;flex-shrink:0}
+.card{box-shadow:0 2px 8px rgba(20,40,70,.05);animation:none;transition:border-color .15s}
+.card:hover{box-shadow:0 2px 8px rgba(20,40,70,.05)}
+.orders-intro{min-height:56px;gap:14px}.orders-intro .status-legend{display:none}
+.orders-intro .chart-sub{max-width:62ch;color:#52647c;font-size:13px}
+.color-audit{display:flex;flex-wrap:wrap;gap:8px}
+.color-audit-item{flex:1 1 135px;min-width:0;padding:10px;text-align:left}
+.color-audit-item b{white-space:normal;line-height:1.35;overflow:visible}
+.color-audit-item .filter-hint{display:none}
+.color-swatch{height:4px!important}
+.order-pagination{padding:8px 0;border-block:1px solid #e0e7f0}
+.order-pagination .chart-sub{margin:0;font-variant-numeric:tabular-nums}
+.order-pagination .btn{min-height:40px;box-shadow:none}
+.btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+.b2b-badge:empty{display:none}
+.b2b-body,.b2b-list,.b2b-messages{overscroll-behavior:contain}
+.b2b-deal-controls[hidden],.web-leads-launch[hidden],.b2b-launch[hidden]{display:none!important}
+@media(max-width:680px){.color-audit-item{flex-basis:125px}.top .brand h1{font-size:20px}.admin-switch .select{flex:1;min-width:140px}.order-pagination{justify-content:space-between}.order-pagination .chart-sub{font-size:11px}.b2b-panel:not(.has-chat) .b2b-body{grid-template-rows:minmax(0,1fr)}}

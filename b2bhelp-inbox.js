@@ -28,9 +28,13 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
   };
   const escapeFriendlyError = error => {
     const code = String(error?.message || error || '');
+    if (/auth_unavailable|membership_unavailable/i.test(code)) return 'Сервер REG.RU не смог проверить доступ в Firebase. Повторите обновление.';
+    if (/timeout|abort/i.test(code)) return 'Сервер не ответил вовремя. Повторите обновление.';
     if (/b2bhelp_not_configured/i.test(code)) return 'Шлюз ещё не подключён к B2BHelp.';
-    if (/auth|401/i.test(code)) return 'Сессия истекла. Войдите в CRM снова.';
-    if (/origin|403/i.test(code)) return 'Домен CRM не разрешён сервером.';
+    if (/^auth$|401/i.test(code)) return 'Сессия истекла. Войдите в CRM снова.';
+    if (/^role$/i.test(code)) return 'Сообщения доступны владельцу и диспетчеру-логисту.';
+    if (/origin/i.test(code)) return 'Домен CRM не разрешён сервером.';
+    if (/upstream/i.test(code)) return 'B2BHelp не ответил шлюзу REG.RU. Проверьте доступность и подключение B2BHelp.';
     if (/failed to fetch|network|load failed/i.test(code)) return 'Не удалось связаться с сервером. Проверьте соединение.';
     return 'Не удалось загрузить данные B2BHelp. Попробуйте обновить.';
   };
@@ -44,6 +48,7 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
       body: options.body ? JSON.stringify(options.body) : undefined,
       cache: 'no-store',
       credentials: 'omit',
+      signal: AbortSignal.timeout(15000),
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok || payload?.ok === false) throw new Error(payload?.error || `HTTP ${response.status}`);
@@ -157,7 +162,7 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
   async function refreshInbox() {
     if (state.busy) return;
     state.busy = true;
-    setStatus('Загружаю новые чаты вручную…');
+    setStatus('Загружаю диалоги B2BHelp…');
     render();
     try {
       state.chats = dedupeChats(await loadPages('/chats', 'chats', 4));
@@ -171,7 +176,7 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
         }));
       }
       if (state.selected) state.selected = state.chats.find(c => chatKey(c) === chatKey(state.selected)) || null;
-      setStatus('Обновлено. Автообновления отключены.', 'ok');
+      setStatus(`Обновлено в ${new Date().toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' })} · ${state.chats.length} диалогов · новые: ${unread.length}`, 'ok');
       if (state.selected) await loadMessages(state.selected, false);
     } catch (error) {
       state.error = escapeFriendlyError(error);
@@ -345,6 +350,7 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
   buildUI();
   hookSession();
   Promise.resolve(cloud?.bootPromise).catch(() => {}).finally(() => { hookSession(); accessChanged(); });
+  window.addEventListener('masterai:session', accessChanged);
   window.addEventListener('focus', accessChanged);
   document.addEventListener('visibilitychange', accessChanged);
   document.addEventListener('click', () => { if (timer) clearTimeout(timer); timer=setTimeout(accessChanged,250); }, true);

@@ -145,6 +145,7 @@
     wrapped.__webLeadsHooked = true; cloud[name] = wrapped;
   }
   Promise.resolve(cloud?.bootPromise).catch(() => {}).finally(accessChanged);
+  window.addEventListener('masterai:session', accessChanged);
   window.addEventListener('focus', accessChanged);
 }
 )();
