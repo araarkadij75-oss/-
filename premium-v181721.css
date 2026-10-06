@@ -220,6 +220,37 @@ body:has(.modal.open) .mobile-bottom-nav{display:none!important}
 @media(max-width:900px){.daily-cash-row{grid-template-columns:90px minmax(70px,1fr) repeat(2,minmax(92px,auto))}.daily-cash-metric:nth-last-child(-n+2){display:none}}
 @media(max-width:560px){.daily-cash-card .section-head{align-items:flex-start}.daily-cash-row{grid-template-columns:78px minmax(50px,1fr) minmax(96px,auto);gap:8px;padding:10px}.daily-cash-metric{display:none}.daily-cash-metric.cash{display:block}.daily-cash-date b{font-size:12px}.daily-cash-track{height:8px}}
 
+/* 18.17.29 — compact, high-contrast workspace chrome. */
+.top{position:relative!important;top:auto!important;align-items:center;gap:10px;margin-bottom:10px;padding:10px 12px;border-color:#c5d2e3;background:#fff!important;box-shadow:0 4px 14px rgba(21,45,82,.07)}
+.top-actions{min-width:0;gap:7px;row-gap:7px}
+.top-actions>.btn,.top-actions>.badge,.top-actions>.user-badge,.top-actions>.admin-switch{min-width:0}
+.top-actions>.badge,.top-actions>.user-badge{color:#263954;border-color:#c7d4e5;background:#f4f7fb}
+.top-actions .user-badge{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs{position:relative!important;top:auto!important;z-index:auto!important;margin-bottom:12px;border-color:#bdcadd;background:#e4ebf5!important;box-shadow:0 3px 10px rgba(21,45,82,.06)}
+.tab{color:#344761}
+.tab:hover{background:#fff;color:#173968}
+.tab.active{background:#175bd1;color:#fff;box-shadow:0 2px 7px rgba(23,91,209,.22)}
+.tab.active:after{display:none}
+.tab:focus-visible,.btn:focus-visible{outline:3px solid #125ee8!important;outline-offset:2px;box-shadow:0 0 0 2px #fff!important}
+#roleWorkGuide[hidden]{display:none!important}
+@media(max-width:1100px){.top{position:relative!important;top:auto!important;align-items:flex-start}.top-actions{justify-content:flex-start}.top-actions .user-badge{max-width:100%}}
+@media(max-width:680px){
+  .top{gap:7px;margin-bottom:8px;padding:9px;border-radius:14px}
+  .top-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:6px}
+  .top-actions>*{min-width:0;max-width:100%}
+  .top-actions #newOrderTop,.top-actions .admin-switch{grid-column:1/-1}
+  .top-actions #enableNotificationsTop,.top-actions #logoutBtn{display:inline-flex!important;min-height:44px}
+  .top-actions #enableNotificationsTop{grid-column:1}
+  .top-actions #logoutBtn{grid-column:2}
+  .top-actions>.badge{display:none!important}
+  .top-actions>.user-badge{display:flex!important;grid-column:1/-1;justify-content:flex-start;min-height:40px;padding-inline:11px}
+  .tabs{margin-bottom:10px;overscroll-behavior-inline:contain;scroll-padding-inline:12px}
+  .tab{min-height:44px;color:#263a55}
+  .tab.active{color:#fff}
+}
+@media(max-width:380px){.top-actions{grid-template-columns:1fr 1fr}.top-actions #newOrderTop,.top-actions .admin-switch,.top-actions>.user-badge{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.btn,.tab{transition:none!important}}
+
 /* UI recovery — deliberately simple, sharp and predictable. */
 :root{--font-ui:Arial,"Helvetica Neue",Helvetica,sans-serif;--font-display:Arial,"Helvetica Neue",Helvetica,sans-serif}
 html,body,button,input,select,textarea{font-family:Arial,"Helvetica Neue",Helvetica,sans-serif!important;-webkit-font-smoothing:auto!important;-moz-osx-font-smoothing:auto!important;text-rendering:auto!important;font-synthesis:weight style}

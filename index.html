@@ -124,7 +124,7 @@ body.auth-locked #app{pointer-events:none}
 body.auth-locked #app *{visibility:hidden}
 body.auth-locked #loginModal,body.auth-locked #loginModal *{visibility:visible;pointer-events:auto}
 </style>
-<link rel="stylesheet" href="./premium-v181721.css?v=181728">
+<link rel="stylesheet" href="./premium-v181721.css?v=181729">
 </head>
 <body class="auth-locked"><div class="app" id="app">
 <div class="top"><div class="brand"><h1>MASTER AI</h1><p>Управление заказами, сотрудниками и рабочими процессами.</p></div><div class="top-actions"><button class="btn primary" id="newOrderTop">+ Новый заказ</button><button class="btn" id="backupTop" data-owner-action>Backup</button><div class="admin-switch" id="adminRoleSwitch" hidden><b style="font-size:11px">Просмотр как</b><select class="select" id="adminViewRole"><option value="owner">Владелец</option><option value="dispatcher">Диспетчер</option><option value="dispatcher_logistic">Диспетчер‑логист</option><option value="logistic">Логист</option><option value="master">Мастер</option></select><select class="select role-preview-master" id="adminViewMaster" hidden><option value="">Выберите мастера</option></select><button class="btn small" id="adminViewReset" type="button">Сбросить</button></div><span class="user-badge" id="userBadge"><span class="role-dot"></span><span id="userBadgeText">Владелец</span></span><button class="btn small" id="syncTop" hidden>↻ Google</button><button class="btn small" id="enableNotificationsTop" type="button">🔔 Уведомления</button><button class="btn small" id="installAppTop">⬇ Установить</button><span class="badge cloud-badge" id="cloudBadge"><span class="dot"></span><span id="cloudBadgeText">Подключение…</span></span><button class="btn small" id="logoutBtn" hidden>Выйти</button><span class="badge"><span class="dot"></span><span id="dbBadge">Заказов: 0</span></span><span class="badge" id="testBadgeWrap" hidden><span class="dot"></span><span id="testBadge">Проверка</span></span></div></div>
@@ -655,14 +655,16 @@ function aiUiModuleAllowed(role,tab){const c=window.MASTER_AI_UI_CONFIG||AI_UI_D
 function renderRoleWorkGuide(){
  const el=$('#roleWorkGuide'); if(!el)return;
  const role=currentRole();
+ if(role==='owner'){el.hidden=true;el.replaceChildren();return}
  const copy={
   dispatcher_logistic:['Рабочий порядок диспетчера‑логиста','1) Создайте заказ и заполните клиента, адрес, запрос и время выезда. 2) Сразу выберите мастера. 3) Следите за этапами: назначен → принят → выехал → на месте → в работе. 4) После отчёта мастера заказ появится «На проверке»: сверьте данные и нажмите «Подтвердить закрытие» либо «Вернуть мастеру».'],
   master:['Рабочий порядок мастера','Откройте назначенный заказ и проходите этапы по порядку: «Принять» → «Выехал» → «На месте» → «Начать работу» → «Завершить и отправить на проверку». В отчёте укажите фактическую сумму, материалы и комментарий. Окончательно заказ закрывает диспетчер‑логист после проверки.'],
   dispatcher:['Рабочий порядок диспетчера','Создайте заявку и заполните данные клиента, адрес, запрос и время выезда. Распределение мастеров выполняет диспетчер‑логист.'],
-  logistic:['Рабочий порядок логиста','Распределяйте заказы между мастерами, контролируйте этапы выполнения и сдачу по заказам.'],
-  owner:['MASTER AI','Рабочая база заказов и сотрудников.']
+  logistic:['Рабочий порядок логиста','Распределяйте заказы между мастерами, контролируйте этапы выполнения и сдачу по заказам.']
  };
- const x=copy[role]||copy.owner;
+ const x=copy[role];
+ if(!x){el.hidden=true;el.replaceChildren();return}
+ el.hidden=false;
  el.innerHTML=`<div class="guide-title">${x[0]}</div><div class="guide-text">${x[1]}</div>`;
 }
 function applyRoleUI(){if(state.session.user)document.body.classList.remove('auth-locked');renderRoleWorkGuide();const u=currentUser(),m=roleMeta(),role=currentRole(),preview=u.role==='owner'&&!!state.session.previewRole;document.body.classList.toggle('role-no-money',!m.money);document.body.classList.remove('role-owner','role-dispatcher_logistic','role-logistic','role-dispatcher','role-master');document.body.classList.add('role-'+role);$$('.tab').forEach(t=>t.hidden=!m.tabs.includes(t.dataset.tab)||!aiUiModuleAllowed(role,t.dataset.tab));$('#backupTop').hidden=!m.settings;$('#newOrderTop').hidden=!m.create;$('#newOrderInline').hidden=!m.create;$('#openBulk').hidden=!m.bulk;$('#deleteSelected').hidden=!m.del;$('#exportSelected').hidden=!m.export;$('#userBadgeText').innerHTML=preview?`${esc(u.name||'Владелец')} <small>· просмотр: ${esc(roleLabel(role))}</small>`:`${esc(u.name||'Владелец')} <small>· ${esc(roleLabel(role))}</small>`;const sw=$('#adminRoleSwitch');if(sw){sw.hidden=u.role!=='owner';$('#adminViewRole').value=preview?state.session.previewRole:'owner';$('#adminViewMaster').hidden=!(preview&&role==='master');if(preview&&role==='master')$('#adminViewMaster').value=state.session.previewMaster||''}$('#logoutBtn').hidden=!(state.settings.accessEnabled||cloudMode());$('#syncTop').hidden=!(state.settings.googleBridgeUrl&&state.settings.googleSecret);$('#syncTop').title='Двусторонняя синхронизация с Google Sheets';if(cloudMode()&&!window.MasterAICloud?.connected)window.MasterAICloudStatus('warn','Система готова · выполните вход');if($('#selectVisible'))$('#selectVisible').disabled=!m.bulk;const shift=$('#dashboardShift');if(shift){const own=currentUser().shift||'';shift.value=role==='owner'?(shift.value||''):own;shift.disabled=role!=='owner'}const active=$('.tab.active');if(active&&active.hidden)switchTab('orders');applyOrderFormPermissions();renderOrders()}

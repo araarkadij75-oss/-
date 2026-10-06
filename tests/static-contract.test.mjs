@@ -112,10 +112,16 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181728/);
+    assert.match(read(file), /premium-v181721\.css\?v=181729/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
+  assert.match(css, /#roleWorkGuide\[hidden\]\{display:none!important\}/);
+  assert.match(css, /\.top\{position:relative!important;top:auto!important/);
+  assert.match(css, /#enableNotificationsTop,\.top-actions #logoutBtn\{display:inline-flex!important/);
+  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+    assert.match(read(file), /if\(role==='owner'\)\{el\.hidden=true;el\.replaceChildren\(\);return\}/);
+  }
   assert.match(read('sw.js'), /premium-v181721\.css/);
 });
 
