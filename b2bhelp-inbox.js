@@ -30,18 +30,22 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
     const code = String(error?.message || error || '');
     if (/auth_unavailable|membership_unavailable/i.test(code)) return 'Сервер REG.RU не смог проверить доступ в Firebase. Повторите обновление.';
     if (/timeout|abort/i.test(code)) return 'Сервер не ответил вовремя. Повторите обновление.';
+    if (/token_missing|crm_offline/i.test(code)) return 'CRM не подтвердила вход в рабочий аккаунт. Войдите в CRM заново.';
+    if (/firebase_config/i.test(code)) return 'На REG.RU не настроена проверка Firebase. Нужна проверка приватного серверного конфига.';
+    if (/token_rejected|membership_token/i.test(code)) return 'REG.RU отклонил сессию Firebase. Перезайдите в CRM и обновите входящие.';
     if (/b2bhelp_not_configured/i.test(code)) return 'Шлюз ещё не подключён к B2BHelp.';
-    if (/^auth$|401/i.test(code)) return 'Сессия истекла. Войдите в CRM снова.';
     if (/^role$/i.test(code)) return 'Сообщения доступны владельцу и диспетчеру-логисту.';
+    if (/^auth$|401/i.test(code)) return 'REG.RU отклонил сессию Firebase. Перезайдите в CRM и обновите входящие.';
     if (/origin/i.test(code)) return 'Домен CRM не разрешён сервером.';
     if (/upstream/i.test(code)) return 'B2BHelp не ответил шлюзу REG.RU. Проверьте доступность и подключение B2BHelp.';
     if (/failed to fetch|network|load failed/i.test(code)) return 'Не удалось связаться с сервером. Проверьте соединение.';
     return 'Не удалось загрузить данные B2BHelp. Попробуйте обновить.';
   };
   async function request(path, options = {}) {
-    if (!cloud || !allowed.has(currentRole()) || !cloud.connected) throw new Error('auth');
+    if (!cloud || !allowed.has(currentRole())) throw new Error('role');
+    if (!cloud.connected) throw new Error('crm_offline');
     const token = await cloud.getIdToken?.();
-    if (!token) throw new Error('auth');
+    if (!token) throw new Error('token_missing');
     const response = await fetch(`${API}${path}`, {
       method: options.method || 'GET',
       headers: { Authorization: `Bearer ${token}`, ...(options.body ? { 'Content-Type': 'application/json' } : {}) },

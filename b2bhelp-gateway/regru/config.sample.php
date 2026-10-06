@@ -3,6 +3,7 @@
 // Never upload a populated copy into the public site directory or commit secrets.
 return [
     'B2BHELP_API_TOKEN' => '',
+    // Must permit server-side Identity Toolkit calls (no browser Referer header).
     'FIREBASE_WEB_API_KEY' => '',
     'FIREBASE_PROJECT_ID' => 'master-ai-beta-9440599',
     'FIREBASE_WORKSPACE_ID' => 'master-ai-beta',

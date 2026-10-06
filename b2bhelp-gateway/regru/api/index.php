@@ -158,7 +158,7 @@ function authorize_request(string $origin): array
     $config = gateway_config();
     $apiKey = is_string($config['FIREBASE_WEB_API_KEY'] ?? null) ? $config['FIREBASE_WEB_API_KEY'] : '';
     if ($apiKey === '' || $idToken === '') {
-        respond(401, ['ok' => false, 'error' => 'auth'], $origin);
+        respond($apiKey === '' ? 503 : 401, ['ok' => false, 'error' => $apiKey === '' ? 'firebase_config' : 'token_rejected'], $origin);
     }
 
     try {
@@ -171,7 +171,9 @@ function authorize_request(string $origin): array
         respond(503, ['ok' => false, 'error' => 'auth_unavailable'], $origin);
     }
     if ($lookup['status'] < 200 || $lookup['status'] >= 300 || !is_array($user) || !is_string($user['localId'] ?? null)) {
-        respond(401, ['ok' => false, 'error' => 'auth'], $origin);
+        $identityError = $lookup['data']['error']['message'] ?? '';
+        $configRejected = is_string($identityError) && preg_match('/API_KEY_INVALID|API_KEY_HTTP_REFERRER_BLOCKED|API key not valid/i', $identityError) === 1;
+        respond($configRejected ? 503 : 401, ['ok' => false, 'error' => $configRejected ? 'firebase_config' : 'token_rejected'], $origin);
     }
 
     $project = is_string($config['FIREBASE_PROJECT_ID'] ?? null) ? $config['FIREBASE_PROJECT_ID'] : 'master-ai-beta-9440599';
@@ -185,7 +187,7 @@ function authorize_request(string $origin): array
         respond(503, ['ok' => false, 'error' => 'membership_unavailable'], $origin);
     }
     if ($memberResponse['status'] === 401) {
-        respond(401, ['ok' => false, 'error' => 'auth'], $origin);
+        respond(401, ['ok' => false, 'error' => 'membership_token'], $origin);
     }
     if ($memberResponse['status'] === 429 || $memberResponse['status'] >= 500 || $memberResponse['status'] === 0) {
         respond(503, ['ok' => false, 'error' => 'membership_unavailable'], $origin);
