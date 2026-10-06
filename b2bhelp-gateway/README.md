@@ -6,6 +6,8 @@ All marketplace messaging goes through B2BHelp:
 MASTER AI -> B2BHelp -> Avito
 ```
 
+The public repair-site form also submits inquiries through the REG.RU host (`/api/website-leads`) so it no longer depends on a Vercel function. Website inquiries are stored in a private host-side queue and can be reviewed only by owner and dispatcher-logistic accounts in the CRM.
+
 MASTER AI must never send requests to Avito or store Avito API credentials. B2BHelp's official API docs are at `https://user.dev.b2b-help.ru/docs/readme`; its documented API host is `https://dev.b2b-help.ru`.
 
 ## Implemented API contract

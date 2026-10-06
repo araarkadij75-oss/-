@@ -282,6 +282,214 @@ function read_json_body(string $origin): array
     return (array)$body;
 }
 
+function private_data_path(string $name): string
+{
+    $configured = getenv('B2BHELP_CONFIG');
+    $configPath = is_string($configured) && $configured !== ''
+        ? $configured
+        : dirname(__DIR__, 3) . '/b2bhelp-config.php';
+    $config = gateway_config();
+    $key = match ($name) {
+        'website-leads.json' => 'WEB_LEADS_FILE',
+        'website-lead-limits.json' => 'WEB_LEAD_LIMITS_FILE',
+        default => '',
+    };
+    $path = $key !== '' ? ($config[$key] ?? '') : '';
+    if (!is_string($path) || $path === '') {
+        $path = dirname($configPath) . '/' . $name;
+    }
+    return resolve_private_storage_path($path);
+}
+
+function resolve_private_storage_path(string $path): string
+{
+    $publicRoot = realpath(dirname(__DIR__));
+    $dataDirectory = realpath(dirname($path));
+    if ($publicRoot === false || $dataDirectory === false) {
+        throw new RuntimeException('private_storage_unavailable');
+    }
+    $candidate = $dataDirectory . DIRECTORY_SEPARATOR . basename($path);
+    $resolved = realpath($candidate) ?: $candidate;
+    $publicPrefix = rtrim($publicRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    if ($resolved === $publicRoot || str_starts_with($resolved, $publicPrefix)) {
+        throw new RuntimeException('private_storage_unavailable');
+    }
+    return $resolved;
+}
+
+function mutate_private_json(string $path, callable $mutator): mixed
+{
+    $directory = dirname($path);
+    if (!is_dir($directory) || !is_writable($directory)) {
+        throw new RuntimeException('private_storage_unavailable');
+    }
+    $oldUmask = umask(0077);
+    try {
+        $handle = @fopen($path, 'c+');
+        if ($handle === false) {
+            throw new RuntimeException('private_storage_unavailable');
+        }
+        try {
+            if (!flock($handle, LOCK_EX)) {
+                throw new RuntimeException('private_storage_unavailable');
+            }
+            $raw = stream_get_contents($handle);
+            $data = is_string($raw) && trim($raw) !== '' ? json_decode($raw, true) : [];
+            if (!is_array($data)) {
+                $data = [];
+            }
+            $result = $mutator($data);
+            $encoded = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+            if (!is_string($encoded)) {
+                throw new RuntimeException('private_storage_unavailable');
+            }
+            rewind($handle);
+            if (!ftruncate($handle, 0) || fwrite($handle, $encoded) !== strlen($encoded) || !fflush($handle)) {
+                throw new RuntimeException('private_storage_unavailable');
+            }
+            @chmod($path, 0600);
+            flock($handle, LOCK_UN);
+            return $result;
+        } finally {
+            fclose($handle);
+        }
+    } finally {
+        umask($oldUmask);
+    }
+}
+
+function clean_lead_text(mixed $value, int $max): ?string
+{
+    if (!is_string($value)) {
+        return null;
+    }
+    $value = trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value) ?? '');
+    $length = unicode_length($value);
+    return $length === null || $length > $max ? null : $value;
+}
+
+function accept_website_lead(array $body, string $origin): never
+{
+    if ($origin === '' || !in_array($origin, allowed_origins(), true)) {
+        respond(403, ['ok' => false, 'error' => 'origin'], $origin);
+    }
+    if (($body['website'] ?? '') !== '') {
+        // Quietly accept honeypot submissions without retaining their data.
+        respond(200, ['ok' => true, 'ticket' => ''], $origin);
+    }
+    $name = clean_lead_text($body['name'] ?? '', 120);
+    $phone = clean_lead_text($body['phone'] ?? '', 40);
+    $problem = clean_lead_text($body['problem'] ?? '', 1000);
+    $location = clean_lead_text($body['location'] ?? '', 200);
+    $source = clean_lead_text($body['source'] ?? '', 40);
+    if (($body['consent'] ?? false) !== true || $name === null || $phone === null || $problem === null || $location === null || $source === null
+        || strlen(preg_replace('/\D+/', '', $phone) ?? '') < 10
+        || !in_array($source, ['hero_quick', 'request_modal'], true)) {
+        respond(400, ['ok' => false, 'error' => 'fields'], $origin);
+    }
+    $utm = [];
+    foreach (['source', 'medium', 'campaign', 'content', 'term'] as $key) {
+        $value = clean_lead_text($body['utm'][$key] ?? '', 120);
+        if ($value === null) {
+            respond(400, ['ok' => false, 'error' => 'fields'], $origin);
+        }
+        $utm[$key] = $value;
+    }
+    $page = clean_lead_text($body['page'] ?? '', 160);
+    if ($page === null || str_starts_with($page, '//') || preg_match('/^[a-z][a-z0-9+.-]*:/i', $page)) {
+        respond(400, ['ok' => false, 'error' => 'fields'], $origin);
+    }
+
+    try {
+        $now = time();
+        $limitPath = private_data_path('website-lead-limits.json');
+        $ip = is_string($_SERVER['REMOTE_ADDR'] ?? null) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
+        $secret = (string)(gateway_config()['B2BHELP_API_TOKEN'] ?? 'master-ai-web-lead');
+        $ipKey = hash_hmac('sha256', $ip, $secret);
+        $rate = mutate_private_json($limitPath, static function (array &$limits) use ($ipKey, $now): bool {
+            foreach ($limits as $key => $times) {
+                if (!is_array($times)) { unset($limits[$key]); continue; }
+                $limits[$key] = array_values(array_filter($times, static fn($time): bool => is_int($time) && $time > $now - 3600));
+                if ($limits[$key] === []) unset($limits[$key]);
+            }
+            if (!array_key_exists($ipKey, $limits) && count($limits) >= 2000) return false;
+            $times = $limits[$ipKey] ?? [];
+            if (count($times) >= 5) return false;
+            $times[] = $now;
+            $limits[$ipKey] = $times;
+            return true;
+        });
+        if (!$rate) {
+            header('Retry-After: 3600');
+            respond(429, ['ok' => false, 'error' => 'rate_limit'], $origin);
+        }
+        $id = bin2hex(random_bytes(12));
+        $ticket = 'WEB-' . gmdate('ymd') . '-' . strtoupper(substr($id, 0, 4));
+        $record = [
+            'id' => $id, 'ticket' => $ticket, 'name' => $name, 'phone' => $phone,
+            'problem' => $problem, 'location' => $location, 'source' => $source,
+            'utm' => $utm, 'page' => $page, 'consent' => true, 'stage' => 'new',
+            'createdAt' => gmdate('c', $now), 'updatedAt' => gmdate('c', $now), 'orderId' => '',
+        ];
+        $ticket = mutate_private_json(private_data_path('website-leads.json'), static function (array &$leads) use ($record, $now): string {
+            $phone = preg_replace('/\D+/', '', $record['phone']) ?? '';
+            foreach ($leads as $existing) {
+                $created = is_string($existing['createdAt'] ?? null) ? strtotime($existing['createdAt']) : false;
+                $oldPhone = preg_replace('/\D+/', '', (string)($existing['phone'] ?? '')) ?? '';
+                if ($created !== false && $now - $created <= 300 && $oldPhone === $phone
+                    && (string)($existing['problem'] ?? '') === $record['problem']) {
+                    return (string)($existing['ticket'] ?? $record['ticket']);
+                }
+            }
+            array_unshift($leads, $record);
+            $leads = array_slice($leads, 0, 5000);
+            return $record['ticket'];
+        });
+        respond(201, ['ok' => true, 'ticket' => $ticket, 'duplicate' => $ticket !== $record['ticket']], $origin);
+    } catch (Throwable $error) {
+        respond(503, ['ok' => false, 'error' => 'storage_unavailable'], $origin);
+    }
+}
+
+function list_website_leads(string $origin): never
+{
+    try {
+        $leads = mutate_private_json(private_data_path('website-leads.json'), static fn(array &$data): array => array_slice($data, 0, 200));
+        respond(200, ['ok' => true, 'leads' => $leads], $origin);
+    } catch (Throwable $error) {
+        respond(503, ['ok' => false, 'error' => 'storage_unavailable'], $origin);
+    }
+}
+
+function update_website_lead(array $body, string $origin): never
+{
+    $id = clean_lead_text($body['id'] ?? '', 24);
+    $stage = clean_lead_text($body['stage'] ?? '', 24);
+    $orderId = clean_lead_text($body['orderId'] ?? '', 160);
+    if ($id === null || !preg_match('/^[a-f0-9]{24}$/', $id) || $stage === null
+        || !in_array($stage, ['new', 'thinking', 'order', 'later', 'rejected'], true) || $orderId === null) {
+        respond(400, ['ok' => false, 'error' => 'fields'], $origin);
+    }
+    try {
+        $updated = mutate_private_json(private_data_path('website-leads.json'), static function (array &$leads) use ($id, $stage, $orderId): bool {
+            foreach ($leads as &$lead) {
+                if (($lead['id'] ?? '') === $id) {
+                    $lead['stage'] = $stage;
+                    $lead['orderId'] = $orderId;
+                    $lead['updatedAt'] = gmdate('c');
+                    unset($lead);
+                    return true;
+                }
+            }
+            unset($lead);
+            return false;
+        });
+        respond($updated ? 200 : 404, ['ok' => $updated, 'error' => $updated ? null : 'not_found'], $origin);
+    } catch (Throwable $error) {
+        respond(503, ['ok' => false, 'error' => 'storage_unavailable'], $origin);
+    }
+}
+
 function main(): void
 {
     $origin = request_origin();
@@ -291,19 +499,30 @@ function main(): void
     $path = is_string($path) ? rtrim($path, '/') : '';
     $route = preg_replace('#^/api#', '', $path);
     $route = $route === '' ? '/' : $route;
-    $knownRoutes = ['/health', '/accounts', '/chats', '/pull', '/messages', '/read', '/send'];
+    $knownRoutes = ['/health', '/accounts', '/chats', '/pull', '/messages', '/read', '/send', '/website-leads'];
     if (!in_array($route, $knownRoutes, true)) {
         respond(404, ['ok' => false, 'error' => 'not_found'], $origin);
     }
 
-    $allowedMethod = in_array($route, ['/read', '/send'], true) ? 'POST' : 'GET';
-    if ($method !== $allowedMethod) {
+    $allowedMethods = match ($route) {
+        '/read', '/send' => ['POST'],
+        '/website-leads' => ['GET', 'POST'],
+        default => ['GET'],
+    };
+    if (!in_array($method, $allowedMethods, true)) {
         respond(405, ['ok' => false, 'error' => 'method'], $origin);
     }
 
     $body = $method === 'POST' ? read_json_body($origin) : [];
+    if ($route === '/website-leads' && $method === 'POST' && !isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        accept_website_lead($body, $origin);
+    }
     $auth = authorize_request($origin);
     $config = $auth['config'];
+    if ($route === '/website-leads') {
+        if ($method === 'GET') list_website_leads($origin);
+        update_website_lead($body, $origin);
+    }
     if ($route === '/health') {
         respond(200, [
             'ok' => true,

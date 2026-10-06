@@ -12,6 +12,7 @@ const SHELL=[
   './quota-safe-v181719.js',
   './premium-v181721.css',
   './b2bhelp-inbox.js',
+  './website-leads-inbox.js?v=1',
   './b2bhelp-inbox-core.mjs'
 ];
 

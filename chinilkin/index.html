@@ -83,6 +83,8 @@
           <h2>Оставьте номер — перезвоним и уточним детали</h2>
           <label for="quickPhone">Ваш телефон</label>
           <input id="quickPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required>
+          <label class="consent"><input type="checkbox" name="consent"><span>Согласен на обработку данных для связи по заявке.</span></label>
+          <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"><label>Сайт<input name="website" tabindex="-1" autocomplete="off"></label></div>
           <button class="btn btn-primary btn-full" type="submit">Заказать звонок</button>
           <div class="form-message" id="quickMessage" role="status" aria-live="polite"></div>
           <small>Отправляя номер, вы соглашаетесь на обработку данных для связи по заявке.</small>
@@ -171,7 +173,7 @@
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <button class="modal-close" type="button" data-close-modal aria-label="Закрыть">×</button>
       <span class="eyebrow">Заявка на ремонт</span><h2 id="modalTitle">Расскажите, что случилось с техникой</h2><p>Оставьте контакты — уточним детали и предложим удобный вариант обслуживания.</p>
-      <form id="requestForm" novalidate><div class="two-fields"><label>Имя<input name="name" autocomplete="name" placeholder="Как к вам обращаться"></label><label>Телефон *<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required></label></div><label>Проблема<textarea name="problem" rows="4" placeholder="Например: ноутбук не включается..."></textarea></label><label>Удобный адрес / район<input name="location" autocomplete="street-address" placeholder="Например: Комендантский проспект"></label><label class="consent"><input type="checkbox" name="consent"><span>Согласен на обработку персональных данных для связи по этой заявке.</span></label><button class="btn btn-primary btn-full" type="submit">Отправить заявку</button><div class="form-message" id="fullMessage" role="status" aria-live="polite"></div></form><div class="modal-alt">Или позвоните: <a href="tel:+79810172345">+7 (981) 017-23-45</a></div>
+      <form id="requestForm" novalidate><div class="two-fields"><label>Имя<input name="name" autocomplete="name" placeholder="Как к вам обращаться"></label><label>Телефон *<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required></label></div><label>Проблема<textarea name="problem" rows="4" placeholder="Например: ноутбук не включается..."></textarea></label><label>Удобный адрес / район<input name="location" autocomplete="street-address" placeholder="Например: Комендантский проспект"></label><label class="consent"><input type="checkbox" name="consent"><span>Согласен на обработку персональных данных для связи по этой заявке.</span></label><div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"><label>Сайт<input name="website" tabindex="-1" autocomplete="off"></label></div><button class="btn btn-primary btn-full" type="submit">Отправить заявку</button><div class="form-message" id="fullMessage" role="status" aria-live="polite"></div></form><div class="modal-alt">Или позвоните: <a href="tel:+79810172345">+7 (981) 017-23-45</a></div>
     </div>
   </div>
 
@@ -266,11 +268,12 @@
   clear.addEventListener('click', () => { search.value=''; renderLocations(); search.focus(); });
 
   function normalizePhone(value){ return value.replace(/\D/g,''); }
+  function leadError(error){ const code=String(error?.message||''); if(/rate_limit/i.test(code))return 'Слишком много попыток. Позвоните: +7 (981) 017-23-45.'; if(/storage_unavailable|failed to fetch|network|load failed/i.test(code))return 'Сервис заявок временно недоступен. Позвоните: +7 (981) 017-23-45.'; if(/fields/i.test(code))return 'Проверьте телефон и согласие на обработку данных.'; return code||'Не удалось отправить заявку. Позвоните: +7 (981) 017-23-45.'; }
   async function sendLead(payload){
     const params = new URLSearchParams(location.search);
     payload.utm = {source:params.get('utm_source')||'',medium:params.get('utm_medium')||'',campaign:params.get('utm_campaign')||'',content:params.get('utm_content')||'',term:params.get('utm_term')||''};
-    payload.page = location.href;
-    const res = await fetch('https://remontpc-ivan.vercel.app/api/leads',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+    payload.page = location.pathname;
+    const res = await fetch('https://remontcompsbp.ru/api/website-leads',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
     const data = await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(data.error || 'Не удалось отправить заявку');
     return data;
@@ -281,12 +284,14 @@
   quickForm.addEventListener('submit', async e => {
     e.preventDefault();
     const phone = quickForm.phone.value.trim();
+    const consent = quickForm.consent.checked;
     const msg = document.getElementById('quickMessage');
     const submit = quickForm.querySelector('[type="submit"]');
     if(normalizePhone(phone).length < 10){ setMessage(msg,'error','Введите корректный номер телефона.'); quickForm.phone.focus(); return; }
+    if(!consent){ setMessage(msg,'error','Для отправки заявки подтвердите согласие на обработку данных.'); quickForm.consent.focus(); return; }
     submit.disabled=true; submit.textContent='Отправляем…';
-    try { const data = await sendLead({phone,name:'',problem:'Быстрая заявка с первого экрана',source:'hero_quick',consent:true,website:''}); setMessage(msg,'success',`Заявка ${data.ticket||''} принята. Мы свяжемся с вами.`); quickForm.reset(); }
-    catch(err){ setMessage(msg,'error',(err.message||'Не удалось отправить заявку')+' Можно позвонить: +7 (981) 017-23-45.'); }
+    try { const data = await sendLead({phone,name:'',problem:'Быстрая заявка с первого экрана',source:'hero_quick',consent:true,website:quickForm.website.value}); setMessage(msg,'success',`Заявка ${data.ticket||''} принята. Мы свяжемся с вами.`); quickForm.reset(); }
+    catch(err){ setMessage(msg,'error',leadError(err)); }
     finally { submit.disabled=false; submit.textContent='Заказать звонок'; }
   });
 
@@ -297,8 +302,8 @@
     if(normalizePhone(phone).length < 10){ setMessage(msg,'error','Проверьте номер телефона.'); requestForm.phone.focus(); return; }
     if(!consent){ setMessage(msg,'error','Нужно согласие на обработку данных для связи по заявке.'); requestForm.consent.focus(); return; }
     submit.disabled=true; submit.textContent='Отправляем…';
-    try { const data = await sendLead({name:String(fd.get('name')||''),phone,problem:String(fd.get('problem')||selectedService),location:String(fd.get('location')||''),source:'request_modal',consent:true,website:''}); setMessage(msg,'success',`Готово. Заявка ${data.ticket||''} принята.`); requestForm.reset(); modalProblem.dataset.auto='1'; }
-    catch(err){ setMessage(msg,'error',(err.message||'Не удалось отправить заявку')+' Позвоните нам: +7 (981) 017-23-45.'); }
+    try { const data = await sendLead({name:String(fd.get('name')||''),phone,problem:String(fd.get('problem')||selectedService),location:String(fd.get('location')||''),source:'request_modal',consent:true,website:String(fd.get('website')||'')}); setMessage(msg,'success',`Готово. Заявка ${data.ticket||''} принята.`); requestForm.reset(); modalProblem.dataset.auto='1'; }
+    catch(err){ setMessage(msg,'error',leadError(err)); }
     finally { submit.disabled=false; submit.textContent='Отправить заявку'; }
   });
 
