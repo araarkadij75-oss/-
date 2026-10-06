@@ -26,7 +26,7 @@ The API docs do not specify the incoming webhook event schema or signature. The 
 
 ## Runtime
 
-The gateway can run as a standalone Node.js 22+ HTTP service (`npm start` or the included Dockerfile) as well as through the current Vercel-compatible route wrappers. This keeps the application code independent of Vercel. A Russian host can run it if it provides Node.js or a Linux VPS/container; the required package has no third-party runtime dependencies. The inspected REG.RU account has an active shared Host-A plan with PHP/SSH, but Node.js or Docker support is not established for that plan. Do not deploy the Node server to it as-is; use a tested PHP adapter or a compatible server that is already available.
+The preferred production adapter for this CRM is the PHP gateway under `regru/`, deployed on the existing REG.RU shared hosting. The standalone Node.js 22+ HTTP service and Dockerfile remain available for a compatible host, but the CRM does not depend on Vercel. The inspected REG.RU account has an active shared Host-A plan with PHP/SSH; Node.js or Docker support is not established for that plan, so use the tested PHP adapter there.
 
 The standalone service exposes `/api/health`, `/api/accounts`, `/api/chats`, `/api/pull`, `/api/messages`, `/api/read`, and `/api/send`. Set `CRM_ALLOWED_ORIGINS` to a comma-separated list of exact CRM origins once the production domain is known.
 

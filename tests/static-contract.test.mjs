@@ -199,11 +199,13 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('all deployed marketplace messaging routes delegate to the B2BHelp gateway', () => {
-  const files=['_lib.mjs','pull.mjs','messages.mjs','send.mjs','accounts.mjs','chats.mjs','read.mjs','health.mjs'];
-  const source=files.map(file=>read('avito-gateway/api/'+file)).join('\n');
-  assert.doesNotMatch(source,/api\.avito\.ru|AVITO_CLIENT_ID|AVITO_CLIENT_SECRET/);
-  assert.match(source,/b2bhelp-gateway/);
+test('published inbox uses only the REG.RU B2BHelp gateway', () => {
+  const source=read('b2bhelp-inbox.js');
+  assert.match(source,/https:\/\/remontcompsbp\.ru\/api/);
+  assert.doesNotMatch(source,/api\.avito\.ru|AVITO_CLIENT_ID|AVITO_CLIENT_SECRET/i);
+  assert.equal(fs.existsSync(new URL('../avito-gateway/vercel.json', import.meta.url)),false);
+  assert.equal(fs.existsSync(new URL('../avito-gateway/package.json', import.meta.url)),false);
+  assert.equal(fs.existsSync(new URL('../b2bhelp-gateway/vercel.json', import.meta.url)),false);
   assert.doesNotMatch(source,/integrationEnabled|callsByTime/);
   assert.equal(fs.existsSync(new URL('../avito-crm-v1.js', import.meta.url)),false);
   for(const file of ['index.html','dispatcher-logistic.html','master.html','sw.js']){

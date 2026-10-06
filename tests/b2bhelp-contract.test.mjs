@@ -47,10 +47,16 @@ test('documented B2BHelp scopes are least privilege',()=>{
   assert.doesNotMatch(readme,/msg-center\.disable_account/);
 });
 
-test('deployed legacy gateway contains no direct Avito endpoints or credentials',()=>{
-  const apiFiles=['_lib.mjs','pull.mjs','messages.mjs','send.mjs'].map(f=>read('avito-gateway/api/'+f)).join('\n');
-  assert.doesNotMatch(apiFiles,/api\.avito\.ru|AVITO_CLIENT_ID|AVITO_CLIENT_SECRET/);
-  assert.match(apiFiles,/b2bhelp-gateway/);
+test('CRM inbox uses the REG.RU gateway with no direct Avito client or Vercel deployment config',()=>{
+  const inbox=read('b2bhelp-inbox.js');
+  const gateway=read('b2bhelp-gateway/regru/api/index.php');
+  const server=read('b2bhelp-gateway/server.mjs');
+  assert.match(inbox,/https:\/\/remontcompsbp\.ru\/api/);
+  assert.match(gateway,/https:\/\/dev\.b2b-help\.ru/);
+  assert.match(server,/\/api\/send/);
+  assert.equal(fs.existsSync(new URL('../avito-gateway/vercel.json',import.meta.url)),false);
+  assert.equal(fs.existsSync(new URL('../avito-gateway/package.json',import.meta.url)),false);
+  assert.equal(fs.existsSync(new URL('../b2bhelp-gateway/vercel.json',import.meta.url)),false);
   for(const file of ['index.html','dispatcher-logistic.html','master.html','sw.js']){
     assert.doesNotMatch(read(file),/avito-crm-v1\.js/);
   }
@@ -63,11 +69,4 @@ test('B2BHelp gateway exposes only owner/logistics-safe documented handlers',()=
     assert.match(source,/b2bhelp\(/,file);
   }
   assert.match(read('b2bhelp-gateway/api/send.mjs'),/safeText\(req\.body\?\.text,1000\)/);
-});
-
-test('current Vercel root can resolve each B2BHelp-only route',async()=>{
-  for(const file of ['health','accounts','chats','messages','read','send','pull']){
-    const route=await import(`../avito-gateway/api/${file}.mjs`);
-    assert.equal(typeof route.default,'function',file);
-  }
 });
