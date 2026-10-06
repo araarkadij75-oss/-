@@ -11,10 +11,6 @@ export default async function handler(req,res){
     ok:true,
     integration:'b2bhelp-message-center',
     directAvito:false,
-    configured:{
-      token:c.token,
-      apiContract:c.apiContract,
-      webhookSecret:c.webhookSecret
-    }
+    configured:c
   },origin);
 }

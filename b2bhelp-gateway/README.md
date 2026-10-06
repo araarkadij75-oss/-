@@ -1,56 +1,51 @@
-# MASTER AI — B2BHelp Message Center Gateway
+# MASTER AI — B2BHelp Message Center
 
-This gateway is the only planned messaging integration path for Avito-originated conversations.
+All marketplace messaging goes through B2BHelp:
 
+```text
+MASTER AI -> B2BHelp -> Avito
 ```
-Avito -> B2BHelp -> MASTER AI
-```
 
-MASTER AI must **not** authenticate to or call Avito directly.
+MASTER AI must never send requests to Avito or store Avito API credentials. B2BHelp's official API docs are at `https://user.dev.b2b-help.ru/docs/readme`; its documented API host is `https://dev.b2b-help.ru`.
 
-## Current state
+## Implemented API contract
 
-The B2BHelp account has a dedicated API token with the following least-privilege scopes:
+The gateway uses the official `msg-center` methods:
 
-- `msg-center.get_accounts`
-- `msg-center.subscribe_webhook`
-- `msg-center.get_chats`
-- `msg-center.get_chat_messages`
-- `msg-center.read_chat`
-- `msg-center.send_message`
-- `msg-center.send_message_file`
-- `msg-center.unsubscribe_webhook`
+| Operation | B2BHelp route | Scope |
+| --- | --- | --- |
+| List connected message-center accounts | `GET /msg-center/accounts` | `msg-center.get_accounts` |
+| List chats | `GET /msg-center/chats` | `msg-center.get_chats` |
+| Get a chat's messages | `GET /msg-center/chat/messages` | `msg-center.get_chat_messages` |
+| Mark a chat read | `POST /msg-center/chat/read` | `msg-center.read_chat` |
+| Send a text message | `POST /msg-center/chat/messsage/send` | `msg-center.send_message` |
 
-The token value is intentionally not stored in this repository.
+The upstream token is sent as `Authorization: <API_TOKEN>` with no `Bearer` prefix. The text send method has a 1000-character maximum. The documented message list endpoints use page/limit pagination. The gateway makes no background polling; reads happen on an explicit app request.
 
-## Server-only environment
+The API docs do not specify the incoming webhook event schema or signature. The gateway therefore does not subscribe to webhooks yet. The message response schema also leaves individual message properties unspecified, so the UI must be checked against a real account response before enabling production conversation rendering.
 
-Required:
+## Runtime
 
-- `B2BHELP_API_TOKEN`
-- `B2BHELP_API_BASE_URL` — set only from the official B2BHelp API documentation
-- `FIREBASE_WEB_API_KEY`
+The gateway can run as a standalone Node.js 22+ HTTP service (`npm start` or the included Dockerfile) as well as through the current Vercel-compatible route wrappers. This keeps the application code independent of Vercel. A Russian host can run it if it provides Node.js or a Linux VPS/container; the required package has no third-party runtime dependencies. The inspected REG.RU account has an active shared Host-A plan with PHP/SSH, but Node.js or Docker support is not established for that plan. Do not deploy the Node server to it as-is; use a tested PHP adapter or a compatible server that is already available.
+
+The standalone service exposes `/api/health`, `/api/accounts`, `/api/chats`, `/api/pull`, `/api/messages`, `/api/read`, and `/api/send`. Set `CRM_ALLOWED_ORIGINS` to a comma-separated list of exact CRM origins once the production domain is known.
+
+## Server environment
+
+Required only on the server. Set these variables in the hosting control panel, service manager, or container runtime. The standalone server does not load `.env` files; `.env.example` is a list of variable names and must not contain real credentials:
+
+- `B2BHELP_API_TOKEN` — create a token with only the five scopes listed above.
+- `FIREBASE_WEB_API_KEY` — used to verify the CRM ID token.
 - `FIREBASE_PROJECT_ID=master-ai-beta-9440599`
 - `FIREBASE_WORKSPACE_ID=master-ai-beta`
 
-Reserved for webhook verification once the official webhook contract is confirmed:
+Never put `B2BHELP_API_TOKEN` in `cloud-config.js`, HTML, service worker, or browser JavaScript. The gateway authorizes Firebase roles `owner` and `dispatcher_logistic` before every B2BHelp API call. See `.env.example` for variable names only; never commit real values.
 
-- `B2BHELP_WEBHOOK_SECRET`
+The REG.RU account was inspected. No service, domain, or server was changed or purchased. The linked `.ru` domain is due for renewal on 2026-10-11; its automatic renewal is enabled, but the account showed a zero balance. The displayed “renew for free” offer requires renewing Host-A for 12 months, so it is not a no-cost renewal unless that hosting purchase is made. The active Host-A plan runs through 2026-10-28.
 
-Do not place these values in `cloud-config.js`, any HTML file, service worker, or browser JavaScript.
+## Runtime status
 
-## Safety contract
-
-1. No direct Avito client credentials or Avito API calls.
-2. B2BHelp token is server-only.
-3. Browser requests to this gateway require a Firebase ID token and a permitted MASTER AI role.
-4. Incoming messages will be deduplicated by the stable B2BHelp message identifier before any CRM mutation.
-5. A conversation can link to at most one canonical MASTER AI order unless an owner explicitly creates another.
-6. Webhook processing must be idempotent and safe to retry.
-7. No destructive B2BHelp scopes are required.
-
-## Blocked on official API contract
-
-The B2BHelp developer UI exposes “Документация API”, but the exact upstream base URL, authorization header format, request payloads, webhook payload/signature and subscription parameters have not yet been read. No guessed upstream request code is committed.
-
-Once the documentation page is available, implement only the documented contract for accounts, chats, messages, send, read-chat and webhook subscribe/unsubscribe.
+- No direct Avito requests or Avito credentials are used by this gateway.
+- B2BHelp's IP/device privacy statement applies to its API-key-based Avito account connection. It does not mean Avito cannot see the seller account, message activity, or B2BHelp's server-side requests.
+- No destructive account enable/disable scopes are used.
+- No repeated full-history sync is performed.

@@ -35,7 +35,7 @@ before(async () => {
   await env.withSecurityRulesDisabled(async ctx => {
     const db = ctx.firestore();
     const members = [
-      ['owner-uid', {role:'owner', active:true, login:'owner'}],
+      ['owner-uid', {role:'owner', active:true, login:'owner', name:'Владелец'}],
       ['dispatch-uid', {id:'sergey', name:'Сергей', shift:'sergey', role:'dispatcher', active:true, login:'sergey'}],
       ['ops-uid', {id:'artem', name:'Артём', shift:'artem', role:'dispatcher_logistic', active:true, login:'artem'}],
       ['logistic-uid', {id:'logistic', name:'Логист', shift:'sergey', role:'logistic', active:true, login:'logistic'}],
@@ -221,4 +221,37 @@ test('dispatcher-logistic closes only own shift with server-calculated salary', 
 
 test('dispatcher cannot close a shift report', async () => {
   await assertFails(setDoc(doc(dbFor('dispatch-uid'),'workspaces',ws,'shiftReports','forged'),{id:'forged',date:'2026-09-23',closedBy:'sergey',closedByName:'Сергей',shift:'sergey',cash:1000,salary:2000,orders:1,serverClosedAt:serverTimestamp()}));
+});
+
+test('B2BHelp leads are limited to owner and dispatcher-logistic', async () => {
+  const ref = doc(dbFor('owner-uid'),'workspaces',ws,'b2bLeads','2-8');
+  const lead = {
+    provider:'b2bhelp', accountId:'2', chatId:'8', name:'Клиент', advertTitle:'Объявление', preview:'Нужна помощь',
+    isUnread:true, stage:'new', assignedMaster:'', internalNote:'', orderId:'', createdAt:new Date().toISOString(),
+    updatedAt:serverTimestamp(), updatedBy:'owner-uid', updatedByName:'Владелец'
+  };
+  await assertSucceeds(setDoc(ref, lead));
+  await assertSucceeds(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8')));
+  await assertSucceeds(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
+    stage:'thinking', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Артём'
+  }));
+  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
+    accountId:'999', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Артём'
+  }));
+  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
+    stage:'forged', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Артём'
+  }));
+  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
+    stage:'thinking', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Владелец'
+  }));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'b2bLeads','2-8')));
+  for (const uid of ['dispatch-uid','logistic-uid','master-uid','inactive-uid']) {
+    const denied = doc(dbFor(uid),'workspaces',ws,'b2bLeads','2-8');
+    await assertFails(getDoc(denied));
+    await assertFails(setDoc(doc(dbFor(uid),'workspaces',ws,'b2bLeads',`new-${uid}`), lead));
+    await assertFails(updateDoc(denied, {stage:'refused'}));
+  }
+  await assertFails(getDoc(doc(anonDb(),'workspaces',ws,'b2bLeads','2-8')));
+  await assertFails(deleteDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8')));
+  await assertSucceeds(deleteDoc(ref));
 });

@@ -78,6 +78,40 @@ service cloud.firestore {
         && get(assignmentPath(workspace, orderId)).data.masterUid == request.auth.uid;
     }
 
+    function validB2BLead(workspace) {
+      let member = get(memberPath(workspace)).data;
+      let data = request.resource.data;
+      return data.provider == 'b2bhelp'
+        && data.accountId is string
+        && data.accountId.matches('^[1-9][0-9]{0,19}$')
+        && data.chatId is string
+        && data.chatId.size() > 0 && data.chatId.size() <= 240
+        && data.name is string && data.name.size() <= 160
+        && data.advertTitle is string && data.advertTitle.size() <= 200
+        && data.preview is string && data.preview.size() <= 500
+        && data.isUnread is bool
+        && data.stage in ['new','thinking','order','later','rejected']
+        && data.assignedMaster is string && data.assignedMaster.size() <= 160
+        && data.internalNote is string && data.internalNote.size() <= 2000
+        && data.orderId is string && data.orderId.size() <= 160
+        && data.createdAt is string
+        && data.updatedAt == request.time
+        && data.updatedBy == member.get('id', request.auth.uid)
+        && data.updatedByName == member.get('name', '')
+        && data.updatedByName.size() <= 120;
+    }
+
+    function validB2BLeadUpdate() {
+      return request.resource.data.provider == resource.data.provider
+        && request.resource.data.accountId == resource.data.accountId
+        && request.resource.data.chatId == resource.data.chatId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name','advertTitle','preview','isUnread','stage','assignedMaster',
+          'internalNote','orderId','updatedAt','updatedBy','updatedByName'
+        ]);
+    }
+
     function dispatcherFields() {
       return [
         'orderId','direction','city','callDate','callTime','visitDate','visitTime',
@@ -252,6 +286,26 @@ service cloud.firestore {
 
     match /workspaces/{workspace}/avitoLeads/{leadId} {
       allow read, create, update: if role(workspace) in ['owner', 'dispatcher_logistic'];
+      allow delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/b2bLeads/{leadId} {
+      allow read: if role(workspace) in ['owner', 'dispatcher_logistic'];
+      allow create: if role(workspace) in ['owner', 'dispatcher_logistic']
+                    && request.resource.data.keys().hasAll([
+                      'provider','accountId','chatId','name','advertTitle','preview','isUnread',
+                      'stage','assignedMaster','internalNote','orderId','createdAt','updatedAt',
+                      'updatedBy','updatedByName'
+                    ])
+                    && request.resource.data.keys().hasOnly([
+                      'provider','accountId','chatId','name','advertTitle','preview','isUnread',
+                      'stage','assignedMaster','internalNote','orderId','createdAt','updatedAt',
+                      'updatedBy','updatedByName'
+                    ])
+                    && validB2BLead(workspace);
+      allow update: if role(workspace) in ['owner', 'dispatcher_logistic']
+                    && validB2BLeadUpdate()
+                    && validB2BLead(workspace);
       allow delete: if isOwner(workspace);
     }
 

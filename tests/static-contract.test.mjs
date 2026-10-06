@@ -199,13 +199,13 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('Avito integration is disabled before client or server network access', () => {
-  const lib=read('avito-gateway/api/_lib.mjs');
-  const pull=read('avito-gateway/api/pull.mjs');
-  const client=read('avito-crm-v1.js');
-  assert.match(lib,/integrationEnabled=\(\)=>false/);
-  assert.match(pull,/!integrationEnabled\(\).*410/);
-  assert.match(client,/^\(\(\)=>\{\s*\/\/ Avito integration is intentionally disabled[^]*?\sreturn;/);
+test('all deployed marketplace messaging routes delegate to the B2BHelp gateway', () => {
+  const files=['_lib.mjs','pull.mjs','messages.mjs','send.mjs','accounts.mjs','chats.mjs','read.mjs','health.mjs'];
+  const source=files.map(file=>read('avito-gateway/api/'+file)).join('\n');
+  assert.doesNotMatch(source,/api\.avito\.ru|AVITO_CLIENT_ID|AVITO_CLIENT_SECRET/);
+  assert.match(source,/b2bhelp-gateway/);
+  assert.doesNotMatch(source,/integrationEnabled|callsByTime/);
+  assert.equal(fs.existsSync(new URL('../avito-crm-v1.js', import.meta.url)),false);
   for(const file of ['index.html','dispatcher-logistic.html','master.html','sw.js']){
     assert.doesNotMatch(read(file),/avito-crm-v1\.js/);
   }

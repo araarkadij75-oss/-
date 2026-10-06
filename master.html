@@ -284,6 +284,26 @@ if(cloud.enabled){
   const configDoc=id=>fs.doc(db,'workspaces',ws,'config',id);
   const shiftReportDoc=id=>fs.doc(db,'workspaces',ws,'shiftReports',String(id));
   cloud.getIdToken=async()=>auth.currentUser?auth.currentUser.getIdToken():'';
+  const b2bLeadDoc=id=>fs.doc(db,'workspaces',ws,'b2bLeads',id);
+  cloud.saveB2BLead=async lead=>{
+    if(!['owner','dispatcher_logistic'].includes(cloud.profile?.role))throw new Error('Недостаточно прав');
+    const accountId=String(lead?.accountId||'').trim(),chatId=String(lead?.chatId||'').trim();
+    if(!/^[1-9][0-9]{0,19}$/.test(accountId)||!chatId||chatId.length>240||/[\u0000-\u001f\u007f]/.test(chatId))throw new Error('Некорректный чат B2BHelp');
+    const rawId=Array.from(new TextEncoder().encode(accountId+'|'+chatId),b=>b.toString(16).padStart(2,'0')).join('');
+    const ref=b2bLeadDoc('b2b_'+rawId),oldSnap=await fs.getDoc(ref),old=oldSnap.exists()?oldSnap.data():{},now=new Date().toISOString();
+    const clean=(v,max)=>String(v??'').trim().slice(0,max);
+    const row={
+      provider:'b2bhelp',accountId,chatId,
+      name:clean(lead?.name??old.name,160),advertTitle:clean(lead?.advertTitle??old.advertTitle,200),preview:clean(lead?.preview??old.preview,500),
+      isUnread:lead?.isUnread===true,
+      stage:clean(lead?.stage??old.stage??'new',40),assignedMaster:clean(lead?.assignedMaster??old.assignedMaster??'',160),
+      internalNote:clean(lead?.internalNote??old.internalNote??'',2000),orderId:clean(lead?.orderId??old.orderId??'',160),
+      createdAt:old.createdAt||now,updatedAt:fs.serverTimestamp(),
+      updatedBy:cloud.profile.id,updatedByName:clean(cloud.profile.name,120)
+    };
+    await fs.setDoc(ref,row,{merge:false});
+    return{id:ref.id,...row};
+  };
   const stripUndefined=o=>Object.fromEntries(Object.entries(o||{}).filter(([,v])=>v!==undefined));
   const dispatchSafe=r=>{const ks=['orderId','direction','city','callDate','callTime','visitDate','visitTime','name','phone','address','request','master','dispatcher','review','closeDate','_status','_showPhoneToMaster','_createdAt','_updatedAt','_createdBy','_createdByName','_createdByShift','_updatedBy','_updatedByName','_updatedByShift','_assignedAt','_assignedBy','_assignedByName','_workflow','_workflowCreatedAt','_requiresCloseApproval','_masterStage','_acceptedAt','_enrouteAt','_arrivedAt','_workAt','_doneAt','_workCompletedAt','_masterReportedTotal','_masterReportedParts','_masterReportedReview','_masterNote','_masterReportAt','_reviewSubmittedAt','_reviewReturnedAt','_reviewReturnedBy','_reviewReturnedByName','_closeReviewState','_closeReviewNote','_closeApprovedAt','_closeApprovedBy','_closeApprovedByName'];const o={};for(const k of ks)if(r[k]!==undefined)o[k]=r[k];return o};
   const dispatcherEditable=r=>{const ks=['orderId','direction','city','callDate','callTime','visitDate','visitTime','name','phone','address','request','dispatcher','review','_status','_createdAt','_updatedAt','_createdBy','_createdByName','_createdByShift','_updatedBy','_updatedByName','_updatedByShift'];const o={};for(const k of ks)if(r[k]!==undefined)o[k]=r[k];return o};
@@ -710,6 +730,6 @@ async function betaResetLocal(){
 
 if(window.MASTER_AI_BETA_ONLINE){const b=document.getElementById('betaResetBtn');if(b)b.hidden=true;init()}else{betaSeedLocal(false).then(()=>init()).then(()=>{const b=document.getElementById('betaResetBtn');if(b)b.onclick=betaResetLocal;}).catch(e=>{console.error('BETA bootstrap',e);alert('MASTER AI не смогла загрузить локальный снимок: '+e.message);init();})};
 window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMasters():PRESETS.masters;
-</script><script>window.MASTER_AI_BUILD='18.17.20-CANDIDATE';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
+</script><script>window.MASTER_AI_BUILD='18.17.21-CANDIDATE';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
 
 
