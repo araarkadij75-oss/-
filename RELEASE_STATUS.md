@@ -97,7 +97,7 @@ Candidate gates already passed:
 - live Google mirror after candidate work: **1145 rows / 1145 unique IDs / 0 duplicates / 0 technical IDs**
 
 Promotion remains blocked until:
-- current live Firestore Rules are captured/backed up;
+- authenticated live role/browser E2E passes on beta (candidate rules backup and beta-only deployment are now complete; production is untouched);
 - candidate Rules are deployed with rollback available;
 - authenticated owner / dispatcher-logistic / master live E2E passes;
 - final Firestore ↔ Google parity is rechecked after live gate;

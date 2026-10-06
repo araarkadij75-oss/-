@@ -88,8 +88,8 @@ Mutation URL modes (`create/delete/sync`) are no longer accepted by the candidat
 
 ## Open promotion blockers
 
-1. **Candidate Firestore Rules are tested but NOT deployed to live Firebase.**
-   Production rule text could not be independently retrieved with the available read-only connector.
+1. **Authenticated live role/browser smoke is still required.**
+   Candidate rules have now been captured, deployed, and read-back verified on beta only. Production project `master-ai-9440599` was not touched.
 
 2. **Authenticated live E2E is still required after any Rules deployment.**
    Must cover owner / dispatcher-logistic / master, master phone before/after unlock, review workflow, safe canonical delete and final Google parity.
@@ -105,6 +105,15 @@ Mutation URL modes (`create/delete/sync`) are no longer accepted by the candidat
 
 6. **Restore proof is incomplete.**
    Code rollback and Google snapshot exist; an isolated Firestore restore-and-compare is still required for full certification.
+
+## Beta rules deployment — 2026-10-07
+
+- Read-only backup of the previous beta Firestore ruleset: `release-evidence/firebase-beta-cloud-firestore-live-2026-10-07.rules`.
+- Candidate rules were deployed only to `master-ai-beta-9440599` and read back from the released ruleset.
+- Read-back matched the candidate `firestore.rules` byte-for-byte. New ruleset: `ab7c395a-d57e-4567-a23d-7e52adca056e`.
+- The pre-deployment beta rules differ from the candidate; the saved file is the rollback source.
+- Rules emulator matrix after deployment: 20/20 passed.
+- This does not certify production or complete authenticated browser E2E.
 
 ## Promotion policy
 

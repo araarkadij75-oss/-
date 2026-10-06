@@ -1,6 +1,7 @@
 {
   "candidate": "18.17.19-CANDIDATE",
   "baseCurrent": "18.17.18-CURRENT",
+  "publishedBetaPreview": "https://araarkadij75-oss.github.io/-/preview/v18.17.21/",
   "environment": {
     "firebaseProject": "master-ai-beta-9440599",
     "workspace": "master-ai-beta",
@@ -25,8 +26,8 @@
     "firestoreRulesEmulator": "pass",
     "pwaServiceWorker": "implemented_candidate",
     "mutatingUrlDiagnostics": "blocked_candidate",
-    "liveRulesCaptured": "pending",
-    "liveRulesDeployed": "pending",
+    "liveRulesCaptured": "pass_beta_only",
+    "liveRulesDeployed": "pass_beta_only",
     "authenticatedBrowserE2E": "pending",
     "googleParityAfterPromotion": "pending",
     "isolatedRestore": "pending",
