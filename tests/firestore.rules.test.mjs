@@ -255,3 +255,10 @@ test('B2BHelp leads are limited to owner and dispatcher-logistic', async () => {
   await assertFails(deleteDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8')));
   await assertSucceeds(deleteDoc(ref));
 });
+
+test('legacy Avito leads collection has no access for any role', async () => {
+  const owner = dbFor('owner-uid');
+  await assertFails(getDoc(doc(owner,'workspaces',ws,'avitoLeads','legacy')));
+  await assertFails(setDoc(doc(owner,'workspaces',ws,'avitoLeads','legacy'), {name:'Legacy'}));
+  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'avitoLeads','legacy')));
+});

@@ -1,7 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createGatewayServer} from '../b2bhelp-gateway/server.mjs';
-import {b2bhelp,pageParam,positiveId,safeId,safeText,B2BHELP_API_ORIGIN} from '../b2bhelp-gateway/api/_lib.mjs';
+import {authorize,b2bhelp,pageParam,positiveId,safeId,safeText,B2BHELP_API_ORIGIN} from '../b2bhelp-gateway/api/_lib.mjs';
+
+test('temporary Firebase auth and membership errors return 503',async t=>{
+  const previous=process.env.FIREBASE_WEB_API_KEY;
+  process.env.FIREBASE_WEB_API_KEY='unit-test-key';
+  t.after(()=>previous===undefined?delete process.env.FIREBASE_WEB_API_KEY:process.env.FIREBASE_WEB_API_KEY=previous);
+  const responses=[
+    new Response('{}',{status:429}),
+    new Response(JSON.stringify({users:[{localId:'test-user'}]}),{status:200}),
+    new Response('{}',{status:503})
+  ];
+  t.mock.method(globalThis,'fetch',async()=>responses.shift());
+  const makeRes=()=>({code:0,body:null,headers:{},setHeader(k,v){this.headers[k]=v},status(code){this.code=code;return this},json(body){this.body=body;return this}});
+  const req={headers:{origin:'https://araarkadij75-oss.github.io',authorization:'Bearer test-id-token'}};
+  const authRes=makeRes();
+  assert.equal(await authorize(req,authRes),null);
+  assert.equal(authRes.code,503);
+  assert.equal(authRes.body.error,'auth_unavailable');
+  const membershipRes=makeRes();
+  assert.equal(await authorize(req,membershipRes),null);
+  assert.equal(membershipRes.code,503);
+  assert.equal(membershipRes.body.error,'membership_unavailable');
+});
 
 test('B2BHelp request uses the documented host and raw API token header',async t=>{
   const previous=process.env.B2BHELP_API_TOKEN;

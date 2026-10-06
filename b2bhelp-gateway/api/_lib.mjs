@@ -56,7 +56,8 @@ export async function authorize(req,res,roles=['owner','dispatcher_logistic']){
     return null;
   }
   if(!lookup.ok){
-    reply(res,401,{ok:false,error:'auth'},origin);
+    const invalidToken=[400,401].includes(lookup.status);
+    reply(res,invalidToken?401:503,{ok:false,error:invalidToken?'auth':'auth_unavailable'},origin);
     return null;
   }
 
@@ -76,6 +77,10 @@ export async function authorize(req,res,roles=['owner','dispatcher_logistic']){
   try{
     memberResponse=await fetch(memberUrl,{headers:{Authorization:`Bearer ${idToken}`},signal:AbortSignal.timeout(1800)});
   }catch{
+    reply(res,503,{ok:false,error:'membership_unavailable'},origin);
+    return null;
+  }
+  if(!memberResponse.ok&&![403,404].includes(memberResponse.status)){
     reply(res,503,{ok:false,error:'membership_unavailable'},origin);
     return null;
   }

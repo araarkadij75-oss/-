@@ -38,6 +38,7 @@ test('CRM inbox stays B2BHelp-only, manual, and renders remote text safely', () 
   assert.match(source, /credentials:\s*'omit'/);
   assert.match(source, /orderId:\s*state\.currentLead\?\.orderId/);
   assert.match(source, /MASTER_AI_OPEN_ORDER_FROM_B2B/);
+  assert.match(source, /if \(chatKey\(chat\) !== chatKey\(state\.selected\)\) panel\.querySelector\('\[data-b2b-input\]'\)\.value = ''/);
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = fs.readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
     assert.match(html, /name:clean\(lead\?\.name\?\?old\.name,160\)/);

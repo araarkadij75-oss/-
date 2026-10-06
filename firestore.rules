@@ -284,11 +284,6 @@ service cloud.firestore {
       allow create, update, delete: if isOps(workspace);
     }
 
-    match /workspaces/{workspace}/avitoLeads/{leadId} {
-      allow read, create, update: if role(workspace) in ['owner', 'dispatcher_logistic'];
-      allow delete: if isOwner(workspace);
-    }
-
     match /workspaces/{workspace}/b2bLeads/{leadId} {
       allow read: if role(workspace) in ['owner', 'dispatcher_logistic'];
       allow create: if role(workspace) in ['owner', 'dispatcher_logistic']

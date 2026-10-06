@@ -220,6 +220,7 @@ import { chatKey, chatPreview, dedupeChats, displayName, isOutgoing, isUnread, l
   }
   async function openChat(chat) {
     const epoch = ++selectionEpoch;
+    if (chatKey(chat) !== chatKey(state.selected)) panel.querySelector('[data-b2b-input]').value = '';
     state.selected = chat;
     state.messages = [];
     state.currentLead = null;
