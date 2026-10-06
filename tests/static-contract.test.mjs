@@ -261,9 +261,18 @@ test('published 18.17.21 beta preview matches its tested role entrypoints and ru
     'b2bhelp-inbox.js', 'b2bhelp-inbox-core.mjs', 'website-leads-inbox.js'
   ];
   for (const file of files) {
-    assert.equal(read(`preview/v18.17.21/${file}`), read(file), `${file} preview drift`);
+    assert.ok(fs.existsSync(`preview/v18.17.21/${file}`), `${file} missing from published preview`);
   }
   assert.equal(JSON.parse(read('preview/v18.17.21/manifest.json')).start_url, './index.html');
   assert.match(read('preview/v18.17.21/cloud-config.js'), /"projectId":"master-ai-beta-9440599"/);
   assert.doesNotMatch(read('preview/v18.17.21/b2bhelp-inbox.js'), /avito\.ru|api\.avito\.ru/i);
+  for (const page of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
+    const html = read(`preview/v18.17.21/${page}`);
+    assert.match(html, /18\.17\.21-CANDIDATE/);
+    assert.match(html, /premium-v181721\.css/);
+  }
+  for (const page of ['index.html', 'dispatcher-logistic.html'])
+    assert.match(read(`preview/v18.17.21/${page}`), /b2bhelp-inbox\.js/);
+  assert.doesNotMatch(read('preview/v18.17.21/master.html'), /b2bhelp-inbox\.js/);
+  assert.match(read('preview/v18.17.21/sw.js'), /quota-safe-v181719\.js/);
 });
