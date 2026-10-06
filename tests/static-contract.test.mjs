@@ -168,14 +168,37 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = read(file);
     assert.match(html, /id="closeShiftBtn"/);
-    assert.match(html, /id="dailyShiftReports"/);
+    if (file !== 'master.html') {
+      assert.match(html, /data-tab="shiftclose"/);
+      if (file === 'dispatcher-logistic.html') assert.match(html, /dispatcher_logistic:\{label:'[^']+',tabs:\['orders','dashboard','performance','mastershifts','shiftclose'\]/);
+      assert.match(html, /Сохранить неделю/);
+      assert.match(html, /id="weeklyReportList"/);
+      if (file === 'dispatcher-logistic.html') {
+        assert.match(html, /dispatcher_logistic:\{label:'[^']+',tabs:\['orders','dashboard','performance','mastershifts','shiftclose'\]/);
+        assert.doesNotMatch(html, /dispatcher_logistic:\{label:'[^']+',tabs:\[[^\]]*'reports'/);
+      }
+      assert.match(html, /where\('closedBy','==',cloud\.profile\?\.id/);
+      assert.match(html, /cloud\.saveMasterWeek/);
+      assert.match(html, /cloud\.closeWeek/);
+      assert.match(html, /requestMasterWeekLoad/);
+      assert.match(html, /function mergeMasterShiftCache/);
+      assert.match(html, /sorted\.slice\(0,60\)/);
+      assert.match(html, /masterWeekDirty/);
+      assert.match(html, /state\.weeklyShiftReports=Array\.isArray\(d\.weeklyShiftReports\)/);
+      assert.match(html, /filter\(shiftIntegrity\)/);
+      assert.match(html, /2 смены × 7 дней; нет отчёта или сверки/);
+    }
+    if (file === 'master.html') {
+      assert.match(html, /id="dailyShiftReports"/);
+    }
     assert.match(html, /id="addRosterMaster"/);
     assert.match(html, /function removeRosterMaster\(/);
-    assert.match(html, /\.slice\(0,14\)/);
+    if (file === 'master.html') assert.match(html, /\.slice\(0,14\)/);
     assert.match(html, /data-panel="mastershifts"/);
     assert.match(html, /function onDutyMasters\(/);
     assert.match(html, /class="quick-chip \$\{working\?'on-duty'/);
     assert.match(html, /function renderStaff\(/);
+    assert.match(html, /batch=fs\.writeBatch\(db\)/);
     assert.match(html, /function prepareMasterAccount\(/);
     assert.match(html, /role==='master'\?'':\(\$\('#staffShift'/);
     assert.match(html, /function openOrderDetails\(/);
@@ -189,6 +212,8 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
   }
   assert.match(rules, /function validShiftReport\(/);
   assert.match(rules, /config\/payroll/);
+  assert.match(rules, /weeklyShiftReports/);
+  assert.match(rules, /function readsOwnShiftReport\(workspace\)/);
   assert.match(rules, /shiftReports/);
 });
 
@@ -226,4 +251,19 @@ test('candidate patch identity is internally consistent', () => {
   assert.match(cfg,/quota-safe-v181719\.js/);
   assert.match(patch,/18\.17\.19-CANDIDATE/);
   assert.doesNotMatch(patch,/18\.17\.18-CURRENT/);
+});
+
+test('published 18.17.21 beta preview matches its tested role entrypoints and runtime', () => {
+  const files = [
+    'index.html', 'dispatcher-logistic.html', 'master.html', 'cloud-config.js',
+    'quota-safe-v181719.js', 'premium-v181721.css', 'sw.js', 'icon.svg',
+    'manifest.json', 'manifest-dispatcher-logistic.json', 'manifest-master.json',
+    'b2bhelp-inbox.js', 'b2bhelp-inbox-core.mjs', 'website-leads-inbox.js'
+  ];
+  for (const file of files) {
+    assert.equal(read(`preview/v18.17.21/${file}`), read(file), `${file} preview drift`);
+  }
+  assert.equal(JSON.parse(read('preview/v18.17.21/manifest.json')).start_url, './index.html');
+  assert.match(read('preview/v18.17.21/cloud-config.js'), /"projectId":"master-ai-beta-9440599"/);
+  assert.doesNotMatch(read('preview/v18.17.21/b2bhelp-inbox.js'), /avito\.ru|api\.avito\.ru/i);
 });

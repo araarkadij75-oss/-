@@ -1,0 +1,18 @@
+{
+  "name": "MASTER AI — Мастер",
+  "short_name": "MASTER AI Мастер",
+  "id": "./?app=master",
+  "start_url": "./master.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#101828",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
