@@ -112,7 +112,7 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181731/);
+    assert.match(read(file), /premium-v181721\.css\?v=181732/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
@@ -275,4 +275,24 @@ test('published 18.17.21 beta preview matches its tested role entrypoints and ru
     assert.match(read(`preview/v18.17.21/${page}`), /b2bhelp-inbox\.js/);
   assert.doesNotMatch(read('preview/v18.17.21/master.html'), /b2bhelp-inbox\.js/);
   assert.match(read('preview/v18.17.21/sw.js'), /quota-safe-v181719\.js/);
+});
+
+test('weekly master schedule treats input collections as collections on every role page', () => {
+  for (const page of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
+    const html = read(page);
+    assert.match(html, /(?<!\$)\$\$\('#masterShiftPicker input'\)\.forEach\(/, `${page} checkbox handlers`);
+    assert.doesNotMatch(html, /(?<!\$)\$\('#masterShiftPicker input'\)\.(?:forEach|some)\(/, `${page} uses a single-element selector as a collection`);
+  }
+});
+
+test('weekly schedule ignores stale loads and locks edits while saving', () => {
+  for (const page of ['index.html', 'dispatcher-logistic.html']) {
+    const html = read(page);
+    assert.match(html, /masterWeekRequest=0/);
+    assert.match(html, /const request=\+\+masterWeekRequest/);
+    assert.match(html, /if\(request!==masterWeekRequest\)return/);
+    assert.match(html, /masterWeekSaving=true/);
+    assert.match(html, /\$\$\('#masterShiftPicker input'\)\.forEach\(x=>x\.disabled=true\)/);
+    assert.match(html, /finally\{masterWeekSaving=false/);
+  }
 });
