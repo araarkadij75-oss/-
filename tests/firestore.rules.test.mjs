@@ -37,6 +37,8 @@ before(async () => {
     const members = [
       ['owner-uid', {role:'owner', active:true, login:'owner', name:'Владелец'}],
       ['dispatch-uid', {id:'sergey', name:'Сергей', shift:'sergey', role:'dispatcher', active:true, login:'sergey'}],
+      ['sergey-ops-uid', {id:'sergey', name:'Сергей', shift:'sergey', role:'dispatcher_logistic', active:true, login:'sergey-ops'}],
+      ['backup-ops-uid', {id:'backup', name:'Запасной', shift:'artem', role:'dispatcher_logistic', active:true, login:'backup'}],
       ['ops-uid', {id:'artem', name:'Артём', shift:'artem', role:'dispatcher_logistic', active:true, login:'artem'}],
       ['logistic-uid', {id:'logistic', name:'Логист', shift:'sergey', role:'logistic', active:true, login:'logistic'}],
       ['master-uid', {role:'master', active:true, login:'master', master:'Иван'}],
@@ -188,12 +190,7 @@ test('other master cannot read phone', async () => {
   await assertFails(getDoc(doc(dbFor('master2-uid'),'workspaces',ws,'masterPhones','TEST-PAST')));
 });
 
-test('Google bridge config is owner-only', async () => {
-  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','google')));
-  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','google')));
-  await assertFails(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','google')));
-});
-
+test('legacy Google integration config is unreadable and only owner-deletable',async()=>{for(const uid of ['owner-uid','ops-uid','dispatch-uid','logistic-uid','master-uid']){const ref=doc(dbFor(uid),'workspaces',ws,'config','google');await assertFails(getDoc(ref));await assertFails(setDoc(ref,{secret:'x'}));await assertFails(updateDoc(ref,{secret:'x'}))}await assertSucceeds(deleteDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','google')))});
 test('UI config is readable by active users but writable only by owner', async () => {
   await assertSucceeds(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','ui')));
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','ui'), {'theme.density':'spacious'}));
@@ -206,55 +203,57 @@ test('payroll settings are owner-only', async () => {
   await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll')));
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:9000}));
   await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:2000}));
+  await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payrollPolicy'), {shiftBasePay:2400,shiftCashThreshold:30000,shiftCashRate:12}));
+  await assertSucceeds(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payrollPolicy')));
+  await assertFails(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','payrollPolicy')));
+  await assertFails(getDoc(doc(dbFor('dispatch-uid'),'workspaces',ws,'config','payrollPolicy')));
+  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payrollPolicy'), {shiftBasePay:1}));
 });
 
-test('dispatcher-logistic closes only own shift with server-calculated salary', async () => {
+test('shift reports are private per staff member and use one deterministic daily id', async () => {
   const db=dbFor('ops-uid');
-  const ref=doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem-artem');
-  const valid={id:'2026-09-23-artem-artem',date:'2026-09-23',closedBy:'artem',closedByName:'Артём',shift:'artem',cash:50000,salary:5000,orders:8,serverClosedAt:serverTimestamp()};
+  const ref=doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem');
+  const valid={id:'2026-09-23-artem',date:'2026-09-23',closedBy:'artem',closedByName:'Артём',shift:'artem',shiftName:'Смена Артёма',orders:8,financialOrders:4,completed:3,active:2,refused:1,cancelled:0,unassigned:0,reviewPending:0,reviews:2,reviewRate:66.7,turnover:60000,cash:50000,avgCheck:15000,salary:5000,basePay:2000,cashThreshold:20000,cashRate:10,orderIds:['a','b'],dataHash:'hash',closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp()};
   await assertSucceeds(setDoc(ref,valid));
+  await assertFails(setDoc(doc(dbFor('backup-ops-uid'),'workspaces',ws,'shiftReports',valid.id),{...valid,closedBy:'backup',closedByName:'Запасной',serverClosedAt:serverTimestamp()}));
+  const sergeyDb=dbFor('sergey-ops-uid');
+  const sergey={...valid,id:'2026-09-23-sergey',closedBy:'sergey',closedByName:'Сергей',shift:'sergey',shiftName:'Смена Сергея',cash:1000,salary:2000,turnover:5000,avgCheck:5000,serverClosedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(sergeyDb,'workspaces',ws,'shiftReports',sergey.id),sergey));
+  await assertFails(setDoc(ref,{...valid,serverClosedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem-copy'),{...valid,id:'2026-09-23-artem-copy',serverClosedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','wrong-pay'),{...valid,id:'wrong-pay',salary:2000,serverClosedAt:serverTimestamp()}));
+  await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','2026-09-24-artem-artem'),{...valid,id:'2026-09-24-artem-artem',date:'2026-09-24',unexpected:'field',serverClosedAt:serverTimestamp()}));
   await assertFails(updateDoc(ref,{salary:9000}));
   await assertSucceeds(getDoc(ref));
-  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports','2026-09-23-artem-artem')));
+  await assertFails(getDoc(doc(dbFor('dispatch-uid'),'workspaces',ws,'shiftReports','2026-09-23-artem')));
+  await assertFails(getDocs(collection(dbFor('dispatch-uid'),'workspaces',ws,'shiftReports')));
+  await assertSucceeds(getDocs(query(collection(dbFor('ops-uid'),'workspaces',ws,'shiftReports'),where('closedBy','==','artem'))));
+  await assertFails(getDocs(query(collection(dbFor('ops-uid'),'workspaces',ws,'shiftReports'),where('closedBy','==','sergey'))));
+  await assertFails(getDoc(doc(sergeyDb,'workspaces',ws,'shiftReports',valid.id)));
+  await assertFails(getDocs(collection(sergeyDb,'workspaces',ws,'shiftReports')));
+  await assertSucceeds(getDocs(query(collection(sergeyDb,'workspaces',ws,'shiftReports'),where('closedBy','==','sergey'))));
+  await assertFails(getDocs(query(collection(sergeyDb,'workspaces',ws,'shiftReports'),where('closedBy','==','artem'))));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports','2026-09-23-artem')));
+  await assertSucceeds(getDocs(collection(dbFor('owner-uid'),'workspaces',ws,'shiftReports')));
+});
+
+test('weekly shift reports are owner-only', async () => {
+  const report={id:'2026-09-21',start:'2026-09-21',end:'2026-09-27',closedBy:'owner-uid',closedByName:'Владелец',closedAt:new Date().toISOString(),closedShifts:1,expectedShifts:14,missingShifts:13,partial:true,orders:2,turnover:5000,cash:3000,salary:5000,avgCheck:2500,financialOrders:2,completed:2,reviews:1,reviewRate:50,sourceHash:'test-hash',dailyReports:[{id:'r1'}],duplicateOrders:0,serverClosedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21'),report));
+  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21'),{salary:0}));
+  await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21'),{closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp()}));
+  await assertFails(deleteDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21')));
+  await assertFails(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-28'),{...report,id:'2026-09-28',start:'2026-09-28',duplicateOrders:2,serverClosedAt:serverTimestamp()}));
+  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21')));
+  await assertFails(getDocs(collection(dbFor('ops-uid'),'workspaces',ws,'weeklyShiftReports')));
+  await assertSucceeds(getDocs(collection(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports')));
 });
 
 test('dispatcher cannot close a shift report', async () => {
   await assertFails(setDoc(doc(dbFor('dispatch-uid'),'workspaces',ws,'shiftReports','forged'),{id:'forged',date:'2026-09-23',closedBy:'sergey',closedByName:'Сергей',shift:'sergey',cash:1000,salary:2000,orders:1,serverClosedAt:serverTimestamp()}));
 });
 
-test('B2BHelp leads are limited to owner and dispatcher-logistic', async () => {
-  const ref = doc(dbFor('owner-uid'),'workspaces',ws,'b2bLeads','2-8');
-  const lead = {
-    provider:'b2bhelp', accountId:'2', chatId:'8', name:'Клиент', advertTitle:'Объявление', preview:'Нужна помощь',
-    isUnread:true, stage:'new', assignedMaster:'', internalNote:'', orderId:'', createdAt:new Date().toISOString(),
-    updatedAt:serverTimestamp(), updatedBy:'owner-uid', updatedByName:'Владелец'
-  };
-  await assertSucceeds(setDoc(ref, lead));
-  await assertSucceeds(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8')));
-  await assertSucceeds(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
-    stage:'thinking', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Артём'
-  }));
-  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
-    accountId:'999', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Артём'
-  }));
-  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
-    stage:'forged', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Артём'
-  }));
-  await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8'), {
-    stage:'thinking', updatedAt:serverTimestamp(), updatedBy:'artem', updatedByName:'Владелец'
-  }));
-  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'b2bLeads','2-8')));
-  for (const uid of ['dispatch-uid','logistic-uid','master-uid','inactive-uid']) {
-    const denied = doc(dbFor(uid),'workspaces',ws,'b2bLeads','2-8');
-    await assertFails(getDoc(denied));
-    await assertFails(setDoc(doc(dbFor(uid),'workspaces',ws,'b2bLeads',`new-${uid}`), lead));
-    await assertFails(updateDoc(denied, {stage:'refused'}));
-  }
-  await assertFails(getDoc(doc(anonDb(),'workspaces',ws,'b2bLeads','2-8')));
-  await assertFails(deleteDoc(doc(dbFor('ops-uid'),'workspaces',ws,'b2bLeads','2-8')));
-  await assertSucceeds(deleteDoc(ref));
-});
+test('B2BHelp lead collection is denied for every role',async()=>{for(const uid of ['owner-uid','ops-uid','dispatch-uid','logistic-uid','master-uid','inactive-uid']){const db=dbFor(uid),ref=doc(db,'workspaces',ws,'b2bLeads','legacy');await assertFails(getDoc(ref));await assertFails(setDoc(ref,{provider:'b2bhelp'}));await assertFails(deleteDoc(ref))}await assertFails(getDoc(doc(anonDb(),'workspaces',ws,'b2bLeads','legacy')))});
 
 test('legacy Avito leads collection has no access for any role', async () => {
   const owner = dbFor('owner-uid');

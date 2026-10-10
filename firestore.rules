@@ -45,12 +45,19 @@ service cloud.firestore {
       return role(workspace) in ['dispatcher_logistic', 'logistic'];
     }
 
+    function readsOwnShiftReport(workspace) {
+      let member = get(memberPath(workspace)).data;
+      let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
+      return isShiftCloser(workspace) && resource.data.closedBy == memberId;
+    }
+
     function payrollPath(workspace) {
       return /databases/$(database)/documents/workspaces/$(workspace)/config/payroll;
     }
 
     function validShiftReport(workspace, reportId) {
       let member = get(memberPath(workspace)).data;
+      let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
       let configured = exists(payrollPath(workspace));
       let basePay = configured ? get(payrollPath(workspace)).data.shiftBasePay : 2000;
       let threshold = configured ? get(payrollPath(workspace)).data.shiftCashThreshold : 20000;
@@ -58,14 +65,93 @@ service cloud.firestore {
       let expected = request.resource.data.cash > threshold
         ? request.resource.data.cash * rate / 100
         : basePay;
-      return request.resource.data.id == reportId
-        && request.resource.data.closedBy == member.id
+      return request.resource.data.keys().hasAll([
+          'id', 'date', 'closedBy', 'closedByName', 'shift', 'shiftName',
+          'orders', 'financialOrders', 'completed', 'active', 'refused',
+          'cancelled', 'unassigned', 'reviewPending', 'reviews', 'reviewRate',
+          'turnover', 'cash', 'avgCheck', 'salary', 'basePay', 'cashThreshold',
+          'cashRate', 'orderIds', 'dataHash', 'closedAt', 'serverClosedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'id', 'date', 'closedBy', 'closedByName', 'shift', 'shiftName',
+          'orders', 'financialOrders', 'completed', 'active', 'refused',
+          'cancelled', 'unassigned', 'reviewPending', 'reviews', 'reviewRate',
+          'turnover', 'cash', 'avgCheck', 'salary', 'basePay', 'cashThreshold',
+          'cashRate', 'orderIds', 'dataHash', 'closedAt', 'serverClosedAt'
+        ])
+        && request.resource.data.id == reportId
+        && reportId == request.resource.data.date + '-' + member.shift
+        && request.resource.data.closedBy == memberId
         && request.resource.data.closedByName == member.name
         && request.resource.data.shift == member.shift
+        && member.shift in ['sergey', 'artem']
         && request.resource.data.serverClosedAt == request.time
         && request.resource.data.salary == expected
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && request.resource.data.orders is int
         && request.resource.data.orders >= 0
-        && request.resource.data.cash >= 0;
+        && request.resource.data.financialOrders is int
+        && request.resource.data.financialOrders >= 0
+        && request.resource.data.completed is int
+        && request.resource.data.reviews is int
+        && request.resource.data.reviewRate >= 0
+        && request.resource.data.reviewRate <= 100
+        && request.resource.data.turnover >= 0
+        && request.resource.data.cash >= 0
+        && request.resource.data.avgCheck >= 0
+        && request.resource.data.salary >= 0
+        && request.resource.data.orderIds is list
+        && request.resource.data.orderIds.size() <= 500
+        && request.resource.data.dataHash is string;
+    }
+
+    function validWeeklyShiftReport(workspace, weekId) {
+      let data = request.resource.data;
+      let member = get(memberPath(workspace)).data;
+      let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
+      return data.keys().hasAll([
+          'id', 'start', 'end', 'closedBy', 'closedByName', 'closedAt', 'serverClosedAt',
+          'closedShifts', 'expectedShifts', 'missingShifts', 'partial', 'orders',
+          'turnover', 'cash', 'salary', 'avgCheck', 'financialOrders', 'completed',
+          'reviews', 'reviewRate', 'sourceHash', 'dailyReports', 'duplicateOrders'
+        ])
+        && data.keys().hasOnly([
+          'id', 'start', 'end', 'closedBy', 'closedByName', 'closedAt', 'serverClosedAt',
+          'closedShifts', 'expectedShifts', 'missingShifts', 'partial', 'orders',
+          'turnover', 'cash', 'salary', 'avgCheck', 'financialOrders', 'completed',
+          'reviews', 'reviewRate', 'sourceHash', 'dailyReports', 'duplicateOrders'
+        ])
+        && data.id == weekId
+        && data.start == weekId
+        && data.start is string
+        && data.start.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.end is string
+        && data.end.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.closedBy == memberId
+        && data.serverClosedAt == request.time
+        && data.expectedShifts == 14
+        && data.closedShifts is int
+        && data.duplicateOrders is int
+        && data.duplicateOrders == 0
+        && data.closedShifts > 0
+        && data.closedShifts <= 14
+        && data.missingShifts is int
+        && data.missingShifts >= 0
+        && data.closedShifts + data.missingShifts == data.expectedShifts
+        && data.partial == (data.missingShifts > 0)
+        && data.dailyReports is list
+        && data.dailyReports.size() == data.closedShifts
+        && data.orders is int
+        && data.orders >= 0
+        && data.financialOrders is int
+        && data.financialOrders >= 0
+        && data.salary >= 0
+        && data.cash >= 0
+        && data.turnover >= 0
+        && data.reviewRate >= 0
+        && data.reviewRate <= 100
+        && data.sourceHash is string;
     }
 
     function assignmentPath(workspace, orderId) {
@@ -76,40 +162,6 @@ service cloud.firestore {
       return isMaster(workspace)
         && exists(assignmentPath(workspace, orderId))
         && get(assignmentPath(workspace, orderId)).data.masterUid == request.auth.uid;
-    }
-
-    function validB2BLead(workspace) {
-      let member = get(memberPath(workspace)).data;
-      let data = request.resource.data;
-      return data.provider == 'b2bhelp'
-        && data.accountId is string
-        && data.accountId.matches('^[1-9][0-9]{0,19}$')
-        && data.chatId is string
-        && data.chatId.size() > 0 && data.chatId.size() <= 240
-        && data.name is string && data.name.size() <= 160
-        && data.advertTitle is string && data.advertTitle.size() <= 200
-        && data.preview is string && data.preview.size() <= 500
-        && data.isUnread is bool
-        && data.stage in ['new','thinking','order','later','rejected']
-        && data.assignedMaster is string && data.assignedMaster.size() <= 160
-        && data.internalNote is string && data.internalNote.size() <= 2000
-        && data.orderId is string && data.orderId.size() <= 160
-        && data.createdAt is string
-        && data.updatedAt == request.time
-        && data.updatedBy == member.get('id', request.auth.uid)
-        && data.updatedByName == member.get('name', '')
-        && data.updatedByName.size() <= 120;
-    }
-
-    function validB2BLeadUpdate() {
-      return request.resource.data.provider == resource.data.provider
-        && request.resource.data.accountId == resource.data.accountId
-        && request.resource.data.chatId == resource.data.chatId
-        && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'name','advertTitle','preview','isUnread','stage','assignedMaster',
-          'internalNote','orderId','updatedAt','updatedBy','updatedByName'
-        ]);
     }
 
     function dispatcherFields() {
@@ -265,7 +317,8 @@ service cloud.firestore {
     }
 
     match /workspaces/{workspace}/config/google {
-      allow read, write: if isOwner(workspace);
+      allow read, create, update: if false;
+      allow delete: if isOwner(workspace);
     }
 
     match /workspaces/{workspace}/config/payroll {
@@ -273,10 +326,22 @@ service cloud.firestore {
       allow create, update, delete: if isOwner(workspace);
     }
 
-    match /workspaces/{workspace}/shiftReports/{reportId} {
+    match /workspaces/{workspace}/config/payrollPolicy {
       allow read: if isOwner(workspace) || isShiftCloser(workspace);
+      allow create, update, delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/shiftReports/{reportId} {
+      allow read: if isOwner(workspace)
+        || readsOwnShiftReport(workspace);
       allow create: if isShiftCloser(workspace) && validShiftReport(workspace, reportId);
       allow update, delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/weeklyShiftReports/{weekId} {
+      allow read: if isOwner(workspace);
+      allow create, update: if isOwner(workspace) && validWeeklyShiftReport(workspace, weekId);
+      allow delete: if false;
     }
 
     match /workspaces/{workspace}/masterShifts/{date} {
@@ -285,23 +350,7 @@ service cloud.firestore {
     }
 
     match /workspaces/{workspace}/b2bLeads/{leadId} {
-      allow read: if role(workspace) in ['owner', 'dispatcher_logistic'];
-      allow create: if role(workspace) in ['owner', 'dispatcher_logistic']
-                    && request.resource.data.keys().hasAll([
-                      'provider','accountId','chatId','name','advertTitle','preview','isUnread',
-                      'stage','assignedMaster','internalNote','orderId','createdAt','updatedAt',
-                      'updatedBy','updatedByName'
-                    ])
-                    && request.resource.data.keys().hasOnly([
-                      'provider','accountId','chatId','name','advertTitle','preview','isUnread',
-                      'stage','assignedMaster','internalNote','orderId','createdAt','updatedAt',
-                      'updatedBy','updatedByName'
-                    ])
-                    && validB2BLead(workspace);
-      allow update: if role(workspace) in ['owner', 'dispatcher_logistic']
-                    && validB2BLeadUpdate()
-                    && validB2BLead(workspace);
-      allow delete: if isOwner(workspace);
+      allow read, write: if false;
     }
 
     match /workspaces/{workspace}/uiChanges/{changeId} {

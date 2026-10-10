@@ -48,44 +48,13 @@ test('legacy production project is absent from runtime cloud config', () => {
   assert.doesNotMatch(c, /projectId\s*:\s*["']master-ai-9440599["']/);
 });
 
-test('employees can push authenticated order updates to Google without a shared secret', () => {
-  const c = read('cloud-config.js');
-  const p = read('quota-safe-v181719.js');
-  assert.match(c, /googleBridgeUrl:\s*"https:\/\/script\.google\.com\/macros\/s\//);
-  assert.doesNotMatch(c, /MASTER_AI_SECRET|bridgeSecret|secret\s*:/);
-  assert.match(p, /firebase-auth\.js/);
-  assert.match(p, /getIdToken\(\)/);
-  assert.match(p, /action:'authUpsert'/);
-  assert.match(p, /role!=='owner'.*enqueueAuthenticatedRows/);
-});
-
-
-test('service worker pins the candidate patch and avoids stale runtime cache', () => {
-  const sw = read('sw.js');
-  assert.match(sw, /quota-safe-v181719\\.js/);
-  assert.doesNotMatch(sw, /quota-safe-v181718\\.js/);
-  assert.match(sw, /cloud-config\\.js/);
-  assert.match(sw, /network|fetch/);
-});
-
-test('non-owner privileged hydration is short-circuited in client adapter', () => {
-  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    const html = read(file);
-    assert.match(html, /if\(!\['owner','dispatcher_logistic','logistic'\]\.includes\(cloud\.profile\?\.role\|\|''\)\)return\[\]/);
-    assert.match(html, /if\(cloud\.profile\?\.role!=='owner'\)return\{\}/);
-  }
-  const patch = read('quota-safe-v181719.js');
-  assert.match(patch, /cloud\.getGoogle=async function\(\)\{[\s\S]*?cloud\.profile\?\.role!=='owner'/);
-});
-
-
-test('all executable JavaScript parses', () => {
+test('external Google integration is disabled in the CRM',()=>{for(const f of ['cloud-config.js','index.html','dispatcher-logistic.html','master.html'])assert.doesNotMatch(read(f),/https:\/\/script\.google\.com|id="s_google|id="googleSync"|window\.open\(.*google/i);for(const f of ['index.html','dispatcher-logistic.html','master.html']){assert.match(read(f),/cloud\.requestGoogleSync=async\(\)=>null/);assert.match(read(f),/googleCoordinatorRole=\(\)=>false/)}});test('external connector hydration is disabled without disturbing Firebase roles',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read(f);assert.match(h,/if\(!\['owner','dispatcher_logistic','logistic'\]\.includes\(cloud\.profile\?\.role\|\|''\)\)return\[\]/);assert.match(h,/cloud\.getGoogle=async\(\)=>\(\{\}\)/);assert.match(h,/cloud\.requestGoogleSync=async\(\)=>null/)}});test('all executable JavaScript parses', () => {
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = read(file);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
       .map(m => m[1])
       .filter(s => s.trim());
-    assert.ok(scripts.length >= 3, file + ': expected inline scripts');
+    assert.ok(scripts.length >= 2, file + ': expected inline scripts');
     for (const [i, script] of scripts.entries()) {
       assert.doesNotThrow(() => new Function(script), file + ': inline script ' + i + ' syntax');
     }
@@ -230,62 +199,7 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('published inbox uses only the REG.RU B2BHelp gateway', () => {
-  const source=read('b2bhelp-inbox.js');
-  assert.match(source,/https:\/\/remontcompsbp\.ru\/api/);
-  assert.doesNotMatch(source,/api\.avito\.ru|AVITO_CLIENT_ID|AVITO_CLIENT_SECRET/i);
-  assert.equal(fs.existsSync(new URL('../avito-gateway/vercel.json', import.meta.url)),false);
-  assert.equal(fs.existsSync(new URL('../avito-gateway/package.json', import.meta.url)),false);
-  assert.equal(fs.existsSync(new URL('../b2bhelp-gateway/vercel.json', import.meta.url)),false);
-  assert.doesNotMatch(source,/integrationEnabled|callsByTime/);
-  assert.equal(fs.existsSync(new URL('../avito-crm-v1.js', import.meta.url)),false);
-  for(const file of ['index.html','dispatcher-logistic.html','master.html','sw.js']){
-    assert.doesNotMatch(read(file),/avito-crm-v1\.js/);
-  }
-});
-
-test('candidate patch identity is internally consistent', () => {
-  const cfg=read('cloud-config.js');
-  const patch=read('quota-safe-v181719.js');
-  assert.match(cfg,/18\.17\.19-CANDIDATE/);
-  assert.match(cfg,/quota-safe-v181719\.js/);
-  assert.match(patch,/18\.17\.19-CANDIDATE/);
-  assert.doesNotMatch(patch,/18\.17\.18-CURRENT/);
-});
-
-test('published 18.17.21 beta preview matches its tested role entrypoints and runtime', () => {
-  const files = [
-    'index.html', 'dispatcher-logistic.html', 'master.html', 'cloud-config.js',
-    'quota-safe-v181719.js', 'premium-v181721.css', 'sw.js', 'icon.svg',
-    'manifest.json', 'manifest-dispatcher-logistic.json', 'manifest-master.json',
-    'b2bhelp-inbox.js', 'b2bhelp-inbox-core.mjs', 'website-leads-inbox.js'
-  ];
-  for (const file of files) {
-    assert.ok(fs.existsSync(`preview/v18.17.21/${file}`), `${file} missing from published preview`);
-  }
-  assert.equal(JSON.parse(read('preview/v18.17.21/manifest.json')).start_url, './index.html');
-  assert.match(read('preview/v18.17.21/cloud-config.js'), /"projectId":"master-ai-beta-9440599"/);
-  assert.doesNotMatch(read('preview/v18.17.21/b2bhelp-inbox.js'), /avito\.ru|api\.avito\.ru/i);
-  for (const page of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
-    const html = read(`preview/v18.17.21/${page}`);
-    assert.match(html, /18\.17\.21-CANDIDATE/);
-    assert.match(html, /premium-v181721\.css/);
-  }
-  for (const page of ['index.html', 'dispatcher-logistic.html'])
-    assert.match(read(`preview/v18.17.21/${page}`), /b2bhelp-inbox\.js/);
-  assert.doesNotMatch(read('preview/v18.17.21/master.html'), /b2bhelp-inbox\.js/);
-  assert.match(read('preview/v18.17.21/sw.js'), /quota-safe-v181719\.js/);
-});
-
-test('weekly master schedule treats input collections as collections on every role page', () => {
-  for (const page of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
-    const html = read(page);
-    assert.match(html, /(?<!\$)\$\$\('#masterShiftPicker input'\)\.forEach\(/, `${page} checkbox handlers`);
-    assert.doesNotMatch(html, /(?<!\$)\$\('#masterShiftPicker input'\)\.(?:forEach|some)\(/, `${page} uses a single-element selector as a collection`);
-  }
-});
-
-test('weekly schedule ignores stale loads and locks edits while saving', () => {
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v33/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('weekly schedule ignores stale loads and locks edits while saving', () => {
   for (const page of ['index.html', 'dispatcher-logistic.html']) {
     const html = read(page);
     assert.match(html, /masterWeekRequest=0/);

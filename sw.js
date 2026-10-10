@@ -1,4 +1,4 @@
-const CACHE='master-ai-18.17.21-shell-v31';
+const CACHE='master-ai-18.17.21-shell-v33';
 const SHELL=[
   './',
   './index.html',
@@ -11,9 +11,6 @@ const SHELL=[
   './cloud-config.js',
   './quota-safe-v181719.js',
   './premium-v181721.css',
-  './b2bhelp-inbox.js',
-  './website-leads-inbox.js?v=1',
-  './b2bhelp-inbox-core.mjs'
 ];
 
 self.addEventListener('install',event=>{
