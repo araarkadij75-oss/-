@@ -326,7 +326,7 @@ body:before{display:none}
 @media(max-width:680px){.color-audit-item{flex-basis:125px}.top .brand h1{font-size:20px}.admin-switch .select{flex:1;min-width:140px}.order-pagination{justify-content:space-between}.order-pagination .chart-sub{font-size:11px}.b2b-panel:not(.has-chat) .b2b-body{grid-template-rows:minmax(0,1fr)}}
 
 /* Unified readable type + consistent surfaces (no remote fonts or visual drift). */
-:root{--font-ui:Inter,"Segoe UI Variable","Segoe UI",Arial,sans-serif;--font-display:Inter,"Segoe UI Variable","Segoe UI",Arial,sans-serif;--border:#d5dfeb;--radius:14px}
+:root{--font-ui:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;--font-display:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;--border:#d5dfeb;--radius:14px}
 html,body,button,input,select,textarea{font-family:var(--font-ui)!important;-webkit-font-smoothing:antialiased!important;-moz-osx-font-smoothing:grayscale!important;text-rendering:optimizeLegibility!important;font-synthesis:none}
 body{font-size:15px;line-height:1.5;color:#1b2d45;letter-spacing:0}
 .brand h1,.chart-title,.modal-title,.kpi .v,.mini .v,.quality .v,.workflow-card .v{font-family:var(--font-display)!important;font-weight:700;letter-spacing:-.02em}
@@ -339,3 +339,16 @@ body{font-size:15px;line-height:1.5;color:#1b2d45;letter-spacing:0}
 :focus-visible{outline:3px solid #3478e5!important;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media(max-width:680px){body{font-size:15px}.chart-sub,.employee-info,.filter-hint{font-size:12px}.table td,.orders-table td{font-size:13px}}
+
+/* Refined visual rhythm: crisp system typography, restrained depth, responsive motion. */
+:root{--accent:#245fce;--accent-strong:#1749a8;--shadow-card:0 8px 26px rgba(25,49,83,.075)}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(70,133,231,.11),transparent 34%),radial-gradient(ellipse at 96% 6%,rgba(126,99,220,.08),transparent 27%),linear-gradient(145deg,#edf3fb,#f5f4fa)!important}
+.top{box-shadow:0 8px 28px rgba(28,52,85,.10)!important}
+.tabs{box-shadow:0 5px 18px rgba(28,52,85,.075)!important}
+.btn.primary{box-shadow:0 5px 14px rgba(36,95,206,.22)!important;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(36,95,206,.29)!important;background:var(--accent-strong)!important}
+.card{box-shadow:var(--shadow-card);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.card:hover{transform:translateY(-1px)}
+.input:focus,.select:focus,.textarea:focus{border-color:#5b91ea!important;box-shadow:0 0 0 3px rgba(52,120,229,.14)!important}
+.table th{font-weight:700;letter-spacing:.015em;color:#4b5f79}
+@media(prefers-reduced-motion:reduce){.btn.primary:hover,.card:hover{transform:none}}

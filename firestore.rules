@@ -317,8 +317,7 @@ service cloud.firestore {
     }
 
     match /workspaces/{workspace}/config/google {
-      allow read, create, update: if false;
-      allow delete: if isOwner(workspace);
+      allow read, write: if isOwner(workspace);
     }
 
     match /workspaces/{workspace}/config/payroll {

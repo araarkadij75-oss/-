@@ -190,7 +190,7 @@ test('other master cannot read phone', async () => {
   await assertFails(getDoc(doc(dbFor('master2-uid'),'workspaces',ws,'masterPhones','TEST-PAST')));
 });
 
-test('legacy Google integration config is unreadable and only owner-deletable',async()=>{for(const uid of ['owner-uid','ops-uid','dispatch-uid','logistic-uid','master-uid']){const ref=doc(dbFor(uid),'workspaces',ws,'config','google');await assertFails(getDoc(ref));await assertFails(setDoc(ref,{secret:'x'}));await assertFails(updateDoc(ref,{secret:'x'}))}await assertSucceeds(deleteDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','google')))});
+test('Google settings stay owner-only; non-owner connector access is denied',async()=>{const owner=doc(dbFor('owner-uid'),'workspaces',ws,'config','google');await assertSucceeds(getDoc(owner));await assertSucceeds(setDoc(owner,{bridgeUrl:'',bridgeUrlV2:'',sheetUrl:'',secret:''},{merge:true}));for(const uid of ['ops-uid','dispatch-uid','logistic-uid','master-uid']){const ref=doc(dbFor(uid),'workspaces',ws,'config','google');await assertFails(getDoc(ref));await assertFails(setDoc(ref,{secret:'x'}));await assertFails(updateDoc(ref,{secret:'x'}))}});
 test('UI config is readable by active users but writable only by owner', async () => {
   await assertSucceeds(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','ui')));
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','ui'), {'theme.density':'spacious'}));

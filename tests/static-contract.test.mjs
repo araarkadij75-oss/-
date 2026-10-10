@@ -10,10 +10,11 @@ test('release state pins safe environment', () => {
   assert.equal(s.environment.firebaseProject, 'master-ai-beta-9440599');
   assert.equal(s.environment.workspace, 'master-ai-beta');
   assert.equal(s.environment.billing, 'Spark / NO BILLING');
-  assert.equal(s.syncContract.bridgeProtocol, 2);
-  assert.equal(s.syncContract.fullReconcile, 'manual_only');
-  assert.equal(s.syncContract.legacyAutoFullSyncBlocked, true);
-  assert.equal(s.syncContract.focusPull, false);
+  assert.equal(s.syncContract.mode, 'firebase_realtime');
+  assert.equal(s.syncContract.externalConnectors, false);
+  assert.equal(s.syncContract.b2bhelp, false);
+  assert.equal(s.syncContract.googleSheets, false);
+  assert.equal(s.syncContract.avito, false);
   assert.equal(s.promotion.allowed, false);
 });
 
@@ -25,7 +26,14 @@ test('18.17.19 safety patch keeps delta/delete invariants', () => {
   assert.match(p, /autoFlushOnOpen:false/);
   assert.match(p, /focusPull:false/);
   assert.match(p, /retryLimit:5/);
-  assert.match(p, /bridgeProtocol:2/);
+  assert.match(p, /function bridgeEndpoint\(\)\{return''\}/);
+  assert.match(p, /function bridgeReady\(\)\{return false\}/);
+  assert.match(p, /async function bridgePost\(\)\{throw new Error\('Внешние интеграции отключены'\)\}/);
+  assert.doesNotMatch(p, /fetch\(/);
+  assert.match(p, /function bridgeEndpoint\(\)\{return''\}/);
+  assert.match(p, /function bridgeReady\(\)\{return false\}/);
+  assert.match(p, /async function bridgePost\(\)\{throw new Error\('Внешние интеграции отключены'\)\}/);
+  assert.doesNotMatch(p, /fetch\(/);
   assert.doesNotMatch(p, /\bphoneAccess\b/);
 });
 
@@ -81,7 +89,7 @@ test('all PWA manifests parse and use role-correct start URLs', () => {
 test('premium responsive design is shared by every role client', () => {
   const css = read('premium-v181721.css');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
-    assert.match(read(file), /premium-v181721\.css\?v=181732/);
+    assert.match(read(file), /premium-v181721\.css\?v=181733/);
   }
   assert.match(css, /@media\(max-width:800px\)/);
   assert.match(css, /prefers-reduced-motion/);
@@ -199,7 +207,7 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v33/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('weekly schedule ignores stale loads and locks edits while saving', () => {
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v34/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('weekly schedule ignores stale loads and locks edits while saving', () => {
   for (const page of ['index.html', 'dispatcher-logistic.html']) {
     const html = read(page);
     assert.match(html, /masterWeekRequest=0/);

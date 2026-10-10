@@ -41,8 +41,8 @@
     });
   }
   function sheetId(url){const m=String(url||'').match(/\/d\/([^/]+)/);return m?m[1]:''}
-  function bridgeEndpoint(g){return String(g&&g.bridgeUrlV2||g&&g.bridgeUrl||'').trim()}
-  function bridgeReady(g){return !!(g&&bridgeEndpoint(g)&&g.secret&&sheetId(g.sheetUrl))}
+  function bridgeEndpoint(){return''}
+  function bridgeReady(){return false}
 
   function armCloudObject(cloud){
     if(!cloud||cloud.__quotaBootArmed)return;
@@ -94,28 +94,8 @@
     function rowHash(r){r=r||{};return fnv(GOOGLE_KEYS.map(k=>k+'='+cv(k,r[k])).join('\u001f'))}
     function safeBaseline(x){if(!x||typeof x!=='object'||Array.isArray(x))return{};const o={};let n=0;for(const [id,h] of Object.entries(x)){if(n++>50000)break;if(id&&typeof h==='string')o[id]=h}return o}
 
-    async function refreshGoogleCfg(){
-      try{
-        const d=await fs.getDoc(googleRef);
-        let x=d.exists()?d.data():{};
-        if(cloud.profile?.role==='owner'){
-          const legacy=String(x.bridgeUrl||''),v2=String(x.bridgeUrlV2||''),activate=String(window.MASTER_AI_BUILD||'').includes('18.17.19-CANDIDATE');
-          if(!v2&&legacy){
-            const patch={bridgeUrlV2:legacy,bridgeProtocol:2,legacyBridgeDisabled:activate,bridgeProtocolUpdatedAt:new Date().toISOString()};
-            if(activate)patch.bridgeUrl='';
-            await fs.setDoc(googleRef,patch,{merge:true});
-            x={...x,...patch};
-          }else if(v2&&legacy&&activate){
-            await fs.setDoc(googleRef,{bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true,bridgeProtocolUpdatedAt:new Date().toISOString()},{merge:true});
-            x={...x,bridgeUrl:'',bridgeProtocol:2,legacyBridgeDisabled:true};
-          }
-        }
-        googleCfg=x;
-        baselineMap=safeBaseline(googleCfg.syncBaseline);
-        return googleCfg;
-      }catch(e){return googleCfg||{}}
-    }
-    function applyTombstones(cacheMap,x){
+    async function refreshGoogleCfg(){googleCfg={};baselineMap={};return googleCfg}
+        function applyTombstones(cacheMap,x){
       const all=[...(Array.isArray(x&&x.deletedOrders)?x.deletedOrders:[]),...(Array.isArray(x&&x.deletedHistory)?x.deletedHistory:[])];
       let changed=false;
       for(const t of all){
@@ -124,67 +104,16 @@
       }
       return changed;
     }
-    async function bridgePost(payload){
-      const g=(googleCfg&&bridgeEndpoint(googleCfg))?googleCfg:await refreshGoogleCfg();
-      const endpoint=bridgeEndpoint(g);
-      if(!endpoint||!g.secret)throw new Error('Google Bridge v2 не настроен');
-      const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),45000);
-      try{
-        const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),signal:ac.signal});
-        const txt=await r.text();let j;
-        try{j=JSON.parse(txt)}catch(e){throw new Error('Google Bridge вернул не-JSON ответ')}
-        if(!r.ok)throw new Error('Google Bridge HTTP '+r.status);
-        if(!j||!j.ok)throw new Error(j&&j.error||'Google Bridge error');
-        return j;
-      }finally{clearTimeout(timer)}
-    }
-    function scheduleAuthenticatedFlush(delay=700){
+    async function bridgePost(){throw new Error('Внешние интеграции отключены')}
+        function scheduleAuthenticatedFlush(delay=700){
       clearTimeout(authPushTimer);
       authPushTimer=setTimeout(flushAuthenticatedRows,Math.max(250,delay));
     }
-    function enqueueAuthenticatedRows(rows){
-      for(const row of rows||[]){
-        const id=String(row&&row.orderId||'').trim();
-        if(id&&!TECH_RE.test(id)&&!knownDeleted.has(id))authPushRows.set(id,true);
-      }
-      if(authPushRows.size)scheduleAuthenticatedFlush();
-    }
-    async function flushAuthenticatedRows(){
-      authPushTimer=null;
-      if(authPushBusy||cloud.profile?.role==='owner'||!authPushRows.size)return;
-      const endpoint=String(cfg.googleBridgeUrl||'').trim(),user=auth.currentUser;
-      if(!endpoint||!user){scheduleAuthenticatedFlush(2000);return}
-      authPushBusy=true;
-      try{
-        for(const id of [...authPushRows.keys()]){
-          const token=await user.getIdToken();
-          const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'authUpsert',idToken:token,orderId:id})});
-          const text=await r.text();let j;
-          try{j=JSON.parse(text)}catch(e){throw new Error('Google Bridge вернул не-JSON ответ')}
-          if(!r.ok||!j||!j.ok)throw new Error(j&&j.error||('Google Bridge HTTP '+r.status));
-          authPushRows.delete(id);diag.bridgePushes++;diag.lastBridgeSuccessAt=new Date().toISOString();
-        }
-      }catch(e){diag.bridgeErrors++;diag.lastBridgeError=String(e&&e.message||e).slice(0,500);scheduleAuthenticatedFlush(5000)}
-      finally{authPushBusy=false}
-    }
-    function enqueueBridgeRows(rows){
-      for(const r0 of rows||[]){
-        const r={...(r0||{})},id=String(r.orderId||'').trim();
-        if(id&&(!TECH_RE.test(id)||r._integrationE2E===true)&&!knownDeleted.has(id)&&!pushDeletes.has(id))pushRows.set(id,r);
-      }
-      scheduleBridgeFlush();
-    }
-    function enqueueBridgeDeletes(items){
-      for(const x of items||[]){
-        const id=String(x&&x.orderId||'').trim();
-        if(id){const d={orderId:id,deletedAt:String(x.deletedAt||new Date().toISOString()),source:'crm'};pushRows.delete(id);pushDeletes.set(id,d);knownDeleted.add(id)}
-      }
-      scheduleBridgeFlush();
-    }
-    function scheduleBridgeFlush(delay=1200){
-      clearTimeout(pushTimer);
-      pushTimer=setTimeout(flushBridge,Math.max(250,delay));
-    }
+    function enqueueAuthenticatedRows(){}
+        async function flushAuthenticatedRows(){authPushTimer=null;authPushRows.clear()}
+    function enqueueBridgeRows(){}
+    function enqueueBridgeDeletes(){}
+    function scheduleBridgeFlush(){}
     async function resolveDeleteTombstones(ids){
       ids=[...new Set((ids||[]).map(String).filter(Boolean))];
       if(!ids.length)return 0;
@@ -538,48 +467,7 @@
       };
     }
 
-    cloud.getGoogle=async function(){
-      if(cloud.profile?.role!=='owner')return{};
-      const g=await refreshGoogleCfg();
-      return{...g,bridgeUrl:bridgeEndpoint(g),bridgeProtocol:2,legacyBridgeDisabled:true};
-    };
-    cloud.saveGoogle=async function(x={}){
-      if(cloud.profile?.role!=='owner')throw new Error('Только владелец');
-      const cur=await refreshGoogleCfg(),endpoint=String(x.bridgeUrlV2||x.bridgeUrl||bridgeEndpoint(cur)||'').trim(),activate=String(window.MASTER_AI_BUILD||'').includes('18.17.19-CANDIDATE');
-      if(!endpoint)throw new Error('URL Google Bridge не задан');
-      await fs.setDoc(googleRef,{sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:activate?'':endpoint,secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:activate,bridgeProtocolUpdatedAt:new Date().toISOString(),updatedAt:fs.serverTimestamp()},{merge:true});
-      googleCfg={...cur,sheetUrl:String(x.sheetUrl||cur.sheetUrl||''),bridgeUrlV2:endpoint,bridgeUrl:activate?'':endpoint,secret:String(x.secret||cur.secret||''),bridgeProtocol:2,legacyBridgeDisabled:activate};
-      return{ok:true,bridgeProtocol:2,legacyBridgeDisabled:activate};
-    };
-    cloud.testGoogle=async function(){
-      const g=await refreshGoogleCfg(),sid=sheetId(g.sheetUrl);
-      if(!bridgeReady(g))throw new Error('Google Bridge v2 не настроен');
-      return bridgePost({action:'ping',secret:g.secret,spreadsheetId:sid});
-    };
-    cloud.syncGoogleNow=manualReconcileV2;
-    cloud.integrationTestDelete=async function(id){
-      if(cloud.profile?.role!=='owner')throw new Error('Только владелец');
-      id=String(id||'').trim();
-      if(!/^INTEG-E2E-[A-Z0-9-]{6,80}$/.test(id))throw new Error('Некорректный test ID');
-      const item={orderId:id,deletedAt:new Date().toISOString(),source:'integration_e2e'};
-      await persistOwnerDeleteTombstones([item]);
-      await rememberDeletes([item]);
-      const local=await deleteCanonicalAndMirrors(item);
-      const g=await refreshGoogleCfg(),sid=sheetId(g.sheetUrl);
-      if(bridgeReady(g)&&sid)await bridgePost({action:'delete',secret:g.secret,spreadsheetId:sid,orderId:id});
-      pushDeletes.delete(id);delete baselineMap[id];
-      await resolveDeleteTombstones([id]);
-      await fs.setDoc(googleRef,{syncBaseline:baselineMap,syncBaselineVersion:1},{merge:true});
-      googleCfg={...g,deletedOrders:(Array.isArray(g.deletedOrders)?g.deletedOrders:[]).filter(x=>String(x&&x.orderId||'')!==id),syncBaseline:baselineMap,syncBaselineVersion:1};
-      return{ok:true,id,bridgeProtocol:2,tombstoneResolved:true,canonicalDeleted:true,auxFailures:local.auxFailures};
-    };
-
-    /* Hard gate legacy automatic full reconciliation. Explicit manual reconciliation
-       remains available through MASTER_AI_QUOTA_SAFE.forcePull() / syncGoogleNow(). */
-    cloud.requestGoogleSync=function(reason='auto_blocked'){
-      diag.fullPullSkips++;
-      return Promise.resolve({ok:true,skipped:true,reason:String(reason||'auto_blocked'),mode:'manual_only'});
-    };
+    cloud.getGoogle=async function(){return{}};cloud.saveGoogle=async function(){throw new Error('Внешние интеграции отключены')};cloud.testGoogle=async function(){throw new Error('Внешние интеграции отключены')};cloud.syncGoogleNow=async function(){throw new Error('Внешние интеграции отключены')};
 
     if(originalHealth){
       cloud.integrationHealth=async function(){
@@ -599,7 +487,7 @@
     }
 
     cloud.__quotaSafePatch=PATCH;
-    window.MASTER_AI_QUOTA_SAFE={version:PATCH,diag,forcePull:()=>manualReconcileV2({reason:'quota_safe_manual_v2'}),flush:flushBridge,reconcile:manualReconcileV2};
+    window.MASTER_AI_QUOTA_SAFE={version:PATCH,diag,forcePull:()=>manualReconcileV2({reason:'quota_safe_manual_v2'}),flush:async()=>({ok:true,skipped:true,integrationsDisabled:true}),reconcile:async()=>{throw new Error('Внешние интеграции отключены')}};
     window.MASTER_AI_BUILD='18.17.19-CANDIDATE';
     console.info('MASTER AI quota-safe patch installed',PATCH);
   }

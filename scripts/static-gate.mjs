@@ -43,7 +43,7 @@ for (const [name,html] of [['owner',owner],['dispatcher',dispatcher],['master',m
   must(!/master-ai-9440599\.web\.app/.test(html), name + ': legacy PROD hosting URL leaked into executable HTML');
   if (name === 'owner') {
     must(!/\['ping','dry','read','sync'/.test(html), 'mutating diagnostic URL mode leaked');
-    must(html.includes("['ping','dry','read'].includes(integrationDiagRequested)"), 'owner diagnostic URL allowlist missing');
+    must(!/integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(B2B|WEBSITE)|__MASTER_AI_PENDING_(B2B|WEBSITE)_LINK/.test(html), 'retired integration callback remains in owner runtime');
   }
   must(html.includes("sourceRef=cloud.profile?.role==='master'?masterDoc(orderId):orderDoc(orderId)"), name + ': master workflow reads a forbidden owner document');
   must(!html.includes("await window.MasterAICloud.cleanupTechnicalArtifacts?.()"), name + ': login performs an unbounded cleanup scan');

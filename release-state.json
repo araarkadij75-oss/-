@@ -1,38 +1,36 @@
 {
-  "candidate": "18.17.19-CANDIDATE",
+  "candidate": "18.17.21-CANDIDATE",
   "baseCurrent": "18.17.18-CURRENT",
   "publishedBetaPreview": "https://araarkadij75-oss.github.io/-/preview/v18.17.21/",
   "environment": {
     "firebaseProject": "master-ai-beta-9440599",
     "workspace": "master-ai-beta",
     "billing": "Spark / NO BILLING",
-    "canonicalOrders": "workspaces/master-ai-beta/orders",
-    "googleSheetId": "1BA1Lwmpk62xacOBvX_EW02gBhIJvOfW5EOTYFWeOD0o"
+    "canonicalOrders": "workspaces/master-ai-beta/orders"
   },
   "syncContract": {
-    "mode": "direct_upsert_delete",
-    "bridgeProtocol": 2,
-    "fullReconcile": "manual_only",
+    "mode": "firebase_realtime",
+    "externalConnectors": false,
+    "b2bhelp": false,
+    "googleSheets": false,
+    "avito": false,
     "legacyAutoFullSyncBlocked": true,
-    "focusPull": false,
-    "retryLimit": 5
+    "cloudRoleSync": true
   },
   "promotion": {
     "allowed": false,
-    "reason": "Do not promote until live rules backup/deploy, authenticated role E2E, parity and restore gates pass."
+    "reason": "Beta preview is validated for loading; full role-by-role authenticated E2E and remote gateway shutdown are not verified."
   },
   "gates": {
     "staticUnit": "pass",
-    "firestoreRulesEmulator": "pass",
-    "pwaServiceWorker": "implemented_candidate",
-    "mutatingUrlDiagnostics": "blocked_candidate",
+    "firestoreRulesEmulator": "pass_beta_only",
+    "pwaServiceWorker": "shell-v34",
+    "b2bGoogleAvitoClient": "disconnected",
+    "b2bFirestoreAccess": "denied",
     "liveRulesCaptured": "pass_beta_only",
     "liveRulesDeployed": "pass_beta_only",
-    "authenticatedBrowserE2E": "pending",
-    "googleParityAfterPromotion": "pending",
-    "isolatedRestore": "pending",
-    "authHardening": "pending",
-    "bridgeSecretServerSide": "pending",
-    "autonomousGoogleDelivery": "pending"
+    "liveOwnerBrowser": "verified_read_only",
+    "dispatcherMasterAuthenticatedE2E": "pending",
+    "regruGatewayShutdown": "not_verified"
   }
 }
