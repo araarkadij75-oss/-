@@ -117,6 +117,16 @@ test('dashboard uses decision-oriented KPI definitions', () => {
   }
 });
 
+test('dispatcher-logistic dashboards use a shared all-shifts queue by default', () => {
+  for (const file of ['index.html', 'dispatcher-logistic.html']) {
+    const html = read(file);
+    assert.match(html, /function roleVisibleOrders\(rows=state\.orders\)[^\n]*return rows\}/);
+    assert.match(html, /sharedShiftRoles=\['owner','dispatcher_logistic','logistic'\]/);
+    assert.match(html, /shift\.disabled=!sharedShiftRoles\.includes\(role\)/);
+    assert.match(html, /Общая очередь включает заказы обеих смен; этот фильтр меняет только аналитику/);
+  }
+});
+
 test('dashboard shows every day in the selected cash period', () => {
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = read(file);

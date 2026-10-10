@@ -138,6 +138,29 @@ test('dispatcher-logistic can operate but cannot canonical-delete', async () => 
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
 });
 
+test('Sergey and Artem dispatcher-logistics share one workspace order queue across shifts', async () => {
+  const sergey = dbFor('sergey-ops-uid');
+  const artem = dbFor('ops-uid');
+  const canonical = doc(sergey, 'workspaces', ws, 'orders', 'TEST-OWN');
+  const safeMirror = doc(sergey, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN');
+
+  // Both shift profiles read the same canonical order and its role-safe mirror.
+  await assertSucceeds(getDoc(canonical));
+  await assertSucceeds(getDoc(doc(artem, 'workspaces', ws, 'orders', 'TEST-OWN')));
+  await assertSucceeds(getDoc(safeMirror));
+  await assertSucceeds(getDoc(doc(artem, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN')));
+  await assertSucceeds(getDocs(collection(sergey, 'workspaces', ws, 'orders')));
+  await assertSucceeds(getDocs(collection(artem, 'workspaces', ws, 'orders')));
+});
+
+test('dispatcher profiles see cross-shift shared queue without canonical financial access', async () => {
+  const dispatcher = dbFor('dispatch-uid');
+  await assertSucceeds(getDoc(doc(dispatcher, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN')));
+  await assertSucceeds(getDocs(collection(dispatcher, 'workspaces', ws, 'dispatcherOrders')));
+  await assertFails(getDoc(doc(dispatcher, 'workspaces', ws, 'orders', 'TEST-OWN')));
+  await assertFails(getDocs(collection(dispatcher, 'workspaces', ws, 'orders')));
+});
+
 test('logistic cannot create or delete canonical order', async () => {
   const db=dbFor('logistic-uid');
   await assertFails(setDoc(doc(db,'workspaces',ws,'orders','TEST-LOG-CREATE'), {orderId:'TEST-LOG-CREATE'}));
