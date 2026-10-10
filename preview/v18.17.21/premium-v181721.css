@@ -352,3 +352,35 @@ body{background:radial-gradient(ellipse at 8% 0%,rgba(70,133,231,.11),transparen
 .input:focus,.select:focus,.textarea:focus{border-color:#5b91ea!important;box-shadow:0 0 0 3px rgba(52,120,229,.14)!important}
 .table th{font-weight:700;letter-spacing:.015em;color:#4b5f79}
 @media(prefers-reduced-motion:reduce){.btn.primary:hover,.card:hover{transform:none}}
+
+/* One dependable type system and shared baselines across desktop and mobile. */
+:root{
+  --font-ui:Arial,"Helvetica Neue",system-ui,sans-serif;
+  --font-display:Arial,"Helvetica Neue",system-ui,sans-serif;
+}
+html,body,button,input,select,textarea{
+  font-family:Arial,"Helvetica Neue",system-ui,sans-serif!important;
+  font-synthesis:none!important;
+  font-kerning:normal;
+  text-rendering:optimizeLegibility;
+  letter-spacing:normal;
+}
+body{font-size:15px;line-height:1.45;font-weight:400}
+body :where(h1,h2,h3,h4,p,span,b,strong,small,label,button,a,th,td,li,summary){
+  font-kerning:normal;
+}
+body :where(h1,h2,h3,h4,.brand h1,.chart-title,.modal-title,.kpi .v,.mini .v,.quality .v,.workflow-card .v){
+  letter-spacing:normal;
+}
+.field{align-items:stretch}
+.field>label:first-child{display:flex;align-items:flex-end;min-height:2.7em;margin-bottom:6px;line-height:1.35}
+.btn,.tab,.badge,.pill,.status-pill,.stage{align-items:center;line-height:1.3;letter-spacing:normal}
+.btn,.tab{justify-content:center}
+.input,.select,.textarea{line-height:1.4;letter-spacing:normal;font-kerning:normal}
+.table{line-height:1.4;font-variant-numeric:tabular-nums}
+.table th,.table td{vertical-align:middle;line-height:1.4;letter-spacing:normal}
+.table th{text-align:left}
+.table .num{text-align:right;font-variant-numeric:tabular-nums}
+.chart-sub,.help,.source-note,.metric-note,.notice,.employee-info{line-height:1.45;letter-spacing:normal}
+svg text{font-family:Arial,"Helvetica Neue",system-ui,sans-serif}
+@media(max-width:680px){body{font-size:15px}.field>label:first-child{min-height:2.7em}}
