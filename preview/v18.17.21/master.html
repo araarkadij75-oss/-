@@ -308,7 +308,58 @@ cloud.getShiftReports=async()=>{const q=fs.query(fs.collection(db,'workspaces',w
   cloud.cleanupTechnicalArtifacts=async()=>{if(cloud.profile?.role!=='owner')return{removed:0,normalized:0};const snap=await fs.getDocs(fs.collection(db,'workspaces',ws,'orders'));const stale=snap.docs.filter(d=>{const x=d.data()||{},id=String(d.id||x.orderId||'');if(id.startsWith('BETA-E2E-'))return true;return id==='260919-004'&&String(x.name||'')==='555555'&&String(x.address||'')==='5555555'&&String(x._workflow||'')==='master_review_v1'&&String(x._masterStage||'')==='review_pending'&&Number(x._masterReportedTotal||0)===5000&&String(x._createdAt||'').startsWith('2026-09-19T13:41:39')});for(const d of stale){const x=d.data()||{},id=String(d.id||x.orderId||'');await Promise.allSettled([fs.deleteDoc(orderDoc(id)),fs.deleteDoc(dispatchDoc(id)),fs.deleteDoc(masterDoc(id)),fs.deleteDoc(phoneDoc(id))])}const ms=await fs.getDocs(fs.collection(db,'workspaces',ws,'members'));let normalized=0;for(const d of ms.docs){const raw=d.data()||{},cleaned=friendlyMember(raw),patch={};if(String(raw.name||'')!==String(cleaned.name||''))patch.name=cleaned.name;if(String(raw.master||'')!==String(cleaned.master||''))patch.master=cleaned.master;if(Object.keys(patch).length){await fs.setDoc(memberDoc(d.id),patch,{merge:true});normalized++}}return{removed:stale.length,normalized}};
   cloud.getGoogle=async()=>({});cloud.clearGoogleConfig=async()=>{if(cloud.profile?.role!=='owner')return false;try{const ref=configDoc('google'),d=await fs.getDoc(ref),x=d.exists()?d.data():{};if(x.bridgeUrl||x.bridgeUrlV2||x.sheetUrl||x.secret)await fs.setDoc(ref,{bridgeUrl:'',bridgeUrlV2:'',sheetUrl:'',secret:'',bridgeProtocol:0,legacyBridgeDisabled:true,externalIntegrationDisabledAt:new Date().toISOString(),updatedAt:fs.serverTimestamp()},{merge:true});return true}catch(e){console.warn('legacy integration credential cleanup',e);return false}};
   const googleCoordinatorRole=()=>false;cloud.autoDiag={requests:0,starts:0,successes:0,errors:0,busyRetries:0,lastReason:'',lastError:''};cloud.requestGoogleSync=async()=>null;
-  cloud.subscribe=(profile,onRows)=>{try{cloud.unsub?.()}catch{};clearTimeout(cloud.googleAutoTimer);cloud.googleAutoTimer=null;const coordinatorStream=googleCoordinatorRole(profile.role);if(!coordinatorStream&&cloud.googlePeriodicTimer){clearInterval(cloud.googlePeriodicTimer);cloud.googlePeriodicTimer=null}let base=fs.collection(db,'workspaces',ws,profile.role==='master'?'masterAssignments':profile.role==='dispatcher'?'dispatcherOrders':'orders');let q=profile.role==='master'?fs.query(base,fs.where('masterUid','==',auth.currentUser.uid)):base;cloud.unsub=fs.onSnapshot(q,snap=>{const allRows=snap.docs.map(d=>({...d.data(),_cloudDocId:d.id}));const rows=allRows.filter(r=>!String(r.orderId||r._cloudDocId||'').startsWith('BETA-E2E-'));cloud.versions.clear();for(const r of allRows)cloud.versions.set(String(r.orderId||r._cloudDocId),String(r._updatedAt||''));if(coordinatorStream){const wasReady=cloud.ownerSeenReady;cloud.ownerRows=allRows.map(r=>({...r}));cloud.ownerSeenReady=true;if(wasReady&&snap.docChanges().length)cloud.requestGoogleSync('firestore_change')}if(profile.role==='master'){const ids=new Set(rows.map(r=>String(r.orderId||r._cloudDocId)));if(cloud.seenReady)for(const r of rows){const id=String(r.orderId||r._cloudDocId);if(!cloud.seenIds.has(id))window.MasterAINewAssignment?.(r)}cloud.seenIds=ids;cloud.seenReady=true}onRows(rows)},err=>window.MasterAICloudStatus?.('error','Ошибка real-time: '+err.message));if(coordinatorStream){cloud.requestGoogleSync('coordinator_open').catch(e=>console.warn('coordinator open sync',e));if(!cloud.googlePeriodicTimer)cloud.googlePeriodicTimer=setInterval(()=>cloud.requestGoogleSync('periodic').catch(e=>console.warn('periodic google sync',e)),15*60*1000);if(!cloud.googleFocusBound){const pull=()=>{if(document.visibilityState==='visible'&&cloud.connected&&googleCoordinatorRole(cloud.profile?.role))cloud.requestGoogleSync('focus_pull').catch(e=>console.warn('focus google sync',e))};window.addEventListener('focus',pull);document.addEventListener('visibilitychange',pull);cloud.googleFocusBound=true}}};
+  cloud.subscribe=(profile,onRows)=>{
+    try{cloud.unsub?.()}catch{};
+    clearTimeout(cloud.googleAutoTimer);cloud.googleAutoTimer=null;
+    const coordinatorStream=googleCoordinatorRole(profile.role);
+    if(!coordinatorStream&&cloud.googlePeriodicTimer){clearInterval(cloud.googlePeriodicTimer);cloud.googlePeriodicTimer=null}
+    cloud.ownerSeenReady=false;cloud.ownerRows=[];
+    const ownerUnion=profile.role==='owner';
+    const activeUnsubs=[];
+    cloud.unsub=()=>{for(const stop of activeUnsubs.splice(0)){try{stop()}catch{}}};
+    const canonicalBase=fs.collection(db,'workspaces',ws,'orders');
+    const dispatchBase=fs.collection(db,'workspaces',ws,'dispatcherOrders');
+    let canonicalRows=null,dispatchRows=null;
+    const publishOwnerRows=()=>{
+      if(canonicalRows===null||dispatchRows===null)return;
+      const merged=new Map();
+      for(const r of canonicalRows){const id=String(r.orderId||r._cloudDocId||'');if(id)merged.set(id,{...r,_cloudDocId:id})}
+      for(const r of dispatchRows){
+        const id=String(r.orderId||r._cloudDocId||'');if(!id)continue;
+        const canonical=merged.get(id);
+        if(!canonical){merged.set(id,{...r,_cloudDocId:id});continue}
+        const canonicalTime=Date.parse(canonical._updatedAt||'')||0;
+        const dispatchTime=Date.parse(r._updatedAt||'')||0;
+        const preferred=dispatchTime>canonicalTime?r:canonical;
+        const fallback=preferred===canonical?r:canonical;
+        merged.set(id,{...fallback,...preferred,_cloudDocId:id});
+      }
+      const allRows=[...merged.values()];
+      cloud.versions.clear();
+      for(const r of allRows)cloud.versions.set(String(r.orderId||r._cloudDocId),String(r._updatedAt||''));
+      const rows=allRows.filter(r=>!String(r.orderId||r._cloudDocId||'').startsWith('BETA-E2E-'));
+      const wasReady=cloud.ownerSeenReady;
+      cloud.ownerRows=allRows.map(r=>({...r}));cloud.ownerSeenReady=true;
+      if(wasReady)cloud.requestGoogleSync('firestore_change');
+      onRows(rows);
+    };
+    if(ownerUnion){
+      activeUnsubs.push(fs.onSnapshot(canonicalBase,snap=>{canonicalRows=snap.docs.map(d=>({...d.data(),_cloudDocId:d.id}));publishOwnerRows()},err=>window.MasterAICloudStatus?.('error','Ошибка основной базы: '+err.message)));
+      activeUnsubs.push(fs.onSnapshot(dispatchBase,snap=>{dispatchRows=snap.docs.map(d=>({...d.data(),_cloudDocId:d.id}));publishOwnerRows()},err=>window.MasterAICloudStatus?.('error','Ошибка общей очереди: '+err.message)));
+    }else{
+      const base=fs.collection(db,'workspaces',ws,profile.role==='master'?'masterAssignments':['dispatcher','dispatcher_logistic','logistic'].includes(profile.role)?'dispatcherOrders':'orders');
+      const q=profile.role==='master'?fs.query(base,fs.where('masterUid','==',auth.currentUser.uid)):base;
+      activeUnsubs.push(fs.onSnapshot(q,snap=>{
+        const allRows=snap.docs.map(d=>({...d.data(),_cloudDocId:d.id}));
+        const rows=allRows.filter(r=>!String(r.orderId||r._cloudDocId||'').startsWith('BETA-E2E-'));
+        cloud.versions.clear();for(const r of allRows)cloud.versions.set(String(r.orderId||r._cloudDocId),String(r._updatedAt||''));
+        if(coordinatorStream){const wasReady=cloud.ownerSeenReady;cloud.ownerRows=allRows.map(r=>({...r}));cloud.ownerSeenReady=true;if(wasReady&&snap.docChanges().length)cloud.requestGoogleSync('firestore_change')}
+        if(profile.role==='master'){const ids=new Set(rows.map(r=>String(r.orderId||r._cloudDocId)));if(cloud.seenReady)for(const r of rows){const id=String(r.orderId||r._cloudDocId);if(!cloud.seenIds.has(id))window.MasterAINewAssignment?.(r)}cloud.seenIds=ids;cloud.seenReady=true}
+        onRows(rows);
+      },err=>window.MasterAICloudStatus?.('error','Ошибка real-time: '+err.message)));
+    }
+    if(coordinatorStream){cloud.requestGoogleSync('coordinator_open').catch(e=>console.warn('coordinator open sync',e));if(!cloud.googlePeriodicTimer)cloud.googlePeriodicTimer=setInterval(()=>cloud.requestGoogleSync('periodic').catch(e=>console.warn('periodic google sync',e)),15*60*1000);if(!cloud.googleFocusBound){const pull=()=>{if(document.visibilityState==='visible'&&cloud.connected&&googleCoordinatorRole(cloud.profile?.role))cloud.requestGoogleSync('focus_pull').catch(e=>console.warn('focus google sync',e))};window.addEventListener('focus',pull);document.addEventListener('visibilitychange',pull);cloud.googleFocusBound=true}}
+  };
   cloud.subscribeUiConfig=cb=>{try{cloud.uiUnsub?.()}catch{};cloud.uiUnsub=fs.onSnapshot(configDoc('ui'),d=>cb(d.exists()?d.data():{}),()=>{})};cloud.subscribeMemberProfiles=cb=>{if(!['owner','dispatcher_logistic','logistic'].includes(cloud.profile?.role||''))return()=>{};try{cloud.memberUnsub?.()}catch{};cloud.memberUnsub=fs.onSnapshot(fs.collection(db,'workspaces',ws,'members'),snap=>cb(snap.docs.map(d=>friendlyMember({uid:d.id,...d.data()})).filter(m=>m.role!=='owner').map(m=>({uid:m.uid||'',id:m.id||m.uid||'',name:m.name||m.login||'',login:m.login||'',role:m.role||'dispatcher_logistic',master:m.master||'',shift:m.shift||'',fixedMaster:m.role==='master'&&m.fixedMaster===true,active:m.active!==false}))),e=>console.warn('member profile sync',e));return cloud.memberUnsub};
   async function upsertOne(r,role){const id=String(r.orderId||'').trim();if(!id)return;if(role!=='owner'&&cloud.profile){r={...r,_updatedBy:cloud.profile.id,_updatedByName:cloud.profile.name,_updatedByShift:cloud.profile.shift||''};if(!r._createdBy&&['dispatcher','dispatcher_logistic'].includes(role))r={...r,dispatcher:cloud.profile.name,_createdBy:cloud.profile.id,_createdByName:cloud.profile.name,_createdByShift:cloud.profile.shift||''}}if(role==='dispatcher'){await fs.setDoc(orderDoc(id),stripUndefined(dispatcherEditable(r)),{merge:true});await fs.setDoc(dispatchDoc(id),stripUndefined(dispatchSafe(r)),{merge:true});return}await fs.setDoc(orderDoc(id),stripUndefined({...r,_phoneUnlockAt:window.MasterAIPhoneUnlockISO?.(r)||r._phoneUnlockAt||'',_updatedAt:r._updatedAt||new Date().toISOString()}),{merge:false});await mirrorOrder(r)}
   async function persistDeleteTombstones(){return cloud.googleTombstones||[]}

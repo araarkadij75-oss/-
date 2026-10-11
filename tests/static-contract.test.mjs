@@ -192,6 +192,19 @@ test('dispatcher-logistic dashboards use a shared all-shifts queue by default', 
   }
 });
 
+test('owner view merges the canonical and dispatcher queues and reads close totals', () => {
+  for (const file of ['index.html', 'dispatcher-logistic.html', 'preview/v18.17.21/index.html', 'preview/v18.17.21/dispatcher-logistic.html']) {
+    const html = read(file);
+    assert.match(html, /const ownerUnion=profile\.role==='owner'/);
+    assert.match(html, /fs\.onSnapshot\(canonicalBase/);
+    assert.match(html, /fs\.onSnapshot\(dispatchBase/);
+    assert.match(html, /const merged=new Map\(\)/);
+    assert.match(html, /preferred=dispatchTime>canonicalTime\?r:canonical/);
+    assert.match(html, /\['owner','dispatcher_logistic','logistic'\]\.includes\(cloud\.profile\?\.role\)/);
+    assert.match(html, /\['owner','dispatcher_logistic','logistic'\]\.includes\(currentRole\(\)\)/);
+  }
+});
+
 test('dashboard shows every day in the selected cash period', () => {
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = read(file);
@@ -317,7 +330,7 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v61/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/)}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/)}assert.match(read('icon.svg'),/>?$/)});
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v62/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/)}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/)}assert.match(read('icon.svg'),/>?$/)});
 test('orders use Saint Petersburg as the fixed city and have no district workflow',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.ok(html.includes('cities:[\"СПб\"]')); assert.match(html,/id=\"f_city\"[^>]*value=\"СПб\" readonly/);assert.doesNotMatch(html,/Район|cityFilter|Выручка по районам/)}});
 test('orders can be filtered by visit date today without replacing other filters',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.match(html,/id=\"todayOrdersFilter\"/);assert.match(html,/iso\(parseDate\(r\.visitDate\)\)===day/)}});
 test('weekly schedule ignores stale loads and locks edits while saving', () => {
