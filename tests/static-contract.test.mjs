@@ -326,6 +326,22 @@ test('master fixed-rate mode is owner-controlled, profile-based, and excludes cl
   for(const css of ['premium-v181721.css','preview/v18.17.21/premium-v181721.css'])assert.match(read(css),/\.master-pay-mode/);
 });
 
+test('order cards show intake and closure actors; owner can set fixed mode before an account exists',()=>{
+  for(const page of ['index.html','dispatcher-logistic.html','preview/v18.17.21/index.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.22/index.html','preview/v18.17.22/dispatcher-logistic.html']){
+    const html=read(page);
+    assert.match(html,/function orderResponsibility\(r\)/);
+    assert.match(html,/Принял заказ:/);
+    assert.match(html,/Закрыл заказ:/);
+    assert.match(html,/data-master-fixed/);
+    assert.match(html,/fixedMasters:Array\.isArray\(x\.fixedMasters\)\?x\.fixedMasters:\[\]/);
+    assert.match(html,/fixedMasters:x\.fixedMasters\|\|\[\]/);
+    assert.match(html,/isFixed=masterFixedMode\(name\)/);
+    assert.match(html,/function masterFixedMode\(name\).*state\.settings\.fixedMasters/);
+    const toggle=html.slice(html.indexOf('data-master-fixed'),html.indexOf('data-master-fixed')+180);
+    assert.doesNotMatch(toggle,/disabled/,'owner can change fixed mode before the profile exists');
+  }
+});
+
 
 test('review bonus is 5 percent of the clean check capped at 1000 rubles',()=>{
   for(const page of ['index.html','dispatcher-logistic.html','master.html']){
