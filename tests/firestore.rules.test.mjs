@@ -202,7 +202,12 @@ test('closed shift report freezes regular orders while pickups remain editable u
     await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-08-sergey'),{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey',orderIds:['TEST-REPORTED','TEST-PICKUP'],lockedOrderIds:['TEST-REPORTED'],paidOrderIds:[]});
   });
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-REPORTED'),{total:6000,...actor}));
-  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-PICKUP'),{total:6000,_status:'Выполнен',_cashClosedBy:'sergey',_cashClosedByName:'Сергей',_cashClosedAt:new Date().toISOString(),_cashClosedOn:'2026-10-12',...actor}));
+  const pickupClose={orderId:'TEST-PICKUP',total:6000,parts:0,review:'',closeDate:'12.10',_cashClosedBy:'sergey',_cashClosedByName:'Сергей',_cashClosedAt:'2026-10-12T12:00:00.000Z',_cashClosedOn:'2026-10-12',_updatedAt:'2026-10-12T12:00:00.000Z',...actor};
+  const pickupBatch=writeBatch(db);
+  pickupBatch.update(doc(db,'workspaces',ws,'orders','TEST-PICKUP'),{...pickupClose,_status:'Выполнен',_masterStage:'approved'});
+  pickupBatch.update(doc(db,'workspaces',ws,'dispatcherOrders','TEST-PICKUP'),{_status:'Выполнен',closeDate:'12.10',_updatedAt:pickupClose._updatedAt,_masterStage:'approved',...actor});
+  pickupBatch.set(doc(db,'workspaces',ws,'orderCloseData','TEST-PICKUP'),pickupClose);
+  await assertSucceeds(pickupBatch.commit());
   await env.withSecurityRulesDisabled(async ctx=>{
     const admin=ctx.firestore();
     await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-12-sergey'),{id:'2026-10-12-sergey',date:'2026-10-12',shift:'sergey',orderIds:[],lockedOrderIds:['TEST-PICKUP'],paidOrderIds:['TEST-PICKUP']});
@@ -319,15 +324,64 @@ test('closing an order atomically saves and reloads finance data for the respons
   assert.equal(closeProjection.data()._cashClosedBy,'sergey');
 });
 
+test('dispatcher-logistic can save an open order together with its editable close-data projection', async () => {
+  const db=dbFor('sergey-ops-uid'),id='TEST-OPEN-CLOSE-DATA';
+  const actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'orders',id),{orderId:id,callDate:'2026-10-11',_status:'В работе'});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders',id),{orderId:id,callDate:'2026-10-11',_status:'В работе'});
+  });
+  const batch=writeBatch(db);
+  batch.set(doc(db,'workspaces',ws,'orders',id),{orderId:id,_status:'В работе',total:8000,parts:1000,_updatedAt:'2026-10-11T15:00:00.000Z',...actor},{merge:true});
+  batch.set(doc(db,'workspaces',ws,'dispatcherOrders',id),{orderId:id,_status:'В работе',_updatedAt:'2026-10-11T15:00:00.000Z',...actor},{merge:true});
+  batch.set(doc(db,'workspaces',ws,'orderCloseData',id),{orderId:id,total:8000,parts:1000,review:'',closeDate:'',_cashClosedAt:'',_cashClosedOn:'',_cashClosedBy:'',_cashClosedByName:'',_updatedAt:'2026-10-11T15:00:00.000Z',...actor},{merge:true});
+  await assertSucceeds(batch.commit());
+  assert.equal((await getDoc(doc(db,'workspaces',ws,'orderCloseData',id))).data().total,8000);
+});
+
+test('dispatcher-logistic can create a new order and all live projections in one batch', async () => {
+  const db=dbFor('sergey-ops-uid'),id='TEST-NEW-ORDER-SYNC';
+  const actor={_createdBy:'sergey',_createdByName:'Сергей',_createdByShift:'sergey',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  const order={orderId:id,name:'Проверка синхронизации',dispatcher:'Сергей',callDate:'2026-10-11',_status:'В работе',total:'',parts:'',cleanCheck:'',masterAmount:'',companyShare:'',review:'',closeDate:'',_cashClosedAt:'',_cashClosedOn:'',_cashClosedBy:'',_cashClosedByName:'',_updatedAt:'2026-10-11T16:00:00.000Z',...actor};
+  const queue={orderId:id,name:order.name,dispatcher:order.dispatcher,callDate:order.callDate,_status:order._status,_createdAt:order._updatedAt,_createdBy:actor._createdBy,_createdByName:actor._createdByName,_createdByShift:actor._createdByShift,_updatedAt:order._updatedAt,...actor};
+  const close={orderId:id,total:order.total,parts:order.parts,review:order.review,closeDate:order.closeDate,_cashClosedAt:'',_cashClosedOn:'',_cashClosedBy:'',_cashClosedByName:'',_updatedAt:order._updatedAt,_updatedBy:actor._updatedBy,_updatedByName:actor._updatedByName,_updatedByShift:actor._updatedByShift};
+  const batch=writeBatch(db);
+  batch.set(doc(db,'workspaces',ws,'orders',id),order);
+  batch.set(doc(db,'workspaces',ws,'dispatcherOrders',id),queue);
+  batch.set(doc(db,'workspaces',ws,'orderCloseData',id),close);
+  await assertSucceeds(batch.commit());
+  const edit=writeBatch(db),changedAt='2026-10-11T16:05:00.000Z';
+  edit.update(doc(db,'workspaces',ws,'orders',id),{total:'5000',parts:'1000',cleanCheck:'4000',masterAmount:'2000',companyShare:'2000',_updatedAt:changedAt,_updatedBy:actor._updatedBy,_updatedByName:actor._updatedByName,_updatedByShift:actor._updatedByShift});
+  edit.update(doc(db,'workspaces',ws,'dispatcherOrders',id),{_updatedAt:changedAt,_updatedBy:actor._updatedBy,_updatedByName:actor._updatedByName,_updatedByShift:actor._updatedByShift});
+  edit.update(doc(db,'workspaces',ws,'orderCloseData',id),{total:'5000',parts:'1000',_updatedAt:changedAt,_updatedBy:actor._updatedBy,_updatedByName:actor._updatedByName,_updatedByShift:actor._updatedByShift});
+  await assertSucceeds(edit.commit());
+  const [canonical,queueDoc,closeDoc]=await Promise.all([
+    getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'orders',id)),
+    getDoc(doc(db,'workspaces',ws,'dispatcherOrders',id)),
+    getDoc(doc(db,'workspaces',ws,'orderCloseData',id))
+  ]);
+  assert.equal(canonical.data().orderId,id);
+  assert.equal(queueDoc.data().orderId,id);
+  assert.equal(closeDoc.data().total,'5000');
+});
+
 test('order closure attribution is bound to the first authenticated closer and immutable', async () => {
   const sergey=dbFor('sergey-ops-uid');
   const artem=dbFor('ops-uid');
   const path=doc(sergey,'workspaces',ws,'orders','TEST-CLOSE-SERGEY');
   const close={_cashClosedAt:'2026-10-11T12:00:00.000Z',_cashClosedOn:'2026-10-11',_cashClosedBy:'sergey',_cashClosedByName:'Сергей'};
-  await assertSucceeds(updateDoc(path,{...close,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  const closeData={orderId:'TEST-CLOSE-SERGEY',total:1000,parts:0,review:'',closeDate:'11.10',...close,_updatedAt:'2026-10-11T12:00:00.000Z',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  const batch=writeBatch(sergey);
+  batch.update(path,{...close,total:1000,parts:0,review:'',closeDate:'11.10',_status:'Выполнен',_masterStage:'approved',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'});
+  batch.set(doc(sergey,'workspaces',ws,'orderCloseData','TEST-CLOSE-SERGEY'),closeData);
+  await assertSucceeds(batch.commit());
   await assertFails(updateDoc(path,{_cashClosedBy:'artem',_cashClosedByName:'Артём',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
   await assertFails(updateDoc(path,{total:12500,_cashClosedBy:'artem',_cashClosedByName:'Артём',_updatedBy:'artem',_updatedByName:'Артём',_updatedByShift:'artem'}));
-  await assertSucceeds(updateDoc(path,{total:12500,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  const editBatch=writeBatch(sergey);
+  editBatch.update(path,{total:12500,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'});
+  editBatch.update(doc(sergey,'workspaces',ws,'orderCloseData','TEST-CLOSE-SERGEY'),{total:12500,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'});
+  await assertSucceeds(editBatch.commit());
 });
 
 test('dispatcher profiles see only the shared sanitized queue, not canonical financial records', async () => {
@@ -385,8 +439,19 @@ test('Sergey and Artem can prepare and close master orders until the shift repor
     const db=dbFor(uid);
     const actorFields={_updatedBy:id,_updatedByName:name,_updatedByShift:shift};
     const open=doc(db,'workspaces',ws,'orders',orderId);
+    await env.withSecurityRulesDisabled(async ctx=>{
+      await setDoc(doc(ctx.firestore(),'workspaces',ws,'dispatcherOrders',orderId),{
+        orderId,dispatcher:name,_createdBy:id,_createdByName:name,_createdByShift:shift
+      });
+    });
     await assertSucceeds(updateDoc(open,{total:15000,parts:2000,cleanCheck:13000,masterAmount:6000,companyShare:7000,...actorFields}));
-    await assertSucceeds(updateDoc(open,{_status:'Выполнен',closeDate:'2026-10-11',...actorFields}));
+    const closedAt='2026-10-11T12:00:00.000Z',closeDate='11.10';
+    const close={orderId,total:15000,parts:2000,review:'',closeDate,_cashClosedBy:id,_cashClosedByName:name,_cashClosedAt:closedAt,_cashClosedOn:'2026-10-11',_updatedAt:closedAt,...actorFields};
+    const batch=writeBatch(db);
+    batch.update(open,{_status:'Выполнен',total:15000,parts:2000,review:'',closeDate,_cashClosedBy:id,_cashClosedByName:name,_cashClosedAt:closedAt,_cashClosedOn:'2026-10-11',...actorFields});
+    batch.update(doc(db,'workspaces',ws,'dispatcherOrders',orderId),{_status:'Выполнен',closeDate,_updatedAt:closedAt,...actorFields});
+    batch.set(doc(db,'workspaces',ws,'orderCloseData',orderId),close);
+    await assertSucceeds(batch.commit());
     await assertSucceeds(updateDoc(open,{total:1,...actorFields}));
     await assertSucceeds(updateDoc(open,{master:'Петр',...actorFields}));
   }
