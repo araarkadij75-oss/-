@@ -389,7 +389,7 @@ cloud.subscribe=(profile,onRows,retrying=false)=>{
         if(coordinatorStream){const wasReady=cloud.ownerSeenReady;cloud.ownerRows=allRows.map(r=>({...r}));cloud.ownerSeenReady=true;if(wasReady&&snap.docChanges().length)cloud.requestGoogleSync('firestore_change')}
         if(profile.role==='master'){const ids=new Set(rows.map(r=>String(r.orderId||r._cloudDocId)));if(cloud.seenReady)for(const r of rows){const id=String(r.orderId||r._cloudDocId);if(!cloud.seenIds.has(id))window.MasterAINewAssignment?.(r)}cloud.seenIds=ids;cloud.seenReady=true}
         const cached=!!snap.metadata?.fromCache;cloud.dataSyncState={status:cached?'cached':'ready',updatedAt:new Date().toISOString()};
-        if(!cached){clearTimeout(cloud.serverAckTimer);cloud.serverAckTimer=null;cloud.syncRetryAttempt=0;cloud.connectionError='';clearTimeout(cloud.syncRetryTimer);cloud.syncRetryTimer=null}else if(cloud.connectionError)window.MasterAICloudStatus?.('error',cloud.connectionError+' Повторное подключение выполняется автоматически.');else window.MasterAICloudStatus?.('syncing','Показываем сохранённые данные; ожидаем подтверждение Firebase.');
+        if(!cached){confirmServerSync();window.MasterAICloudStatus?.('ok','Общая очередь подтверждена сервером Firebase · '+allRows.length+' заказов')}else if(cloud.connectionError)window.MasterAICloudStatus?.('error',cloud.connectionError+' Повторное подключение выполняется автоматически.');else window.MasterAICloudStatus?.('syncing','Показываем сохранённые данные; ожидаем подтверждение Firebase.');
         onRows(rows);
       },err=>{if(!isCurrent())return;const code=err?.code?' ('+err.code+')':'';scheduleRetry('Общая база'+code+': '+(err?.message||String(err)))}));
     }
