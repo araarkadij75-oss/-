@@ -440,8 +440,11 @@ test('historical payroll backfill uses only past ledger rows and skips verified 
     (row,profile)=>({id:row.date+'-'+profile.shift,date:row.date,shift:profile.shift,salary:row.salaryCents/100}),r=>!!r.ownerConfirmed,async()=>{},()=>{},()=>{},v=>String(v||'').toLowerCase(),v=>Number(v)||0,r=>r.shift||''
   );
   await run();
+  assert.deepEqual(created,['2026-10-09']);
+  assert.match(elements['#backfillStatus'].textContent,/Отчёт владельца записан за 2026-10-09/);
+  await run();
   assert.deepEqual(created,['2026-10-09','2026-10-10']);
-  assert.match(elements['#backfillStatus'].textContent,/Готово: закрыто владельцем 2 смен; уже были закрыты 1/);
+  assert.match(elements['#backfillStatus'].textContent,/Отчёт владельца записан за 2026-10-10/);
   assert.equal(state.shiftReports.some(r=>r.date>='2026-10-11'),false);
   assert.equal(state.shiftReports.length,3);
 });
