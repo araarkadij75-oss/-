@@ -271,7 +271,7 @@ if(cloud.enabled){
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js')
   ]);
-  const app=appMod.initializeApp(cfg.firebaseConfig),auth=authMod.getAuth(app),db=fs.initializeFirestore(app,{experimentalForceLongPolling:true}),authPersistenceReady=authMod.setPersistence(auth,authMod.browserSessionPersistence);
+  const app=appMod.initializeApp(cfg.firebaseConfig),auth=authMod.getAuth(app),db=fs.initializeFirestore(app,{experimentalAutoDetectLongPolling:true}),authPersistenceReady=authMod.setPersistence(auth,authMod.browserSessionPersistence);
   const ws=cfg.workspaceId;
   const norm=v=>String(v??'').trim().toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ');
   const friendlyMember=x=>{const y={...(x||{})},li=norm(y.login);if(['dispatcher','logistic'].includes(y.role))y.role='dispatcher_logistic';if(li==='owner'){y.name='Владелец'}else if(li==='beta-logist'){y.name='Диспетчер‑логист'}else if(li==='beta-master'){y.name='Мастер';y.master='Мастер'}else{y.name=String(y.name||y.login||'').replace(/^BETA\s+/i,'');y.master=String(y.master||'').replace(/^BETA\s+/i,'')}return y};

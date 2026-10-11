@@ -12,6 +12,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   serverTimestamp,
   setDoc,
@@ -257,6 +258,48 @@ test('Sergey and Artem dispatcher-logistics share one workspace order queue acro
   await assertSucceeds(getDoc(doc(artem, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN')));
   await assertSucceeds(getDocs(collection(sergey, 'workspaces', ws, 'dispatcherOrders')));
   await assertSucceeds(getDocs(collection(artem, 'workspaces', ws, 'dispatcherOrders')));
+});
+
+test('Sergey and Artem live listeners see order create, update, and owner delete across accounts', async () => {
+  const sergey=dbFor('sergey-ops-uid'), artem=dbFor('ops-uid'), owner=dbFor('owner-uid');
+  const id=`BETA-E2E-SYNC-${Date.now()}`;
+  const sergeyQueue=collection(sergey,'workspaces',ws,'dispatcherOrders');
+  const artemQueue=collection(artem,'workspaces',ws,'dispatcherOrders');
+  let sergeyRows=null, artemRows=null;
+  let tick;
+  const changed=new Promise((resolve,reject)=>{
+    let timer=setTimeout(()=>reject(new Error('live listener update timeout')),7000);
+    tick=()=>{try{if(sergeyRows&&artemRows){clearTimeout(timer);resolve()}}catch(e){clearTimeout(timer);reject(e)}};
+  });
+  const stopSergey=onSnapshot(sergeyQueue,s=>{sergeyRows=new Map(s.docs.map(d=>[d.id,d.data()]));tick?.()},e=>{});
+  const stopArtem=onSnapshot(artemQueue,s=>{artemRows=new Map(s.docs.map(d=>[d.id,d.data()]));tick?.()},e=>{});
+  const waitFor=async(predicate,label)=>{
+    const end=Date.now()+7000;
+    while(Date.now()<end){if(predicate())return;await new Promise(r=>setTimeout(r,30))}
+    assert.fail(`Timed out waiting for ${label}`);
+  };
+  try {
+    await changed;
+    const now=new Date().toISOString();
+    const order={orderId:id,name:'ТЕСТ СИНХРОНИЗАЦИИ',phone:'70000000000',request:'Только тест Firestore Emulator',dispatcher:'Сергей',_createdBy:'sergey',_createdByName:'Сергей',_createdByShift:'sergey',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey',_updatedAt:now,_status:'В работе'};
+    const create=writeBatch(sergey);
+    create.set(doc(sergey,'workspaces',ws,'orders',id),order);
+    create.set(doc(sergey,'workspaces',ws,'dispatcherOrders',id),order);
+    await assertSucceeds(create.commit());
+    await waitFor(()=>artemRows?.has(id),'Artem sees Sergey-created test order');
+    const updatedAt=new Date(Date.now()+1).toISOString();
+    const update={request:'Тестовая правка видна Артёму',_updatedAt:updatedAt,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+    const edit=writeBatch(sergey);
+    edit.update(doc(sergey,'workspaces',ws,'orders',id),update);
+    edit.update(doc(sergey,'workspaces',ws,'dispatcherOrders',id),update);
+    await assertSucceeds(edit.commit());
+    await waitFor(()=>artemRows?.get(id)?.request==='Тестовая правка видна Артёму','Artem sees Sergey update');
+    const remove=writeBatch(owner);
+    remove.delete(doc(owner,'workspaces',ws,'orders',id));
+    remove.delete(doc(owner,'workspaces',ws,'dispatcherOrders',id));
+    await assertSucceeds(remove.commit());
+    await waitFor(()=>!sergeyRows?.has(id)&&!artemRows?.has(id),'both sessions see owner delete');
+  } finally {stopSergey();stopArtem()}
 });
 
 test('order close data is visible only to owner and shift closers, and freezes after a shift report', async () => {
