@@ -38,9 +38,28 @@ test('18.17.19 safety patch keeps delta/delete invariants', () => {
   assert.doesNotMatch(p, /\bphoneAccess\b/);
 });
 
-test('role entrypoints are pinned', () => {
+test('role entrypoints are pinned and mismatched accounts are redirected before data loads', () => {
   assert.match(read('dispatcher-logistic.html'), /MASTER_AI_FORCED_ROLE="dispatcher_logistic"/);
   assert.match(read('master.html'), /MASTER_AI_FORCED_ROLE="master"/);
+  assert.match(read('index.html'), /MASTER_AI_FORCED_ROLE="owner"/);
+  assert.match(read('dispatcher-logistic.html'), /MASTER_AI_ALLOWED_ROLES=\["dispatcher_logistic","logistic","dispatcher"\]/);
+  for(const page of ['index.html','dispatcher-logistic.html','master.html']){
+    const html=read(page);
+    assert.match(html,/if\(!forcedRoleOk\(p\.role\)\)\{await redirectRoleMismatch\(p\.role\)/);
+    assert.match(html,/if\(p&&!forcedRoleOk\(p\.role\)\)\{await redirectRoleMismatch\(p\.role\);return\}/);
+    assert.match(html,/function roleEntryUrl\(role\)/);
+    assert.match(html,/function redirectRoleMismatch\(role\)/);
+    const start=html.indexOf('const FORCED_APP_ROLE'),end=html.indexOf('const ROLE_META',start),guard=new Function('window','location','URL','URLSearchParams',html.slice(start,end)+';return {forcedRoleOk,roleEntryUrl}');
+    const cfg=page==='index.html'?{MASTER_AI_FORCED_ROLE:'owner'}:page==='master.html'?{MASTER_AI_FORCED_ROLE:'master'}:{MASTER_AI_FORCED_ROLE:'dispatcher_logistic',MASTER_AI_ALLOWED_ROLES:['dispatcher_logistic','logistic','dispatcher']};
+    const g=guard(cfg,{href:'https://example.test/-/preview/v18.17.21/?release=old',search:'?release=old'},URL,URLSearchParams);
+    assert.equal(g.roleEntryUrl('owner'),'https://example.test/-/preview/v18.17.21/index.html?release=old');
+    assert.equal(g.roleEntryUrl('master'),'https://example.test/-/preview/v18.17.21/master.html?release=old');
+    assert.equal(g.roleEntryUrl('dispatcher_logistic'),'https://example.test/-/preview/v18.17.21/dispatcher-logistic.html?release=old');
+    assert.equal(g.forcedRoleOk('owner'),page==='index.html');
+    assert.equal(g.forcedRoleOk('master'),page==='master.html');
+    assert.equal(g.forcedRoleOk('dispatcher_logistic'),page==='dispatcher-logistic.html');
+    assert.equal(html,read('preview/v18.17.21/'+page));
+  }
 });
 
 test('master workflow uses its permitted assignment document', () => {
@@ -253,7 +272,7 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v46/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/);assert.equal(html,read('preview/v18.17.21/'+page))}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/);assert.equal(JSON.stringify(manifest),JSON.stringify(JSON.parse(read('preview/v18.17.21/'+file))))}assert.match(read('icon.svg'),/>?$/)});
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v47/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/);assert.equal(html,read('preview/v18.17.21/'+page))}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/);assert.equal(JSON.stringify(manifest),JSON.stringify(JSON.parse(read('preview/v18.17.21/'+file))))}assert.match(read('icon.svg'),/>?$/)});
 test('orders use Saint Petersburg as the fixed city and have no district workflow',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.ok(html.includes('cities:[\"СПб\"]')); assert.match(html,/id="f_city"[^>]*value="СПб" readonly/);assert.doesNotMatch(html,/Район|cityFilter|Выручка по районам/);assert.equal(html,read('preview/v18.17.21/'+page))}});
 test('orders can be filtered by visit date today without replacing other filters',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/id="todayOrdersFilter"/);assert.match(html,/iso\(parseDate\(r\.visitDate\)\)===day/);assert.match(html,/todayOrdersFilter'\)\.onclick=\(\)=>\{/);assert.equal(html,read('preview/v18.17.21/'+page))}});
 test('weekly schedule ignores stale loads and locks edits while saving', () => {
