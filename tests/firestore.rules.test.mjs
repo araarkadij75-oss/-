@@ -218,26 +218,40 @@ test('closed shift report freezes regular orders while pickups remain editable u
   await assertFails(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-PICKUP'),{_reportLockId:'forged',...actor}));
 });
 
-test('dispatcher-logistic closes a day with an immutable lock-only closure; closure markers require the same batch', async () => {
+test('dispatcher-logistic closes a day with one immutable closure write; regular orders lock from closure while pickups remain editable', async () => {
   const db=dbFor('sergey-ops-uid'),actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
   await env.withSecurityRulesDisabled(async ctx=>{
     const admin=ctx.firestore();
     await setDoc(doc(admin,'workspaces',ws,'orders','TEST-CLOSURE-ORDER'),{orderId:'TEST-CLOSURE-ORDER',callDate:'2026-10-10',_status:'Выполнен'});
     await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-ORDER'),{orderId:'TEST-CLOSURE-ORDER',callDate:'2026-10-10',_status:'Выполнен'});
     // A pickup can be accepted by one shift and closed by the other.
-    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-CLOSURE-PICKUP'),{orderId:'TEST-CLOSURE-PICKUP',callDate:'2026-10-08',_createdBy:'artem',_createdByName:'Артём',_createdByShift:'artem',_status:'Выполнен',_isPickup:true,_cashClosedOn:'2026-10-10'});
-    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-PICKUP'),{orderId:'TEST-CLOSURE-PICKUP',callDate:'2026-10-08',_status:'Выполнен',_isPickup:true,_cashClosedOn:'2026-10-10'});
+    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-CLOSURE-PICKUP'),{orderId:'TEST-CLOSURE-PICKUP',callDate:'2026-10-08',_createdBy:'artem',_createdByName:'Артём',_createdByShift:'artem',_status:'Забор / техника у мастера',_isPickup:true});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-PICKUP'),{orderId:'TEST-CLOSURE-PICKUP',callDate:'2026-10-08',_status:'Забор / техника у мастера',_isPickup:true});
   });
-  const closure={id:'2026-10-10-sergey',date:'2026-10-10',shift:'sergey',shiftName:'Смена Сергея',closedBy:'sergey',closedByName:'Сергей',closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp(),orderIds:['TEST-CLOSURE-ORDER','TEST-CLOSURE-PICKUP'],lockedOrderIds:['TEST-CLOSURE-ORDER','TEST-CLOSURE-PICKUP']};
-  const batch=writeBatch(db);
-  batch.set(doc(db,'workspaces',ws,'shiftClosures',closure.id),closure);
-  batch.update(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-ORDER'),{_reportLockId:closure.id,...actor});
-  batch.update(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-PICKUP'),{_reportLockId:closure.id,...actor});
-  await assertSucceeds(batch.commit());
+  const lockIds=['TEST-CLOSURE-ORDER',...Array.from({length:10},(_,i)=>'TEST-LOCK-'+i)];
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    for(const id of lockIds.slice(1)){
+      await setDoc(doc(admin,'workspaces',ws,'orders',id),{orderId:id,callDate:'2026-10-10',_status:'В работе'});
+      await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders',id),{orderId:id,callDate:'2026-10-10',_status:'В работе'});
+    }
+  });
+  const closure={id:'2026-10-10-sergey',date:'2026-10-10',shift:'sergey',shiftName:'Смена Сергея',closedBy:'sergey',closedByName:'Сергей',closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp(),orderIds:[...lockIds,'TEST-CLOSURE-PICKUP'],lockedOrderIds:lockIds};
+  const oversized=writeBatch(db);
+  oversized.set(doc(db,'workspaces',ws,'shiftClosures',closure.id),closure);
+  for(const orderId of lockIds)oversized.update(doc(db,'workspaces',ws,'dispatcherOrders',orderId),{_reportLockId:closure.id,...actor});
+  await assertFails(oversized.commit());
+  await assertSucceeds(setDoc(doc(db,'workspaces',ws,'shiftClosures',closure.id),closure));
   await assertSucceeds(getDoc(doc(db,'workspaces',ws,'shiftClosures',closure.id)));
+  for(let i=0;i<lockIds.length;i+=2){
+    const batch=writeBatch(db);
+    for(const orderId of lockIds.slice(i,i+2))batch.update(doc(db,'workspaces',ws,'dispatcherOrders',orderId),{_reportLockId:closure.id,...actor});
+    await assertSucceeds(batch.commit());
+  }
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSURE-ORDER'),{total:9000,...actor}));
-  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSURE-PICKUP'),{total:9000,...actor}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSURE-PICKUP'),{total:9000,...actor}));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-ORDER'),{_status:'В работе',...actor}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-PICKUP'),{review:'да',...actor}));
   await assertFails(setDoc(doc(db,'workspaces',ws,'shiftClosures','2026-10-11-sergey'),{...closure,id:'2026-10-11-sergey',date:'2026-10-11',salary:9000,serverClosedAt:serverTimestamp()}));
   await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'shiftClosures',closure.id)));
   await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftClosures',closure.id)));

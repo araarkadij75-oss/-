@@ -270,6 +270,8 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
       if (file === 'dispatcher-logistic.html') {
         assert.match(html, /dispatcher_logistic:\{label:'[^']+',tabs:\['orders','dashboard','performance','mastershifts','shiftclose'\]/);
         assert.doesNotMatch(html, /dispatcher_logistic:\{label:'[^']+',tabs:\[[^\]]*'reports'/);
+        assert.match(html, /lockedOrderIds:\[\.\.\.new Set\(rows\.filter\(r=>!isPickupOrder\(r\)\)/);
+        assert.match(html, /cloud\.closeShift=async report=>[\s\S]*?await fs\.setDoc\(shiftClosureDoc\(id\),stripUndefined\(payload\),\{merge:false\}\);for\(let i=0;i<lockedOrderIds\.length;i\+=2\)/);
       }
       assert.match(html, /where\('closedBy','==',cloud\.profile\?\.id/);
       assert.match(html, /cloud\.saveMasterWeek/);
