@@ -272,6 +272,14 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
         assert.doesNotMatch(html, /dispatcher_logistic:\{label:'[^']+',tabs:\[[^\]]*'reports'/);
         assert.match(html, /lockedOrderIds:\[\.\.\.new Set\(rows\.filter\(r=>!isPickupOrder\(r\)\)/);
         assert.match(html, /cloud\.closeShift=async report=>[\s\S]*?await fs\.setDoc\(shiftClosureDoc\(id\),stripUndefined\(payload\),\{merge:false\}\);for\(let i=0;i<lockedOrderIds\.length;i\+=2\)/);
+        assert.match(html, /cloud\.confirmShiftReport=async report=>[\s\S]*?serverApprovedAt:fs\.serverTimestamp\(\)/);
+        assert.match(html, /function confirmClosedShift\(r\)/);
+        assert.match(html, /data-confirm-shift/);
+        assert.match(html, /\$\$\('\[data-share-shift\]'\)\.forEach/);
+        assert.match(html, /r\.closureOnly\?\(r\.orderIds\|\|\[\]\)\.length/);
+        assert.match(html, /function closureOrderDetailsHtml\(r,role\)/);
+        assert.match(html, /memberId=r\.subjectMemberId\|\|r\.closedBy/);
+        assert.match(html, /r\.subjectMemberId===profile\.id/);
       }
       assert.match(html, /where\('closedBy','==',cloud\.profile\?\.id/);
       assert.match(html, /cloud\.saveMasterWeek/);
