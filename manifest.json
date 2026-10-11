@@ -1,6 +1,6 @@
 {
-  "name": "MASTER AI",
-  "short_name": "MASTER AI",
+  "name": "EliteService",
+  "short_name": "EliteService",
   "id": "./?app=owner",
   "start_url": "./index.html",
   "scope": "./",

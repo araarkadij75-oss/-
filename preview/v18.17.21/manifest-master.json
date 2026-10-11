@@ -1,6 +1,6 @@
 {
-  "name": "MASTER AI — Мастер",
-  "short_name": "MASTER AI Мастер",
+  "name": "EliteService — Мастер",
+  "short_name": "EliteService Мастер",
   "id": "./?app=master",
   "start_url": "./master.html",
   "scope": "./",
