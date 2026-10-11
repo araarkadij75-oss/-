@@ -332,6 +332,7 @@ test('order cards show intake and closure actors; owner can set fixed mode befor
     assert.match(html,/function orderResponsibility\(r\)/);
     assert.match(html,/Принял заказ:/);
     assert.match(html,/Закрыл заказ:/);
+    assert.match(html,/isClosed=!!closed\|\|!!r\._cashClosedAt\|\|!!r\.closeDate\|\|derivedStage\(r\)==='Выполнен'/);
     assert.match(html,/data-master-fixed/);
     assert.match(html,/fixedMasters:Array\.isArray\(x\.fixedMasters\)\?x\.fixedMasters:\[\]/);
     assert.match(html,/fixedMasters:x\.fixedMasters\|\|\[\]/);
