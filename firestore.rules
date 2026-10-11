@@ -191,7 +191,7 @@ service cloud.firestore {
         '_assignedAt','_assignedBy','_assignedByName','_workflow','_workflowCreatedAt',
         '_requiresCloseApproval','_masterStage','_closeReviewState','_closeReviewNote',
         '_closeApprovedAt','_closeApprovedBy','_closeApprovedByName',
-        '_phoneUnlockAt','_showPhoneToMaster','_cashClosedAt','_cashClosedOn','_cashClosedBy',
+        '_phoneUnlockAt','_showPhoneToMaster','_doneAt','_workCompletedAt','_cashClosedAt','_cashClosedOn','_cashClosedBy',
         '_cashClosedByName'
       ];
     }
@@ -554,6 +554,34 @@ service cloud.firestore {
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace));
+      allow delete: if isOwner(workspace);
+    }
+
+    // Close totals are separate from the shared queue: shift closers can
+    // enter/review an order's cash, while ordinary dispatchers cannot read it.
+    match /workspaces/{workspace}/orderCloseData/{orderId} {
+      function validOrderCloseData() {
+        let member = get(memberPath(workspace)).data;
+        let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
+        return request.resource.data.keys().hasOnly([
+            'orderId','parts','total',
+            'closeDate','_cashClosedAt','_cashClosedOn','_cashClosedBy',
+            '_cashClosedByName','_updatedAt','_updatedBy','_updatedByName','_updatedByShift'
+          ])
+          && request.resource.data.orderId == orderId
+          && request.resource.data._updatedBy == memberId
+          && request.resource.data._updatedByName == member.name
+          && request.resource.data._updatedByShift == member.shift;
+      }
+      allow get, list: if isOwner(workspace) || isShiftCloser(workspace);
+      allow create: if isShiftCloser(workspace)
+        && exists(orderPath(workspace, orderId))
+        && !isFinalOrder(workspace, get(orderPath(workspace, orderId)).data, orderId)
+        && validOrderCloseData();
+      allow update: if isShiftCloser(workspace)
+        && exists(orderPath(workspace, orderId))
+        && !isFinalOrder(workspace, get(orderPath(workspace, orderId)).data, orderId)
+        && validOrderCloseData();
       allow delete: if isOwner(workspace);
     }
 

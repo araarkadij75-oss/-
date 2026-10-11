@@ -250,6 +250,32 @@ test('Sergey and Artem dispatcher-logistics share one workspace order queue acro
   await assertSucceeds(getDocs(collection(artem, 'workspaces', ws, 'dispatcherOrders')));
 });
 
+test('order close data is visible only to owner and shift closers, and freezes after a shift report', async () => {
+  const sergey=dbFor('sergey-ops-uid');
+  const owner=dbFor('owner-uid');
+  const dispatcher=dbFor('dispatch-uid');
+  const orderId='TEST-CLOSE-DATA';
+  const actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  const closeDoc=doc(sergey,'workspaces',ws,'orderCloseData',orderId);
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'orders',orderId),{orderId,callDate:'2026-10-11',_status:'Выполнен'});
+  });
+  await assertSucceeds(setDoc(closeDoc,{orderId,total:12000,parts:2000,closeDate:'11.10',...actor}));
+  await assertSucceeds(updateDoc(closeDoc,{total:13000,...actor}));
+  await assertSucceeds(getDoc(doc(owner,'workspaces',ws,'orderCloseData',orderId)));
+  await assertSucceeds(getDoc(closeDoc));
+  await assertFails(getDoc(doc(dispatcher,'workspaces',ws,'orderCloseData',orderId)));
+  await assertFails(getDocs(collection(dispatcher,'workspaces',ws,'orderCloseData')));
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-11-sergey'),{
+      id:'2026-10-11-sergey',date:'2026-10-11',shift:'sergey',orderIds:[orderId],paidOrderIds:[]
+    });
+  });
+  await assertFails(updateDoc(closeDoc,{total:14000,...actor}));
+});
+
 test('dispatcher profiles see only the shared sanitized queue, not canonical financial records', async () => {
   const dispatcher = dbFor('dispatch-uid');
   await assertSucceeds(getDoc(doc(dispatcher, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN')));
