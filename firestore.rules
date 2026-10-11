@@ -126,9 +126,12 @@ service cloud.firestore {
       let owner = get(memberPath(workspace)).data;
       let ownerId = owner.keys().hasAny(['id']) ? owner.id : request.auth.uid;
       let configured = exists(payrollPath(workspace));
-      let basePay = configured ? get(payrollPath(workspace)).data.shiftBasePay : 2000;
-      let threshold = configured ? get(payrollPath(workspace)).data.shiftCashThreshold : 20000;
-      let rate = configured ? get(payrollPath(workspace)).data.shiftCashRate : 10;
+      let basePay = configured && get(payrollPath(workspace)).data.keys().hasAny(['shiftBasePay'])
+        ? get(payrollPath(workspace)).data.shiftBasePay : 2000;
+      let threshold = configured && get(payrollPath(workspace)).data.keys().hasAny(['shiftCashThreshold'])
+        ? get(payrollPath(workspace)).data.shiftCashThreshold : 20000;
+      let rate = configured && get(payrollPath(workspace)).data.keys().hasAny(['shiftCashRate'])
+        ? get(payrollPath(workspace)).data.shiftCashRate : 10;
       let expected = data.cash > threshold ? data.cash * rate / 100 : basePay;
       return data.keys().hasAll([
           'id','date','closedBy','closedByName','shift','shiftName','orders','financialOrders',
