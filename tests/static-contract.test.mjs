@@ -217,6 +217,14 @@ test('runtime UI settings cannot replace the readable system font or shrink page
   }
 });
 
+test('owner order count exposes both live source totals', () => {
+  for (const file of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
+    const html = read('preview/v18.17.21/' + file);
+    assert.match(html, /ownerStats=currentUser\(\)\?\.role==='owner'\?window\.MasterAICloud\?\.ownerStreamStats:null/);
+    assert.match(html, /очередь \$\{ownerStats\.dispatchUnique\} \/ база \$\{ownerStats\.canonicalUnique\}/);
+  }
+});
+
 test('dashboard shows every day in the selected cash period', () => {
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
     const html = read(file);
