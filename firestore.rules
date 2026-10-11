@@ -45,12 +45,32 @@ service cloud.firestore {
       return role(workspace) in ['dispatcher_logistic', 'logistic'];
     }
 
+    // Staff may prepare and close an order for a master, but a terminal order
+    // (or an order whose cash has been recorded) is immutable to staff.
+    function isFinalOrder(data) {
+      return (data.keys().hasAny(['_status'])
+          && data._status in ['Выполнен', 'Закрыт', 'Закрыто', 'Отказ', 'Отмена'])
+        || (data.keys().hasAny(['_masterStage']) && data._masterStage == 'approved')
+        || (data.keys().hasAny(['_closeReviewState']) && data._closeReviewState == 'approved')
+        || (data.keys().hasAny(['_cashClosedAt']) && data._cashClosedAt != '')
+        || (data.keys().hasAny(['closeDate']) && data.closeDate != '');
+    }
+
+    function validStaffOrderCreate() {
+      let data = request.resource.data;
+      return !isFinalOrder(data)
+        && !data.keys().hasAny(['pp','parts','cleanCheck','total','masterAmount','companyShare']);
+    }
+
     // Client-facing operational edits are intentionally allow-listed. Any new
     // field remains owner-only until it has been reviewed and added here.
     function operationalOrderFields() {
       return [
         'orderId','a0','_origin','direction','city','callDate','callTime','visitDate','visitTime',
         'name','phone','address','request','master','dispatcher','review','closeDate',
+        // Only logistics roles can edit order-level closing amounts, and only
+        // before the order is final. Payroll, expenses and rate settings remain owner-only.
+        'pp','parts','cleanCheck','total','masterAmount','companyShare',
         '_status','_updatedAt','_updatedBy','_updatedByName','_updatedByShift',
         '_assignedAt','_assignedBy','_assignedByName','_workflow','_workflowCreatedAt',
         '_requiresCloseApproval','_masterStage','_closeReviewState','_closeReviewNote',
@@ -311,9 +331,6 @@ service cloud.firestore {
             '_masterReportedTotal','_masterReportedParts','_masterReportedReview',
             '_masterNote','_masterReportAt','_workCompletedAt','_reviewSubmittedAt',
             '_requiresCloseApproval','closeDate']))
-        || (resource.data._workflow != 'master_review_v1' && from == 'work' && to == 'done'
-          && request.resource.data._status == 'Выполнен'
-          && changed.hasOnly(['_masterStage','_updatedAt','_doneAt','_status']))
         || (from == 'work' && to == 'work'
           && changed.hasOnly(['_updatedAt','_masterReportedTotal','_masterReportedParts',
             '_masterReportedReview','_masterNote','_masterReportAt']))
@@ -336,18 +353,23 @@ service cloud.firestore {
 
       allow create: if isOwner(workspace)
                     || (role(workspace) == 'dispatcher_logistic'
+                        && validStaffOrderCreate()
                         && request.resource.data.keys().hasOnly(operationalCreateFields())
                         && validCreatorIdentity(workspace, orderId))
                     || (isDispatcher(workspace)
+                        && !isFinalOrder(request.resource.data)
                         && request.resource.data.keys().hasOnly(dispatcherFields())
                         && validCreatorIdentity(workspace, orderId));
 
       allow update: if isOwner(workspace)
                     || (role(workspace) in ['dispatcher_logistic','logistic']
+                        && !isFinalOrder(resource.data)
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(operationalOrderFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
                     || (isDispatcher(workspace)
+                        && !isFinalOrder(resource.data)
+                        && !isFinalOrder(request.resource.data)
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
@@ -363,14 +385,18 @@ service cloud.firestore {
                   && role(workspace) in ['owner','dispatcher','dispatcher_logistic','logistic'];
       allow create: if isOwner(workspace)
                     || (role(workspace) in ['dispatcher','dispatcher_logistic']
+                        && !isFinalOrder(request.resource.data)
                         && request.resource.data.keys().hasOnly(dispatcherMirrorFields())
                         && validCreatorIdentity(workspace, orderId));
       allow update: if isOwner(workspace)
                     || (role(workspace) in ['dispatcher_logistic','logistic']
+                        && !isFinalOrder(resource.data)
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherMirrorFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
                     || (isDispatcher(workspace)
+                        && !isFinalOrder(resource.data)
+                        && !isFinalOrder(request.resource.data)
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace));
@@ -389,8 +415,10 @@ service cloud.firestore {
 
       allow update: if isOwner(workspace)
                     || (isShiftCloser(workspace)
+                    && !isFinalOrder(resource.data)
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterAssignmentFields()))
                     || (isMaster(workspace)
+                        && !isFinalOrder(resource.data)
                         && resource.data.masterUid == request.auth.uid
                         && request.resource.data.masterUid == request.auth.uid
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields())

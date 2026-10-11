@@ -57,14 +57,31 @@ before(async () => {
       orderId:'TEST-OTHER', name:'Другой', phone:'79990000001', master:'Петр',
       total:9000, _masterStage:'assigned', _updatedAt:new Date().toISOString()
     });
+    await setDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSED'), {
+      orderId:'TEST-CLOSED', name:'Закрытый заказ', master:'Иван', total:12000,
+      parts:1000, cleanCheck:11000, masterAmount:5000, companyShare:6000,
+      _status:'Выполнен', _cashClosedAt:new Date().toISOString(),
+      _masterStage:'approved', _updatedAt:new Date().toISOString()
+    });
+    for (const [id,master] of [['TEST-CLOSE-SERGEY','Иван'],['TEST-CLOSE-ARTEM','Иван'],['TEST-CLOSE-LOGISTIC','Иван']]) {
+      await setDoc(doc(db,'workspaces',ws,'orders',id), {orderId:id,master,total:1000,_status:'В работе'});
+    }
     await setDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-OWN'), {
       orderId:'TEST-OWN', masterUid:'master-uid', name:'Клиент', _masterStage:'assigned'
     });
     await setDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-OTHER'), {
       orderId:'TEST-OTHER', masterUid:'master2-uid', name:'Другой', _masterStage:'assigned'
     });
+    await setDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-CLOSED'), {
+      orderId:'TEST-CLOSED', masterUid:'master-uid', name:'Закрытый заказ',
+      _status:'Выполнен', _masterStage:'approved'
+    });
     await setDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN'), {
       orderId:'TEST-OWN', name:'Клиент', phone:'79990000000'
+    });
+    await setDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSED'), {
+      orderId:'TEST-CLOSED', name:'Закрытый заказ', _status:'Выполнен',
+      _masterStage:'approved'
     });
     await setDoc(doc(db,'workspaces',ws,'masterPhones','TEST-OWN'), {
       orderId:'TEST-OWN', phone:'79990000000', masterUid:'master-uid',
@@ -127,7 +144,7 @@ test('dispatcher can create intake fields but cannot assign master or edit money
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {_createdBy:'artem',...actor}));
 });
 
-test('dispatcher-logistic can update operational data but cannot write finance or canonical-delete', async () => {
+test('dispatcher-logistic can close an open order with amounts, but cannot change closed orders or owner settings', async () => {
   const db=dbFor('ops-uid');
   await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
   await assertFails(getDocs(collection(db,'workspaces',ws,'orders')));
@@ -135,16 +152,33 @@ test('dispatcher-logistic can update operational data but cannot write finance o
   await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
     master:'Иван', _status:'В работе', _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
   }));
-  for (const field of ['total','cleanCheck','pp','parts','masterAmount','companyShare','_fixedMaster','_autoFinance']) {
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
+    total:12000, parts:2000, cleanCheck:10000, masterAmount:5000, companyShare:5000,
+    _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
+  for (const field of ['_fixedMaster','_autoFinance']) {
     await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
-      [field]:field.startsWith('_')?true:999999,
+      [field]:true,
       _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
     }));
   }
+  for (const field of ['total','masterAmount','companyShare','_status','closeDate','master']) {
+    await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSED'), {
+      [field]:field==='_status'?'В работе':field==='master'?'Петр':999999,
+      _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+    }));
+  }
+  await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'orders','TEST-CLOSED'), {total:10000}));
   await assertSucceeds(setDoc(doc(db,'workspaces',ws,'orders','TEST-OPS-CREATE'), {
     orderId:'TEST-OPS-CREATE', dispatcher:'Артём',
     _createdBy:'artem', _createdByName:'Артём', _createdByShift:'artem',
     _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
+  await assertFails(setDoc(doc(db,'workspaces',ws,'orders','TEST-OPS-FORGED-CLOSE'), {
+    orderId:'TEST-OPS-FORGED-CLOSE', dispatcher:'Артём', master:'Иван',
+    _createdBy:'artem', _createdByName:'Артём', _createdByShift:'artem',
+    _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem',
+    _status:'Выполнен', total:50000, masterAmount:50000, companyShare:0
   }));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OPS-CREATE'), {
     _createdByName:'Сергей', _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
@@ -183,7 +217,7 @@ test('logistic cannot create or delete canonical order', async () => {
   await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
     visitTime:'14:00', _updatedBy:'logistic', _updatedByName:'Логист', _updatedByShift:'sergey'
   }));
-  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
     companyShare:999999, _updatedBy:'logistic', _updatedByName:'Логист', _updatedByShift:'sergey'
   }));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
@@ -213,6 +247,26 @@ test('operational roles cannot inject finance fields into the dispatcher mirror'
     salary:999999, _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
   }));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN')));
+});
+
+test('Sergey and Artem can prepare and close master orders, then all staff edits are denied', async () => {
+  for (const [uid,id,name,shift,orderId] of [
+    ['sergey-ops-uid','sergey','Сергей','sergey','TEST-CLOSE-SERGEY'],
+    ['ops-uid','artem','Артём','artem','TEST-CLOSE-ARTEM'],
+    ['logistic-uid','logistic','Логист','sergey','TEST-CLOSE-LOGISTIC']
+  ]) {
+    const db=dbFor(uid);
+    const actorFields={_updatedBy:id,_updatedByName:name,_updatedByShift:shift};
+    const open=doc(db,'workspaces',ws,'orders',orderId);
+    await assertSucceeds(updateDoc(open,{total:15000,parts:2000,cleanCheck:13000,masterAmount:6000,companyShare:7000,...actorFields}));
+    await assertSucceeds(updateDoc(open,{_status:'Выполнен',closeDate:'2026-10-11',...actorFields}));
+    await assertFails(updateDoc(open,{total:1,...actorFields}));
+    await assertFails(updateDoc(open,{master:'Петр',...actorFields}));
+  }
+  const mirror=doc(dbFor('ops-uid'),'workspaces',ws,'dispatcherOrders','TEST-CLOSED');
+  await assertFails(updateDoc(mirror,{_status:'В работе',_updatedBy:'artem',_updatedByName:'Артём',_updatedByShift:'artem'}));
+  const assignment=doc(dbFor('master-uid'),'workspaces',ws,'masterAssignments','TEST-CLOSED');
+  await assertFails(updateDoc(assignment,{_masterStage:'work',_status:'В работе'}));
 });
 
 test('master reads only own sanitized assignment and no canonical order', async () => {
