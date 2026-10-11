@@ -65,7 +65,11 @@ test('role entrypoints are pinned and mismatched accounts are redirected before 
 test('master workflow uses its permitted assignment document', () => {
   for (const file of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
     const html = read(file);
-    assert.match(html, /sourceRef=cloud\.profile\?\.role==='master'\?masterDoc\(orderId\):orderDoc\(orderId\)/);
+    if (file === 'master.html') {
+      assert.match(html, /sourceRef=cloud\.profile\?\.role==='master'\?masterDoc\(orderId\):orderDoc\(orderId\)/);
+    } else {
+      assert.match(html, /const role=cloud\.profile\?\.role,sourceRef=role==='master'\?masterDoc\(orderId\):\['dispatcher','dispatcher_logistic','logistic'\]\.includes\(role\)\?dispatchDoc\(orderId\):orderDoc\(orderId\)/);
+    }
     assert.doesNotMatch(html, /await window\.MasterAICloud\.cleanupTechnicalArtifacts\?\.\(\)/);
   }
 });
@@ -137,7 +141,20 @@ test('dashboard uses decision-oriented KPI definitions', () => {
   }
 });
 
+test('cloud-only role entrypoints fail closed and escape order identifiers in HTML attributes', () => {
+  for (const page of ['index.html','dispatcher-logistic.html','master.html']) {
+    const html=read(page);
+    assert.match(html,/SECURE_CLOUD_REQUIRED=!!window\.MASTER_AI_BETA_ONLINE&&!!FORCED_APP_ROLE/);
+    assert.match(html,/if\(SECURE_CLOUD_REQUIRED&&!cloudMode\(\)\)/);
+    assert.match(html,/async function dbRead\(\)\{if\(SECURE_CLOUD_REQUIRED\)return null;/);
+    assert.match(html,/if\(!SECURE_CLOUD_REQUIRED&&window\.MASTER_AI_BETA&&!window\.MASTER_AI_BETA_ONLINE\)/);
+    assert.match(html,/authMod\.setPersistence\(auth,authMod\.browserSessionPersistence\)/);
+    assert.doesNotMatch(html,/\$\{r\._id\}(?:["'`<>\s]|$)/);
+  }
+});
+
 test('dispatcher-logistic dashboards use a shared all-shifts queue by default', () => {
+  assert.match(read('dispatcher-logistic.html'), /profile\.role==='master'\?'masterAssignments':\['dispatcher','dispatcher_logistic','logistic'\]\.includes\(profile\.role\)\?'dispatcherOrders':'orders'/);
   for (const file of ['index.html', 'dispatcher-logistic.html']) {
     const html = read(file);
     assert.match(html, /function roleVisibleOrders\(rows=state\.orders\)[^\n]*return rows\}/);
@@ -213,7 +230,7 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
     assert.match(html, /role==='master'\?'':\(\$\('#staffShift'/);
     assert.match(html, /function openOrderDetails\(/);
     assert.match(html, /card\.onclick=open/);
-    assert.match(html, /data-open="\$\{r\._id\}"/);
+    assert.match(html, /data-open="\$\{esc\(r\._id\)\}"/);
     assert.match(html, /function shiftPayroll\(/);
     assert.match(html, /function shiftSnapshot\(/);
     assert.match(html, /salary:shiftPayroll\(cash\)/);
@@ -338,4 +355,53 @@ test('owner migration recalculates only open auto-finance review orders',()=>{
   const paid={orderId:'A2',_autoFinance:true,_cashClosedAt:'2026-01-01',_status:'Выполнен',review:'да',total:50000,parts:0,cleanCheck:50000,masterAmount:27500,companyShare:22500};
   const manual={orderId:'A3',_autoFinance:false,_status:'В работе',review:'да',total:50000,parts:0,cleanCheck:50000,masterAmount:27000,companyShare:23000};
   const result=migrate([open,paid,manual]);assert.equal(result.count,1);assert.equal(result.orders[0].masterAmount,26000);assert.equal(result.orders[0].companyShare,24000);assert.equal(result.orders[1],paid);assert.equal(result.orders[2],manual);
+});
+
+test('owner daily payroll reconciliation calculates editable 2/2 shifts and keeps reports separate',()=>{
+  const html=read('index.html'),start=html.indexOf('function payrollShiftKey('),end=html.indexOf('function renderWeeklyReports(',start);
+  assert.ok(start>=0&&end>start);
+  const state={settings:{staff:[],shiftBasePay:2000,shiftCashThreshold:20000,shiftCashRate:10},shiftReports:[],orders:[
+    {dispatcher:'Сергей',callDate:'2026-09-01',companyShare:20000,closeDate:'2026-09-03'},
+    {dispatcher:'Артём',callDate:'2026-09-01',companyShare:25000,_cashClosedAt:'2026-09-04'},
+    {dispatcher:'Артём',callDate:'2026-09-03',companyShare:25000,_cashClosedAt:'2026-09-04'},
+    {dispatcher:'Сергей',callDate:'2026-09-02',companyShare:0}
+  ]};
+  const elements={'#dailyPayrollReconciliation':{hidden:false},'#payrollReconcileMonth':{value:'2026-09'},'#payrollCycleAnchor':{value:'2026-09-01'},'#payrollCycleStart':{value:'sergey'},'#dailyPayrollReconciliationTable':{innerHTML:''},'#dailyPayrollReconciliationNote':{textContent:''}};
+  const parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null};
+  const render=new Function('state','$','currentRole','today','norm','shiftOrderDate','num','clean','parseDate','uniqueShiftReports','shiftIntegrity','shiftPayroll','sum','money','integer','esc',html.slice(start,end)+';return {renderDailyPayrollReconciliation,payrollScheduledShift}')(
+    state,s=>elements[s],()=> 'owner',()=> '2026-09-01',v=>String(v||'').toLowerCase().replace(/ё/g,'е'),r=>r.callDate,v=>Number(v)||0,v=>String(v||''),parse,rows=>rows,()=>true,cash=>cash>20000?cash*.1:2000,(rows,fn)=>rows.reduce((n,r)=>n+fn(r),0),v=>`${Number(v).toFixed(0)} ₽`,v=>String(v),v=>String(v)
+  );
+  assert.equal(render.payrollScheduledShift('2026-09-01','2026-09-01','sergey'),'sergey');
+  assert.equal(render.payrollScheduledShift('2026-09-02','2026-09-01','sergey'),'sergey');
+  assert.equal(render.payrollScheduledShift('2026-09-03','2026-09-01','sergey'),'artem');
+  assert.equal(render.payrollScheduledShift('2026-08-31','2026-09-01','sergey'),'artem');
+  render.renderDailyPayrollReconciliation();
+  assert.match(elements['#dailyPayrollReconciliationTable'].innerHTML,/Итого за месяц/);
+  assert.match(elements['#dailyPayrollReconciliationTable'].innerHTML,/60500 ₽/);
+  assert.match(elements['#dailyPayrollReconciliationTable'].innerHTML,/Вне графика/);
+  assert.match(elements['#dailyPayrollReconciliationTable'].innerHTML,/смена без заказов · базовый оклад/);
+  assert.match(elements['#dailyPayrollReconciliationNote'].textContent,/расчёт для сверки/);
+  elements['#dailyPayrollReconciliation'].hidden=false;
+  const renderStaff=new Function('state','$','currentRole','today','norm','shiftOrderDate','num','clean','parseDate','uniqueShiftReports','shiftIntegrity','shiftPayroll','sum','money','integer','esc',html.slice(start,end)+';return renderDailyPayrollReconciliation')(
+    state,s=>elements[s],()=> 'dispatcher_logistic',()=> '2026-09-01',v=>String(v||'').toLowerCase().replace(/ё/g,'е'),r=>r.callDate,v=>Number(v)||0,v=>String(v||''),parse,rows=>rows,()=>true,cash=>cash>20000?cash*.1:2000,(rows,fn)=>rows.reduce((n,r)=>n+fn(r),0),v=>`${Number(v).toFixed(0)} ₽`,v=>String(v),v=>String(v)
+  );
+  renderStaff();assert.equal(elements['#dailyPayrollReconciliation'].hidden,true);
+});
+
+test('owner two-day payroll payout groups both worked shifts and includes late cash exactly in the next cycle',()=>{
+  const html=read('preview/v18.17.21/index.html'),start=html.indexOf('function payrollShiftKey('),end=html.indexOf('function renderWeeklyReports(',start);
+  assert.ok(start>=0&&end>start);
+  const state={settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},shiftReports:[
+    {id:'2026-09-01-sergey',date:'2026-09-01',shift:'sergey',salary:2000,cash:10000,deferredCash:6000,paidOrderIds:['OLD-1']},
+    {id:'2026-09-02-sergey',date:'2026-09-02',shift:'sergey',salary:2500,cash:25000,deferredCash:15000,paidOrderIds:['LATE-1']}
+  ]};
+  const box={innerHTML:''},parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(+m[1],+m[2]-1,+m[3]):null},render=new Function('state','$','norm','parseDate','uniqueShiftReports','shiftIntegrity','num','money','esc',html.slice(start,end)+';return {renderTwoDayPayrollPayouts}')(
+    state,s=>s==='#payrollCyclePayoutTable'?box:null,v=>String(v||'').toLowerCase().replace(/ё/g,'е'),parse,rows=>rows,()=>true,v=>Number(v)||0,v=>`${Number(v).toFixed(0)} ₽`,v=>String(v)
+  );
+  render.renderTwoDayPayrollPayouts(2026,9,'2026-09-01','sergey',[]);
+  assert.match(box.innerHTML,/09-01 — 09-02/);
+  assert.match(box.innerHTML,/Касса за цикл/);
+  assert.match(box.innerHTML,/21000 ₽/);
+  assert.match(box.innerHTML,/4500 ₽/);
+  assert.match(box.innerHTML,/Оба отчёта сверены/);
 });
