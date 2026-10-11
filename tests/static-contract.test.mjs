@@ -406,15 +406,41 @@ test('owner two-day payroll payout groups both worked shifts and includes late c
   assert.match(box.innerHTML,/Оба отчёта сверены/);
 });
 
-test('historical payroll backfill skips existing reports and never creates today or future shifts',async()=>{
+test('historical payroll reports verify against the owner payroll ledger',()=>{
+  const html=read('preview/v18.17.21/index.html'),start=html.indexOf('function historicalPayrollDigest('),end=html.indexOf('function renderOwnerShiftApprovals(',start);
+  assert.ok(start>=0&&end>start);
+  const history={date:'2026-10-10',person:'artem',orders:10,cashCents:2721500,salaryCents:272150};
+  const state={payrollHistory:{days:[history]},settings:{shiftBasePay:2000,shiftCashThreshold:20000,shiftCashRate:10,staff:[{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]}};
+  const num=v=>Number(v)||0,profile=state.settings.staff[0];
+  const f=new Function('state','num','pinHash','shiftName','shiftPayroll','shiftSnapshot','legacyShiftSnapshot',html.slice(start,end)+';return {historicalPayrollShiftSnapshot,shiftIntegrity}')(
+    state,num,v=>'hash:'+v,v=>v==='artem'?'Смена Артёма':'Смена Сергея',(cash)=>cash>20000?cash*.1:2000,()=>({}),()=>({})
+  );
+  const report=f.historicalPayrollShiftSnapshot(history,profile);
+  Object.assign(report,{subjectMemberId:'a',approvedFor:'a'});
+  assert.equal(report.cash,27215);
+  assert.equal(report.salary,2721.5);
+  assert.equal(f.shiftIntegrity(report),true);
+  assert.equal(f.shiftIntegrity({...report,salary:2000}),false);
+  assert.equal(f.shiftIntegrity({...report,dataHash:'tampered'}),false);
+});
+
+test('historical payroll backfill uses only past ledger rows and skips verified duplicates',async()=>{
   const html=read('preview/v18.17.21/index.html'),start=html.indexOf('async function backfillClosedHistoricalShifts()'),end=html.indexOf('function renderTwoDayPayrollPayouts(',start);
   assert.ok(start>=0&&end>start);
-  const state={settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},shiftReports:[{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey'}]},created=[];
-  const elements={'#payrollCycleAnchor':{value:'2026-10-08'},'#payrollCycleStart':{value:'sergey'},'#backfillClosedShifts':{disabled:false}},parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null},iso=d=>d.toISOString().slice(0,10),scheduled=(date,anchor,first)=>{const delta=(parse(date)-parse(anchor))/86400000,phase=((delta%4)+4)%4;return phase<2?first:(first==='sergey'?'artem':'sergey')};
-  const cloud={connected:true,confirmShiftDraft:async r=>{created.push(r.date);return r}},run=new Function('currentRole','window','$','toast','parseDate','today','iso','payrollScheduledShift','state','currentUser','shiftSnapshot','payrollShiftKey','dbWrite','renderShiftClose','renderWeeklyReports',html.slice(start,end)+';return backfillClosedHistoricalShifts')(
-    ()=> 'owner',{MasterAICloud:cloud},s=>elements[s],()=>{},parse,()=> '2026-10-11',iso,scheduled,state,()=>({id:'owner',name:'Owner'}),(date,profile)=>({id:date+'-'+profile.shift,date,shift:profile.shift,salary:2000}),r=>r.shift,async()=>{},()=>{},()=>{}
+  const ledger=[
+    {date:'2026-10-08',person:'sergey',orders:10,cashCents:3547300,salaryCents:354700},
+    {date:'2026-10-09',person:'artem',orders:9,cashCents:1175000,salaryCents:200000},
+    {date:'2026-10-10',person:'artem',orders:10,cashCents:2721500,salaryCents:272150},
+    {date:'2026-10-11',person:'sergey',orders:11,cashCents:0,salaryCents:0}
+  ];
+  const state={payrollHistory:{days:ledger},settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},shiftReports:[{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey',ownerConfirmed:true}]},created=[],errors=[];
+  const elements={'#backfillClosedShifts':{disabled:false}};
+  const cloud={connected:true,confirmShiftDraft:async r=>{created.push(r.date);return r}},run=new Function('currentRole','window','$','toast','today','state','currentUser','historicalPayrollShiftSnapshot','shiftIntegrity','dbWrite','renderShiftClose','renderWeeklyReports',html.slice(start,end)+';return backfillClosedHistoricalShifts')(
+    ()=> 'owner',{MasterAICloud:cloud},s=>elements[s],m=>errors.push(m),()=> '2026-10-11',state,()=>({id:'owner',name:'Owner'}),
+    (row,profile)=>({id:row.date+'-'+profile.shift,date:row.date,shift:profile.shift,salary:row.salaryCents/100}),r=>!!r.ownerConfirmed,async()=>{},()=>{},()=>{}
   );
   await run();
+  assert.deepEqual(errors,['Исторические смены зафиксированы: 2 новых, 1 уже были подтверждены']);
   assert.deepEqual(created,['2026-10-09','2026-10-10']);
   assert.equal(state.shiftReports.some(r=>r.date>='2026-10-11'),false);
   assert.equal(state.shiftReports.length,3);
