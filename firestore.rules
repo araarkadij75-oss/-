@@ -77,7 +77,8 @@ service cloud.firestore {
           'orders', 'financialOrders', 'completed', 'active', 'refused',
           'cancelled', 'unassigned', 'reviewPending', 'reviews', 'reviewRate',
           'turnover', 'cash', 'avgCheck', 'salary', 'basePay', 'cashThreshold',
-          'cashRate', 'orderIds', 'dataHash', 'closedAt', 'serverClosedAt'
+          'cashRate', 'orderIds', 'dataHash', 'closedAt', 'serverClosedAt',
+          'settlementVersion', 'shiftCash', 'deferredCash', 'paidOrderIds', 'deferredOrderIds'
         ])
         && request.resource.data.id == reportId
         && reportId == request.resource.data.date + '-' + member.shift
@@ -87,6 +88,19 @@ service cloud.firestore {
         && member.shift in ['sergey', 'artem']
         && request.resource.data.serverClosedAt == request.time
         && request.resource.data.salary == expected
+        && (!request.resource.data.keys().hasAny(['settlementVersion'])
+          || (request.resource.data.settlementVersion == 1
+            && request.resource.data.keys().hasAll([
+              'shiftCash', 'deferredCash', 'paidOrderIds', 'deferredOrderIds'
+            ])))
+        && (!request.resource.data.keys().hasAny(['shiftCash'])
+          || (request.resource.data.shiftCash >= 0
+            && request.resource.data.deferredCash >= 0
+            && request.resource.data.shiftCash + request.resource.data.deferredCash == request.resource.data.cash
+            && request.resource.data.paidOrderIds is list
+            && request.resource.data.paidOrderIds.size() <= 500
+            && request.resource.data.deferredOrderIds is list
+            && request.resource.data.deferredOrderIds.size() <= request.resource.data.paidOrderIds.size()))
         && request.resource.data.date is string
         && request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
         && request.resource.data.orders is int

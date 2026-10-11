@@ -238,6 +238,9 @@ test('shift reports are private per staff member and use one deterministic daily
   const ref=doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem');
   const valid={id:'2026-09-23-artem',date:'2026-09-23',closedBy:'artem',closedByName:'Артём',shift:'artem',shiftName:'Смена Артёма',orders:8,financialOrders:4,completed:3,active:2,refused:1,cancelled:0,unassigned:0,reviewPending:0,reviews:2,reviewRate:66.7,turnover:60000,cash:50000,avgCheck:15000,salary:5000,basePay:2000,cashThreshold:20000,cashRate:10,orderIds:['a','b'],dataHash:'hash',closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp()};
   await assertSucceeds(setDoc(ref,valid));
+  const lateSettlement={...valid,id:'2026-09-25-artem',date:'2026-09-25',orders:1,financialOrders:1,completed:1,turnover:35000,cash:35000,shiftCash:0,deferredCash:35000,salary:3500,orderIds:['late-1'],paidOrderIds:['late-1'],deferredOrderIds:['late-1'],settlementVersion:1,serverClosedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(db,'workspaces',ws,'shiftReports',lateSettlement.id),lateSettlement));
+  await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','2026-09-26-artem'),{...lateSettlement,id:'2026-09-26-artem',date:'2026-09-26',cash:35000,shiftCash:1000,deferredCash:1000,serverClosedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(dbFor('backup-ops-uid'),'workspaces',ws,'shiftReports',valid.id),{...valid,closedBy:'backup',closedByName:'Запасной',serverClosedAt:serverTimestamp()}));
   const sergeyDb=dbFor('sergey-ops-uid');
   const sergey={...valid,id:'2026-09-23-sergey',closedBy:'sergey',closedByName:'Сергей',shift:'sergey',shiftName:'Смена Сергея',cash:1000,salary:2000,turnover:5000,avgCheck:5000,serverClosedAt:serverTimestamp()};

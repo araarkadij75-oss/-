@@ -207,6 +207,38 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
   assert.match(rules, /shiftReports/);
 });
 
+test('late cash settlements roll into the original shift exactly once', () => {
+  const source = read('index.html');
+  const payroll = source.match(/function shiftPayroll\([^\n]+/);
+  assert.ok(payroll, 'payroll calculation exists');
+  const calculate = new Function('num', `return (${payroll[0]})`)(value => Number(value) || 0);
+  assert.equal(calculate(35000, { shiftBasePay: 2000, shiftCashThreshold: 20000, shiftCashRate: 10 }), 3500);
+  assert.equal(calculate(20000, { shiftBasePay: 2000, shiftCashThreshold: 20000, shiftCashRate: 10 }), 2000);
+  assert.match(source, /function shiftSettlementOrders\(/);
+  assert.match(source, /r\.paidOrderIds\)\?r\.paidOrderIds/);
+  assert.match(source, /!r\._cashClosedAt/);
+  assert.match(source, /deferredOrderIds/);
+  assert.match(source, /id="payrollAccrualTable"/);
+  assert.match(read('firestore.rules'), /request\.resource\.data\.shiftCash \+ request\.resource\.data\.deferredCash == request\.resource\.data\.cash/);
+  const settlementSource = source.match(/function shiftSettlementOrders\([^\n]+/);
+  const settlementState = { shiftReports: [{ closedBy: 'sergey', date: '2026-10-09', orderIds: ['already-paid'] }], orders: [
+      { orderId: 'late-old', _createdByShift: 'sergey', callDate: '2026-10-05', _cashClosedAt: '2026-10-11T10:00:00Z', companyShare: 3000 },
+      { orderId: 'same-day', _createdByShift: 'sergey', callDate: '2026-10-11', _cashClosedAt: '2026-10-11T11:00:00Z', companyShare: 32000 },
+      { orderId: 'already-paid', _createdByShift: 'sergey', callDate: '2026-10-08', _cashClosedAt: '2026-10-11T12:00:00Z', companyShare: 9000 },
+      { orderId: 'artem', _createdByShift: 'artem', callDate: '2026-10-08', _cashClosedAt: '2026-10-11T12:00:00Z', companyShare: 4000 }
+    ] };
+  settlementState.orders.forEach(r => { r._cashClosedOn = '2026-10-11'; });
+  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', `return (${settlementSource[0]})`)(
+    settlementState, value => Number(value) || 0, String, value => String(value || '').toLowerCase(),
+    value => typeof value === 'string' ? value.slice(0, 10) : '', value => value
+  );
+  const sergey = { id: 'sergey', name: 'Сергей', shift: 'sergey' };
+  assert.deepEqual(settlement('2026-10-11', sergey).map(r => r.orderId), ['late-old', 'same-day']);
+  assert.deepEqual(settlement('2026-10-10', sergey), [], 'a future surrender cannot affect an earlier shift');
+  settlementState.shiftReports.push({ closedBy: 'sergey', date: '2026-10-11', paidOrderIds: ['late-old', 'same-day'] });
+  assert.deepEqual(settlement('2026-10-12', sergey), [], 'paid order IDs do not accrue twice');
+});
+
 test('master clients cannot open or submit the generic order editor', () => {
   const rules = read('firestore.rules');
   for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
@@ -220,7 +252,7 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v36/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('weekly schedule ignores stale loads and locks edits while saving', () => {
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v37/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('weekly schedule ignores stale loads and locks edits while saving', () => {
   for (const page of ['index.html', 'dispatcher-logistic.html']) {
     const html = read(page);
     assert.match(html, /masterWeekRequest=0/);
