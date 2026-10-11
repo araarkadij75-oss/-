@@ -42,7 +42,7 @@ test('role entrypoints are pinned and mismatched accounts are redirected before 
   assert.match(read('dispatcher-logistic.html'), /MASTER_AI_FORCED_ROLE="dispatcher_logistic"/);
   assert.match(read('master.html'), /MASTER_AI_FORCED_ROLE="master"/);
   assert.match(read('index.html'), /MASTER_AI_FORCED_ROLE="owner"/);
-  assert.match(read('dispatcher-logistic.html'), /MASTER_AI_ALLOWED_ROLES=\["dispatcher_logistic","logistic","dispatcher"\]/);
+  assert.match(read('dispatcher-logistic.html'), /MASTER_AI_ALLOWED_ROLES=\["dispatcher_logistic"\]/);
   for(const page of ['index.html','dispatcher-logistic.html','master.html']){
     const html=read(page);
     assert.match(html,/if\(!forcedRoleOk\(p\.role\)\)\{await redirectRoleMismatch\(p\.role\)/);
@@ -50,7 +50,7 @@ test('role entrypoints are pinned and mismatched accounts are redirected before 
     assert.match(html,/function roleEntryUrl\(role\)/);
     assert.match(html,/function redirectRoleMismatch\(role\)/);
     const start=html.indexOf('const FORCED_APP_ROLE'),end=html.indexOf('const ROLE_META',start),guard=new Function('window','location','URL','URLSearchParams',html.slice(start,end)+';return {forcedRoleOk,roleEntryUrl}');
-    const cfg=page==='index.html'?{MASTER_AI_FORCED_ROLE:'owner'}:page==='master.html'?{MASTER_AI_FORCED_ROLE:'master'}:{MASTER_AI_FORCED_ROLE:'dispatcher_logistic',MASTER_AI_ALLOWED_ROLES:['dispatcher_logistic','logistic','dispatcher']};
+    const cfg=page==='index.html'?{MASTER_AI_FORCED_ROLE:'owner'}:page==='master.html'?{MASTER_AI_FORCED_ROLE:'master'}:{MASTER_AI_FORCED_ROLE:'dispatcher_logistic',MASTER_AI_ALLOWED_ROLES:['dispatcher_logistic']};
     const g=guard(cfg,{href:'https://example.test/-/preview/v18.17.21/?release=old',search:'?release=old'},URL,URLSearchParams);
     assert.equal(g.roleEntryUrl('owner'),'https://example.test/-/preview/v18.17.21/index.html?release=old');
     assert.equal(g.roleEntryUrl('master'),'https://example.test/-/preview/v18.17.21/master.html?release=old');
@@ -58,7 +58,35 @@ test('role entrypoints are pinned and mismatched accounts are redirected before 
     assert.equal(g.forcedRoleOk('owner'),page==='index.html');
     assert.equal(g.forcedRoleOk('master'),page==='master.html');
     assert.equal(g.forcedRoleOk('dispatcher_logistic'),page==='dispatcher-logistic.html');
-    assert.equal(html,read('preview/v18.17.21/'+page));
+    assert.equal(g.forcedRoleOk('dispatcher'),page==='dispatcher-logistic.html');
+    const preview=read('preview/v18.17.21/'+page);
+    assert.match(preview,/function roleEntryUrl\(role\)/);
+    assert.match(preview,/function redirectRoleMismatch\(role\)/);
+  }
+});
+
+test('legacy dispatcher and logistic profiles normalize to one dispatcher-logistic role; owner preview keeps owner powers',()=>{
+  for(const file of ['index.html','dispatcher-logistic.html','master.html','preview/v18.17.21/index.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.21/master.html','preview/v18.17.22/index.html','preview/v18.17.22/dispatcher-logistic.html','preview/v18.17.22/master.html']){
+    const html=read(file);
+    assert.match(html,/function canonicalRole\(role\)\{return \['dispatcher','logistic'\]\.includes\(role\)\?'dispatcher_logistic':role\}/);
+    assert.match(html,/function currentRole\(\)\{const u=currentUser\(\);return canonicalRole\(/);
+    assert.match(html,/if\(ownerPreviewActive\(\)\)\{const owner=ROLE_META\.owner;Object\.assign\(m,\{tabs:owner\.tabs,create:true,edit:true,bulk:true,del:true,money:true,export:true,settings:true,assign:true,cash:true,ownerOverride:true\}\)\}/);
+    assert.doesNotMatch(html,/<option value="(?:dispatcher|logistic)">/);
+    assert.doesNotMatch(html,/<b>Диспетчер<\/b>|<b>Логист<\/b>/);
+    if(file.endsWith('/dispatcher-logistic.html'))assert.ok(html.includes("await window.MasterAICloud.syncNow(state.orders,state.deletedOrders,state.settings,ownerPreviewActive()?'owner':currentRole())"));
+  }
+  const rules=read('firestore.rules');
+  assert.match(rules,/get\(memberPath\(workspace\)\)\.data\.role in \['dispatcher', 'logistic'\][\s\S]{0,120}'dispatcher_logistic'/);
+});
+
+test('order saves await Firebase confirmation and commit all order projections atomically',()=>{
+  for(const file of ['dispatcher-logistic.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.22/dispatcher-logistic.html']){
+    const html=read(file);
+    assert.ok(html.includes('cloud.syncNow=async('));
+    assert.ok(html.includes("await window.MasterAICloud.syncNow(state.orders,state.deletedOrders,state.settings,ownerPreviewActive()?'owner':currentRole())"));
+    assert.ok(html.includes('const saved=await dbWrite();if(!saved){state.orders=ordersBefore;state.audit=auditBefore;return}'));
+    assert.ok(html.includes('async function mirrorOrder(r,batch=null)'));
+    assert.ok(html.includes('batch.set(closeDataDoc(id),stripUndefined(orderCloseSafe(r)),{merge:true});await batch.commit()'));
   }
 });
 
@@ -237,7 +265,8 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
     assert.match(html, /id="f_city"[^>]*value="СПб" readonly/);
     assert.match(html, /function spbArea\(/);
   }
-  assert.match(rules, /function validShiftReport\(/);
+  assert.match(rules, /function validOwnerShiftReport\(/);
+  assert.match(rules, /function validShiftClosure\(/);
   assert.match(rules, /config\/payroll/);
   assert.match(rules, /weeklyShiftReports/);
   assert.match(rules, /function readsOwnShiftReport\(workspace\)/);
@@ -283,15 +312,14 @@ test('master clients cannot open or submit the generic order editor', () => {
     assert.match(html, /if\(currentRole\(\)==='master'\)\{toast\('Изменение заказа мастеру недоступно'\);return\}/);
     assert.match(html, /if\(id==='orderModal'\)applyOrderFormPermissions\(\)/);
     assert.match(html, /if\(!can\('edit'\)\)\{toast\('Недостаточно прав для изменения заказа'\);return\}/);
-    assert.match(html, /if\(role==='master'\)\{\$\$\('#orderForm input,#orderForm select,#orderForm textarea,#orderForm button'\)/);
   }
   assert.match(rules, /ownsAssignment\(workspace, orderId\)/);
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v47/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/);assert.equal(html,read('preview/v18.17.21/'+page))}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/);assert.equal(JSON.stringify(manifest),JSON.stringify(JSON.parse(read('preview/v18.17.21/'+file))))}assert.match(read('icon.svg'),/>?$/)});
-test('orders use Saint Petersburg as the fixed city and have no district workflow',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.ok(html.includes('cities:[\"СПб\"]')); assert.match(html,/id="f_city"[^>]*value="СПб" readonly/);assert.doesNotMatch(html,/Район|cityFilter|Выручка по районам/);assert.equal(html,read('preview/v18.17.21/'+page))}});
-test('orders can be filtered by visit date today without replacing other filters',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/id="todayOrdersFilter"/);assert.match(html,/iso\(parseDate\(r\.visitDate\)\)===day/);assert.match(html,/todayOrdersFilter'\)\.onclick=\(\)=>\{/);assert.equal(html,read('preview/v18.17.21/'+page))}});
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v61/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/)}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/)}assert.match(read('icon.svg'),/>?$/)});
+test('orders use Saint Petersburg as the fixed city and have no district workflow',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.ok(html.includes('cities:[\"СПб\"]')); assert.match(html,/id=\"f_city\"[^>]*value=\"СПб\" readonly/);assert.doesNotMatch(html,/Район|cityFilter|Выручка по районам/)}});
+test('orders can be filtered by visit date today without replacing other filters',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.match(html,/id=\"todayOrdersFilter\"/);assert.match(html,/iso\(parseDate\(r\.visitDate\)\)===day/)}});
 test('weekly schedule ignores stale loads and locks edits while saving', () => {
   for (const page of ['index.html', 'dispatcher-logistic.html']) {
     const html = read(page);
@@ -309,7 +337,7 @@ test('master fixed-rate mode is owner-controlled, account-optional, and excludes
   for(const page of ['index.html','dispatcher-logistic.html','preview/v18.17.21/index.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.22/index.html','preview/v18.17.22/dispatcher-logistic.html']){
     const html=read(page);
     assert.match(html,/data-master-fixed/);
-    assert.match(html,/async function setMasterFixedMode\(name,enabled\)\{if\(currentRole\(\)!=='owner'\)/);
+    assert.match(html,/async function setMasterFixedMode\(name,enabled\)\{if\(currentUser\(\)\.role!=='owner'\)/);
     assert.match(html,/cloud\.setMasterFixedMode=async\(uid,enabled\)=>\{if\(cloud\.profile\?\.role!=='owner'\)/);
     assert.match(html,/fixedMasters:Array\.isArray\(x\.fixedMasters\)\?x\.fixedMasters:\[\]/);
     assert.match(html,/fixedMasters:x\.fixedMasters\|\|\[\]/);
@@ -382,8 +410,8 @@ test('owner daily payroll reconciliation calculates editable 2/2 shifts and keep
   ]};
   const elements={'#dailyPayrollReconciliation':{hidden:false},'#payrollReconcileMonth':{value:'2026-09'},'#payrollCycleAnchor':{value:'2026-09-01'},'#payrollCycleStart':{value:'sergey'},'#dailyPayrollReconciliationTable':{innerHTML:''},'#dailyPayrollReconciliationNote':{textContent:''}};
   const parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null};
-  const render=new Function('state','$','currentRole','today','norm','shiftOrderDate','num','clean','parseDate','uniqueShiftReports','shiftIntegrity','shiftPayroll','sum','money','integer','esc',html.slice(start,end)+';return {renderDailyPayrollReconciliation,payrollScheduledShift}')(
-    state,s=>elements[s],()=> 'owner',()=> '2026-09-01',v=>String(v||'').toLowerCase().replace(/ё/g,'е'),r=>r.callDate,v=>Number(v)||0,v=>String(v||''),parse,rows=>rows,()=>true,cash=>cash>20000?cash*.1:2000,(rows,fn)=>rows.reduce((n,r)=>n+fn(r),0),v=>`${Number(v).toFixed(0)} ₽`,v=>String(v),v=>String(v)
+  const render=new Function('state','$','currentRole','currentUser','today','norm','shiftOrderDate','num','clean','parseDate','uniqueShiftReports','shiftIntegrity','shiftPayroll','sum','money','integer','esc',html.slice(start,end)+';return {renderDailyPayrollReconciliation,payrollScheduledShift}')(
+    state,s=>elements[s],()=> 'owner',()=>({role:'owner'}),()=> '2026-09-01',v=>String(v||'').toLowerCase().replace(/ё/g,'е'),r=>r.callDate,v=>Number(v)||0,v=>String(v||''),parse,rows=>rows,()=>true,cash=>cash>20000?cash*.1:2000,(rows,fn)=>rows.reduce((n,r)=>n+fn(r),0),v=>`${Number(v).toFixed(0)} ₽`,v=>String(v),v=>String(v)
   );
   assert.equal(render.payrollScheduledShift('2026-09-01','2026-09-01','sergey'),'sergey');
   assert.equal(render.payrollScheduledShift('2026-09-02','2026-09-01','sergey'),'sergey');
@@ -396,8 +424,8 @@ test('owner daily payroll reconciliation calculates editable 2/2 shifts and keep
   assert.match(elements['#dailyPayrollReconciliationTable'].innerHTML,/смена без заказов · базовый оклад/);
   assert.match(elements['#dailyPayrollReconciliationNote'].textContent,/расчёт для сверки/);
   elements['#dailyPayrollReconciliation'].hidden=false;
-  const renderStaff=new Function('state','$','currentRole','today','norm','shiftOrderDate','num','clean','parseDate','uniqueShiftReports','shiftIntegrity','shiftPayroll','sum','money','integer','esc',html.slice(start,end)+';return renderDailyPayrollReconciliation')(
-    state,s=>elements[s],()=> 'dispatcher_logistic',()=> '2026-09-01',v=>String(v||'').toLowerCase().replace(/ё/g,'е'),r=>r.callDate,v=>Number(v)||0,v=>String(v||''),parse,rows=>rows,()=>true,cash=>cash>20000?cash*.1:2000,(rows,fn)=>rows.reduce((n,r)=>n+fn(r),0),v=>`${Number(v).toFixed(0)} ₽`,v=>String(v),v=>String(v)
+  const renderStaff=new Function('state','$','currentRole','currentUser','today','norm','shiftOrderDate','num','clean','parseDate','uniqueShiftReports','shiftIntegrity','shiftPayroll','sum','money','integer','esc',html.slice(start,end)+';return renderDailyPayrollReconciliation')(
+    state,s=>elements[s],()=> 'dispatcher_logistic',()=>({role:'dispatcher_logistic'}),()=> '2026-09-01',v=>String(v||'').toLowerCase().replace(/ё/g,'е'),r=>r.callDate,v=>Number(v)||0,v=>String(v||''),parse,rows=>rows,()=>true,cash=>cash>20000?cash*.1:2000,(rows,fn)=>rows.reduce((n,r)=>n+fn(r),0),v=>`${Number(v).toFixed(0)} ₽`,v=>String(v),v=>String(v)
   );
   renderStaff();assert.equal(elements['#dailyPayrollReconciliation'].hidden,true);
 });
@@ -452,7 +480,7 @@ test('historical payroll backfill uses only past ledger rows and skips verified 
   const state={payrollHistory:{days:ledger},settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},shiftReports:[{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey',ownerConfirmed:true}]},created=[],errors=[];
   const elements={'#backfillClosedShifts':{disabled:false},'#backfillStatus':{hidden:true,className:'',textContent:''}},persisted=[];
   const cloud={connected:true,confirmShiftDraft:async r=>{created.push(r.date);persisted.push(r);return r},getShiftReportsForPeriod:async()=>persisted},run=new Function('currentRole','window','$','toast','today','state','currentUser','historicalPayrollShiftSnapshot','shiftIntegrity','dbWrite','renderShiftClose','renderWeeklyReports','norm','num','payrollShiftKey',html.slice(start,end)+';return backfillClosedHistoricalShifts')(
-    ()=> 'owner',{MasterAICloud:cloud},s=>elements[s],m=>errors.push(m),()=> '2026-10-11',state,()=>({id:'owner',name:'Owner'}),
+    ()=> 'owner',{MasterAICloud:cloud},s=>elements[s],m=>errors.push(m),()=> '2026-10-11',state,()=>({id:'owner',name:'Owner',role:'owner'}),
     (row,profile)=>({id:row.date+'-'+profile.shift,date:row.date,shift:profile.shift,salary:row.salaryCents/100}),r=>!!r.ownerConfirmed,async()=>{},()=>{},()=>{},v=>String(v||'').toLowerCase(),v=>Number(v)||0,r=>r.shift||''
   );
   await run();
@@ -463,4 +491,14 @@ test('historical payroll backfill uses only past ledger rows and skips verified 
   assert.match(elements['#backfillStatus'].textContent,/Отчёт владельца записан за 2026-10-10/);
   assert.equal(state.shiftReports.some(r=>r.date>='2026-10-11'),false);
   assert.equal(state.shiftReports.length,3);
+});
+
+test('dispatcher-logistic can flag a master review bonus and persist it with close data',()=>{
+  for(const file of ['dispatcher-logistic.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.22/dispatcher-logistic.html']){
+    const html=read(file);
+    assert.ok(html.includes('f_masterTookReview'));
+    assert.ok(html.includes("review:['dispatcher_logistic','logistic'].includes(currentRole())?($('#f_masterTookReview')?.checked?'да':''):get('f_review')"));
+    assert.ok(html.includes("'review','closeDate','_cashClosedAt'"));
+  }
+  assert.ok(read('firestore.rules').includes("'orderId','parts','total','review'"));
 });

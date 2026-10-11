@@ -461,3 +461,58 @@ svg text{font-family:Arial,"Helvetica Neue",system-ui,sans-serif}
   #orderForm>.field{padding:9px}
   #orderForm .finance-details .details-body{padding:9px}
 }
+
+/* 18.17.21 audit pass: stable navigation, legible type and clearer work zones. */
+.top{
+  position:relative;top:auto;
+  border:1px solid #29466d;
+  background:linear-gradient(120deg,#102542,#1b3558 68%,#203d65);
+  box-shadow:0 12px 32px rgba(2,10,25,.24);
+}
+.top .brand h1{color:#fff;text-shadow:none}
+.top .brand p{margin-left:44px;margin-top:2px;color:#c7d5e9;font-size:13px;font-weight:550;letter-spacing:0}
+.tabs{position:relative;top:auto;z-index:2}
+body:before{opacity:.32;background-size:36px 36px}
+.chart-sub,.kpi .s,.field label,.metric-note,.source-note,.help,.employee-info,
+.permission-note,.notice,.table td,.table th{font-size:max(12px,.82em)}
+.chart-sub,.source-note,.help,.employee-info,.permission-note,.notice{line-height:1.55}
+.table th{font-size:12px;letter-spacing:.025em}
+.table td{font-size:13px}
+.section-head{border-color:#cbd8e8}
+.section-head .chart-title:before{background:linear-gradient(180deg,#2673e8,#7755d5)}
+.section[data-panel="orders"]>.card.pad{background:linear-gradient(145deg,#fff,#edf4ff)}
+.section[data-panel="dashboard"]>.card.pad{background:linear-gradient(145deg,#fff,#eaf2ff)}
+.section[data-panel="mastershifts"]>.card.pad{background:linear-gradient(145deg,#fff,#eaf2ff)}
+.section[data-panel="shiftclose"]>.card.pad{background:linear-gradient(145deg,#fff,#eaf5ee)}
+.section[data-panel="reports"]>.card.pad{background:linear-gradient(145deg,#fff,#f1edfb)}
+.section[data-panel="finance"]>.card.pad{background:linear-gradient(145deg,#fff,#eaf5ee)}
+.section[data-panel="performance"]>.card.pad{background:linear-gradient(145deg,#fff,#eff0ff)}
+.section[data-panel="ai"]>.card.pad{background:linear-gradient(145deg,#fff,#f1edfb)}
+.section[data-panel]>.card.pad>.card.pad{background:#fff}
+.orders-toolbar,.filters{background:#e9eff8;border-color:#c4d2e4}
+.orders-toolbar .filters{background:#f8faff}
+.bulk-option:has(#bulkSchemeApply)[hidden]{display:none!important}
+.inline-master-input:disabled,.mobile-inline-master:disabled{cursor:not-allowed;background:#edf1f6;color:#59677d;opacity:1}
+.table-wrap{max-width:100%;overscroll-behavior-x:contain}
+@media(max-width:800px){
+  .top{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .top-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-start}
+  .top-actions>*{min-width:0}
+  .section[data-panel]>.card.pad{padding:14px}
+}
+@media(max-width:480px){
+  .app{padding:10px 10px 80px}
+  .top-actions{display:flex;flex-wrap:wrap}
+  .brand h1{font-size:21px}
+  .top .brand p{font-size:13px}
+  .tab{font-size:12px}
+  .table th{font-size:12px}
+  .table td{font-size:12px}
+  .kpi .s{font-size:12px}
+  .order-pagination .chart-sub{font-size:12px}
+}
+
+:root{--font-ui:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;--font-display:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif}
+html,body,button,input,select,textarea{font-family:var(--font-ui)!important;-webkit-font-smoothing:antialiased!important;-moz-osx-font-smoothing:grayscale!important;text-rendering:optimizeLegibility!important;font-synthesis:none!important}
+.top .brand h1,.chart-title,.modal-title,.kpi .v,.mini .v,.quality .v,.workflow-card .v{font-family:var(--font-display)!important}
+svg text{font-family:var(--font-ui)}

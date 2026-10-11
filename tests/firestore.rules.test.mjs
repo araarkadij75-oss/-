@@ -1,5 +1,6 @@
 import test, { before, after } from 'node:test';
 import fs from 'node:fs';
+import assert from 'node:assert/strict';
 import {
   initializeTestEnvironment,
   assertSucceeds,
@@ -123,7 +124,7 @@ test('owner has canonical CRUD', async () => {
   await assertSucceeds(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWNER-CREATE')));
 });
 
-test('dispatcher can create intake fields but cannot assign master or edit money', async () => {
+test('legacy dispatcher profile uses the unified dispatcher-logistic permissions', async () => {
   const db=dbFor('dispatch-uid');
   await assertSucceeds(setDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {
     orderId:'TEST-DISPATCH-CREATE', name:'Новый', phone:'70000000000', request:'Диагностика',
@@ -131,8 +132,11 @@ test('dispatcher can create intake fields but cannot assign master or edit money
     _updatedBy:'sergey', _updatedByName:'Сергей', _updatedByShift:'sergey',
     _status:'В работе', _updatedAt:new Date().toISOString()
   }));
-  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {master:'Иван'}));
-  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {total:5000}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {master:'Иван',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {total:5000,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {review:'да',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  await assertSucceeds(setDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-DISPATCH-CREATE'), {orderId:'TEST-DISPATCH-CREATE',name:'Новый',dispatcher:'Сергей',review:'да',_createdBy:'sergey',_createdByName:'Сергей',_createdByShift:'sergey',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  await assertSucceeds(getDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-DISPATCH-CREATE')));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE')));
   const xssId='<img src=x onerror=alert(1)>';
   await assertFails(setDoc(doc(db,'workspaces',ws,'orders',xssId), {
@@ -198,7 +202,7 @@ test('closed shift report freezes regular orders while pickups remain editable u
     await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-08-sergey'),{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey',orderIds:['TEST-REPORTED','TEST-PICKUP'],lockedOrderIds:['TEST-REPORTED'],paidOrderIds:[]});
   });
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-REPORTED'),{total:6000,...actor}));
-  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-PICKUP'),{total:6000,_status:'Выполнен',_cashClosedOn:'2026-10-12',...actor}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-PICKUP'),{total:6000,_status:'Выполнен',_cashClosedBy:'sergey',_cashClosedByName:'Сергей',_cashClosedAt:new Date().toISOString(),_cashClosedOn:'2026-10-12',...actor}));
   await env.withSecurityRulesDisabled(async ctx=>{
     const admin=ctx.firestore();
     await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-12-sergey'),{id:'2026-10-12-sergey',date:'2026-10-12',shift:'sergey',orderIds:[],lockedOrderIds:['TEST-PICKUP'],paidOrderIds:['TEST-PICKUP']});
@@ -256,17 +260,28 @@ test('order close data is visible only to owner and shift closers, and freezes a
   const dispatcher=dbFor('dispatch-uid');
   const orderId='TEST-CLOSE-DATA';
   const actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  const closer={_cashClosedBy:'sergey',_cashClosedByName:'Сергей',_cashClosedAt:'2026-10-11T12:00:00.000Z',_cashClosedOn:'2026-10-11'};
   const closeDoc=doc(sergey,'workspaces',ws,'orderCloseData',orderId);
+  const legacyCloseDoc=doc(sergey,'workspaces',ws,'orderCloseData','TEST-CLOSE-LEGACY');
   await env.withSecurityRulesDisabled(async ctx=>{
     const admin=ctx.firestore();
     await setDoc(doc(admin,'workspaces',ws,'orders',orderId),{orderId,callDate:'2026-10-11',_status:'Выполнен'});
+    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-CLOSE-LEGACY'),{orderId:'TEST-CLOSE-LEGACY',callDate:'2026-10-11',_status:'Выполнен'});
+    await setDoc(doc(admin,'workspaces',ws,'orderCloseData','TEST-CLOSE-LEGACY'),{orderId:'TEST-CLOSE-LEGACY',total:9000,parts:1000,closeDate:'10.10',...actor});
   });
-  await assertSucceeds(setDoc(closeDoc,{orderId,total:12000,parts:2000,closeDate:'11.10',...actor}));
-  await assertSucceeds(updateDoc(closeDoc,{total:13000,...actor}));
+  await assertSucceeds(updateDoc(legacyCloseDoc,{total:9500,...actor}));
+  // First close may happen after the finance document was created while the order was still open.
+  await assertSucceeds(updateDoc(legacyCloseDoc,{...closer,...actor}));
+  await assertFails(updateDoc(legacyCloseDoc,{...closer,_cashClosedBy:'artem',_cashClosedByName:'Артём',...actor}));
+  await assertFails(updateDoc(legacyCloseDoc,{total:9600,_cashClosedBy:'artem',_cashClosedByName:'Артём',_cashClosedAt:'2026-10-11T13:00:00.000Z',_cashClosedOn:'2026-10-11',...actor}));
+  await assertSucceeds(setDoc(closeDoc,{orderId,total:12000,parts:2000,closeDate:'11.10',...closer,...actor}));
+  await assertSucceeds(updateDoc(closeDoc,{total:13000,...actor,...closer}));
+  await assertFails(updateDoc(closeDoc,{_cashClosedBy:'artem',_cashClosedByName:'Артём',...actor}));
   await assertSucceeds(getDoc(doc(owner,'workspaces',ws,'orderCloseData',orderId)));
   await assertSucceeds(getDoc(closeDoc));
-  await assertFails(getDoc(doc(dispatcher,'workspaces',ws,'orderCloseData',orderId)));
-  await assertFails(getDocs(collection(dispatcher,'workspaces',ws,'orderCloseData')));
+  // The old dispatcher account value is normalized to the combined role.
+  await assertSucceeds(getDoc(doc(dispatcher,'workspaces',ws,'orderCloseData',orderId)));
+  await assertSucceeds(getDocs(collection(dispatcher,'workspaces',ws,'orderCloseData')));
   await env.withSecurityRulesDisabled(async ctx=>{
     const admin=ctx.firestore();
     await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-11-sergey'),{
@@ -274,6 +289,45 @@ test('order close data is visible only to owner and shift closers, and freezes a
     });
   });
   await assertFails(updateDoc(closeDoc,{total:14000,...actor}));
+});
+
+test('closing an order atomically saves and reloads finance data for the responsible shift', async () => {
+  const db=dbFor('sergey-ops-uid'),id='TEST-RELOAD-SAVED-CLOSE';
+  const actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  const close={_cashClosedBy:'sergey',_cashClosedByName:'Сергей',_cashClosedAt:'2026-10-11T14:00:00.000Z',_cashClosedOn:'2026-10-11'};
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'orders',id),{orderId:id,callDate:'2026-10-11',_status:'В работе'});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders',id),{orderId:id,callDate:'2026-10-11',_status:'В работе'});
+  });
+  const batch=writeBatch(db);
+  batch.set(doc(db,'workspaces',ws,'orders',id),{orderId:id,_status:'Выполнен',total:18000,parts:3000,review:'да',closeDate:'11.10',...close,...actor},{merge:true});
+  batch.set(doc(db,'workspaces',ws,'dispatcherOrders',id),{orderId:id,_status:'Выполнен',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'},{merge:true});
+  batch.set(doc(db,'workspaces',ws,'orderCloseData',id),{orderId:id,total:18000,parts:3000,review:'да',closeDate:'11.10',...close,...actor},{merge:true});
+  await assertSucceeds(batch.commit());
+  // A fresh read models a page reload: the restricted close projection keeps both amounts.
+  const [canonical,queueProjection,closeProjection]=await Promise.all([
+    getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'orders',id)),
+    getDoc(doc(db,'workspaces',ws,'dispatcherOrders',id)),
+    getDoc(doc(db,'workspaces',ws,'orderCloseData',id))
+  ]);
+  assert.equal(canonical.data().total,18000);
+  assert.equal(queueProjection.data()._status,'Выполнен');
+  assert.equal(closeProjection.data().total,18000);
+  assert.equal(closeProjection.data().parts,3000);
+  assert.equal(closeProjection.data().review,'да');
+  assert.equal(closeProjection.data()._cashClosedBy,'sergey');
+});
+
+test('order closure attribution is bound to the first authenticated closer and immutable', async () => {
+  const sergey=dbFor('sergey-ops-uid');
+  const artem=dbFor('ops-uid');
+  const path=doc(sergey,'workspaces',ws,'orders','TEST-CLOSE-SERGEY');
+  const close={_cashClosedAt:'2026-10-11T12:00:00.000Z',_cashClosedOn:'2026-10-11',_cashClosedBy:'sergey',_cashClosedByName:'Сергей'};
+  await assertSucceeds(updateDoc(path,{...close,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  await assertFails(updateDoc(path,{_cashClosedBy:'artem',_cashClosedByName:'Артём',_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
+  await assertFails(updateDoc(path,{total:12500,_cashClosedBy:'artem',_cashClosedByName:'Артём',_updatedBy:'artem',_updatedByName:'Артём',_updatedByShift:'artem'}));
+  await assertSucceeds(updateDoc(path,{total:12500,_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'}));
 });
 
 test('dispatcher profiles see only the shared sanitized queue, not canonical financial records', async () => {

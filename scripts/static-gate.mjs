@@ -45,7 +45,10 @@ for (const [name,html] of [['owner',owner],['dispatcher',dispatcher],['master',m
     must(!/\['ping','dry','read','sync'/.test(html), 'mutating diagnostic URL mode leaked');
     must(!/integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(B2B|WEBSITE)|__MASTER_AI_PENDING_(B2B|WEBSITE)_LINK/.test(html), 'retired integration callback remains in owner runtime');
   }
-  must(html.includes("sourceRef=cloud.profile?.role==='master'?masterDoc(orderId):orderDoc(orderId)"), name + ': master workflow reads a forbidden owner document');
+  const safeWorkflowRead = name === 'master'
+    ? html.includes("sourceRef=cloud.profile?.role==='master'?masterDoc(orderId):orderDoc(orderId)")
+    : html.includes("const role=cloud.profile?.role,sourceRef=role==='master'?masterDoc(orderId):['dispatcher','dispatcher_logistic','logistic'].includes(role)?dispatchDoc(orderId):orderDoc(orderId)");
+  must(safeWorkflowRead, name + ': role workflow reads the wrong order projection');
   must(!html.includes("await window.MasterAICloud.cleanupTechnicalArtifacts?.()"), name + ': login performs an unbounded cleanup scan');
 }
 
