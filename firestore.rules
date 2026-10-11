@@ -132,7 +132,8 @@ service cloud.firestore {
         ? get(payrollPath(workspace)).data.shiftCashThreshold : 20000;
       let rate = configured && get(payrollPath(workspace)).data.keys().hasAny(['shiftCashRate'])
         ? get(payrollPath(workspace)).data.shiftCashRate : 10;
-      let expected = data.cash > threshold ? data.cash * rate / 100 : basePay;
+      let percentageMatchesWholeRuble = data.salary * 100 >= data.cash * rate - 50
+        && data.salary * 100 <= data.cash * rate + 50;
       return data.keys().hasAll([
           'id','date','closedBy','closedByName','shift','shiftName','orders','financialOrders',
           'completed','active','refused','cancelled','unassigned','reviewPending','reviews',
@@ -169,7 +170,7 @@ service cloud.firestore {
         && data.basePay == basePay
         && data.cashThreshold == threshold
         && data.cashRate == rate
-        && data.salary == expected
+        && (data.cash > threshold ? percentageMatchesWholeRuble : data.salary == basePay)
         && data.orders is int && data.orders >= 0
         && data.financialOrders is int && data.financialOrders >= 0
         && data.completed is int && data.completed >= 0

@@ -311,6 +311,9 @@ test('shift reports are private per staff member and use one deterministic daily
   await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll'), {historyJson:'{"version":1,"status":"reconciliation_only"}'}));
   const ownerApproved={...valid,id:'2026-09-27-artem',date:'2026-09-27',closedBy:'owner-uid',closedByName:'Владелец',shift:'artem',shiftName:'Смена Артёма',turnover:5000,cash:1000,avgCheck:5000,salary:2000,subjectMemberId:'artem',approvedFor:'artem',approvedForName:'Артём',ownerConfirmed:true,ownerApprovedBy:'owner-uid',ownerApprovedByName:'Владелец',ownerApprovedAt:new Date().toISOString(),serverClosedAt:serverTimestamp(),serverApprovedAt:serverTimestamp()};
   await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports',ownerApproved.id),ownerApproved));
+  const roundedPercentageReport={...ownerApproved,id:'2026-09-28-sergey',date:'2026-09-28',shift:'sergey',shiftName:'Смена Сергея',subjectMemberId:'sergey',approvedFor:'sergey',approvedForName:'Сергей',cash:31308,turnover:31308,avgCheck:31308,salary:3131,serverClosedAt:serverTimestamp(),serverApprovedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports',roundedPercentageReport.id),roundedPercentageReport));
+  await assertFails(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports','2026-09-29-sergey'),{...roundedPercentageReport,id:'2026-09-29-sergey',date:'2026-09-29',salary:3132,serverClosedAt:serverTimestamp(),serverApprovedAt:serverTimestamp()}));
   await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'shiftReports',ownerApproved.id)));
   await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports',ownerApproved.id)));
 });
