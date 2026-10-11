@@ -271,7 +271,7 @@ if(cloud.enabled){
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js')
   ]);
-  const app=appMod.initializeApp(cfg.firebaseConfig),auth=authMod.getAuth(app),db=fs.getFirestore(app),authPersistenceReady=authMod.setPersistence(auth,authMod.browserSessionPersistence);
+  const app=appMod.initializeApp(cfg.firebaseConfig),auth=authMod.getAuth(app),db=fs.initializeFirestore(app,{experimentalForceLongPolling:true}),authPersistenceReady=authMod.setPersistence(auth,authMod.browserSessionPersistence);
   const ws=cfg.workspaceId;
   const norm=v=>String(v??'').trim().toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ');
   const friendlyMember=x=>{const y={...(x||{})},li=norm(y.login);if(['dispatcher','logistic'].includes(y.role))y.role='dispatcher_logistic';if(li==='owner'){y.name='Владелец'}else if(li==='beta-logist'){y.name='Диспетчер‑логист'}else if(li==='beta-master'){y.name='Мастер';y.master='Мастер'}else{y.name=String(y.name||y.login||'').replace(/^BETA\s+/i,'');y.master=String(y.master||'').replace(/^BETA\s+/i,'')}return y};
@@ -327,7 +327,7 @@ cloud.subscribe=(profile,onRows,retrying=false)=>{
     cloud.unsub=()=>{for(const stop of activeUnsubs.splice(0)){try{stop()}catch{}}};
     const isCurrent=()=>cloud.subscriptionId===subscriptionId;
     clearTimeout(cloud.serverAckTimer);
-    cloud.serverAckTimer=setTimeout(()=>{if(!isCurrent()||cloud.dataSyncState?.status==='ready')return;const message='Firebase не подтвердил загрузку общей очереди. Не создавайте повторные заказы. Нажмите индикатор «Подключение» для повтора.';const badge=document.querySelector('#cloudBadge');if(badge)badge.title=message;window.MasterAICloudStatus?.('error',message)},12000);
+    cloud.serverAckTimer=setTimeout(()=>{if(!isCurrent()||cloud.dataSyncState?.status==='ready')return;const message='Firebase не подтвердил загрузку общей очереди за 12 секунд. Автоматически переподключаемся; не создавайте повторные заказы.';const badge=document.querySelector('#cloudBadge');if(badge)badge.title=message;scheduleRetry(message)},12000);
     const scheduleRetry=(message)=>{
       if(!isCurrent())return;
       cloud.dataSyncState={...(cloud.dataSyncState||{}),status:'error',error:String(message||'Ошибка подключения')};

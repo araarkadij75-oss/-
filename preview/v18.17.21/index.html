@@ -234,6 +234,7 @@ body.auth-locked #loginModal,body.auth-locked #loginModal *{visibility:visible;p
 
 <section class="section" data-panel="diagnostics"><div class="card pad"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="chart-title">100 независимых автоматических проверок</div><div class="chart-sub">Проверяются интерфейс, роли, цвета, настройки, структура базы, ID, безопасность, аналитика, прогнозы и готовность к эксплуатации. Это реальные программные проверки, а не декоративные «эксперты».</div></div><div class="toolbar"><button class="btn primary" id="runAudit100" type="button">Запустить 100 проверок</button><button class="btn" id="autoHeal100" type="button">AI · исправить безопасно</button></div></div><div id="audit100Summary" class="audit-summary" style="margin-top:12px"></div><div class="audit-progress" style="margin-top:10px"><i id="audit100Progress" style="width:0%"></i></div><div id="audit100Note" class="notice" style="margin-top:10px">Проверка ещё не запускалась.</div></div><div class="grid2" style="margin-top:12px"><div class="card pad"><div class="chart-title">Результаты 100-контроля</div><div class="table-wrap audit-table" style="margin-top:10px;max-height:520px"><table class="table" style="min-width:720px"><thead><tr><th>#</th><th>Блок</th><th>Проверка</th><th>Статус</th><th>Комментарий</th></tr></thead><tbody id="audit100Body"></tbody></table></div></div><div class="card pad"><div class="chart-title">AI Auto-Healer</div><div class="chart-sub">Автоматически исправляет только безопасные структурные дефекты. Финансовые значения, телефоны, мастера и статусы клиентов без уверенного основания не переписываются.</div><div id="healerLog" class="healer-log" style="margin-top:10px"></div><div class="notice warn" style="margin-top:10px">Если проверка требует бизнес-решения, AI создаёт рекомендацию, а не меняет данные сам.</div></div></div></section>
 <section class="section" data-panel="settings">
+<div class="card pad owner-finance" style="margin-bottom:12px"><div class="row" style="justify-content:space-between;align-items:center;gap:12px"><div><div class="chart-title">Общая очередь Сергея и Артёма</div><div class="chart-sub">Безопасно восстановить диспетчерские копии заказов из основной базы. Финансовые поля и отчёты не копируются; более свежие изменения сотрудников сохраняются.</div><div id="dispatcherQueueRepairStatus" class="notice" style="margin-top:8px" role="status" aria-live="polite">Ничего не меняется, пока не запущена проверка.</div></div><button class="btn primary" id="backfillDispatcherOrders" type="button">Проверить и восстановить очередь</button></div></div>
 <div class="grid2">
 <div class="card pad"><div class="chart-title">Рабочие настройки</div><div class="grid2" style="margin-top:12px"><div class="field"><label>Название компании</label><input id="s_company" class="input"></div><div class="field"><label>Валюта</label><select id="s_currency" class="select"><option value="RUB">₽ RUB</option><option value="EUR">€ EUR</option><option value="USD">$ USD</option></select></div><div class="field"><label>Город</label><input id="s_city" class="input" value="СПб" readonly></div><div class="field"><label>Ответственный диспетчер-логист</label><input id="s_dispatcher" class="input" list="dispatcherList"></div></div><div class="form-section" style="grid-column:auto;margin-top:14px">Формула выплат мастерам</div><div class="grid4" style="margin-top:10px"><div class="field"><label>Порог 30→40</label><input id="s_threshold1" class="input" inputmode="decimal" value="4000"></div><div class="field"><label>Порог 40→50</label><input id="s_threshold2" class="input" inputmode="decimal" value="8000"></div><div class="field"><label>Сетка %</label><input id="s_gridRates" class="input" value="30 / 40 / 50"></div><div class="field"><label>Бонус за отзыв</label><input id="s_reviewBonus" class="input" value="5% · максимум 1 000 ₽" readonly aria-label="Бонус за отзыв: 5 процентов, не более 1000 рублей"></div><div class="field"><label>Фикс мастера, %</label><input id="s_fixedRate" class="input" inputmode="decimal" value="50"></div></div><div class="source-note" style="margin-top:8px">По умолчанию: до 4 000 мастеру 30%, 4 000–7 999 — 40%, от 8 000 — 50%. Хороший отзыв добавляет 5% от чистого чека (чек минус запчасти), но не более 1 000 ₽. На фиксе применяется тот же бонус. Фикса включается отдельно для каждого мастера в списке «Команда мастеров».</div><button class="btn primary" id="saveSettings" style="margin-top:12px">Сохранить настройки</button></div>
 <div class="card pad"><div class="chart-title">Надёжность</div><div id="storageInfo" class="notice" style="margin-top:10px"></div><div class="toolbar" style="margin-top:12px"><button class="btn" id="runTests">Запустить самотесты</button><button class="btn danger" id="clearDb">Удалить локальную базу</button></div><div class="chart-sub" style="margin-top:10px">ID заказа · роли сотрудников · журнал действий · резервные копии.</div></div>
@@ -270,7 +271,7 @@ if(cloud.enabled){
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),
     import('https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js')
   ]);
-  const app=appMod.initializeApp(cfg.firebaseConfig),auth=authMod.getAuth(app),db=fs.getFirestore(app);
+  const app=appMod.initializeApp(cfg.firebaseConfig),auth=authMod.getAuth(app),db=fs.initializeFirestore(app,{experimentalForceLongPolling:true});
   const ws=cfg.workspaceId;
   const norm=v=>String(v??'').trim().toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ');
   const friendlyMember=x=>{const y={...(x||{})},li=norm(y.login);if(['dispatcher','logistic'].includes(y.role))y.role='dispatcher_logistic';if(li==='owner'){y.name='Владелец'}else if(li==='beta-logist'){y.name='Диспетчер‑логист'}else if(li==='beta-master'){y.name='Мастер';y.master='Мастер'}else{y.name=String(y.name||y.login||'').replace(/^BETA\s+/i,'');y.master=String(y.master||'').replace(/^BETA\s+/i,'')}return y};
@@ -325,7 +326,7 @@ cloud.subscribe=(profile,onRows,retrying=false)=>{
     cloud.unsub=()=>{for(const stop of activeUnsubs.splice(0)){try{stop()}catch{}}};
     const isCurrent=()=>cloud.subscriptionId===subscriptionId;
     clearTimeout(cloud.serverAckTimer);
-    cloud.serverAckTimer=setTimeout(()=>{if(!isCurrent()||cloud.dataSyncState?.status==='ready')return;const message='Firebase не подтвердил загрузку общей очереди. Не создавайте повторные заказы. Нажмите индикатор «Подключение» для повтора.';const badge=document.querySelector('#cloudBadge');if(badge)badge.title=message;window.MasterAICloudStatus?.('error',message)},12000);
+    cloud.serverAckTimer=setTimeout(()=>{if(!isCurrent()||cloud.dataSyncState?.status==='ready')return;const message='Firebase не подтвердил загрузку общей очереди за 12 секунд. Автоматически переподключаемся; не создавайте повторные заказы.';const badge=document.querySelector('#cloudBadge');if(badge)badge.title=message;scheduleRetry(message)},12000);
     const scheduleRetry=(message)=>{
       if(!isCurrent())return;
       cloud.dataSyncState={...(cloud.dataSyncState||{}),status:'error',error:String(message||'Ошибка подключения')};
@@ -407,7 +408,34 @@ cloud.subscribe=(profile,onRows,retrying=false)=>{
   cloud.saveGoogle=async()=>{throw new Error('Внешние интеграции отключены')};
   cloud.testGoogle=async()=>{throw new Error('Внешние интеграции отключены')};cloud.syncGoogleNow=async()=>{throw new Error('Внешние интеграции отключены')};
   cloud.integrationHealth=async()=>({ok:false,integrationsDisabled:true});cloud.integrationTestCreate=async()=>{throw new Error('Integration diagnostics disabled')};cloud.integrationTestRead=async()=>({exists:false});cloud.integrationTestDelete=async()=>{throw new Error('Integration diagnostics disabled')};
-  cloud.repairWorkspace=async()=>{if(cloud.profile?.role!=='owner')throw new Error('Только владелец');const o=await fs.getDocs(fs.collection(db,'workspaces',ws,'orders'));let n=0;for(const d of o.docs){await mirrorOrder(d.data());n++}return{ok:true,fixes:[],mirrored:n}};
+  cloud.backfillDispatcherOrders=async(onProgress=()=>{})=>{
+    if(cloud.profile?.role!=='owner')throw new Error('Только владелец');
+    const [canonical,dispatch]=await Promise.all([
+      fs.getDocs(fs.collection(db,'workspaces',ws,'orders')),
+      fs.getDocs(fs.collection(db,'workspaces',ws,'dispatcherOrders'))
+    ]);
+    const current=new Map(dispatch.docs.map(d=>[d.id,d.data()||{}]));
+    const writes=[];let skippedNewer=0,skippedExisting=0,added=0;
+    for(const source of canonical.docs){
+      const id=String(source.data()?.orderId||source.id||'').trim();if(!id)continue;
+      const old=current.get(id);
+      if(old){
+        const sourceTime=Date.parse(source.data()?._updatedAt||'')||0;
+        const dispatchTime=Date.parse(old._updatedAt||'')||0;
+        if(dispatchTime>=sourceTime){if(dispatchTime>sourceTime)skippedNewer++;else skippedExisting++;continue}
+      }
+      if(!old)added++;
+      writes.push({id,row:dispatchSafe({...source.data(),orderId:id})});
+    }
+    let written=0;
+    for(let i=0;i<writes.length;i+=450){
+      const batch=fs.writeBatch(db);
+      for(const item of writes.slice(i,i+450))batch.set(dispatchDoc(item.id),stripUndefined(item.row),{merge:false});
+      await batch.commit();written+=Math.min(450,writes.length-i);onProgress({written,total:writes.length,canonical:canonical.size,projectionBefore:dispatch.size});
+    }
+    return{ok:true,canonical:canonical.size,projectionBefore:dispatch.size,projectionAfter:dispatch.size+added,written,skippedNewer,skippedExisting};
+  };
+  cloud.repairWorkspace=async()=>cloud.backfillDispatcherOrders();
   function localPlan(prompt){const t=norm(prompt),changes=[];if(t.includes('компакт'))changes.push({path:'theme.density',op:'set',value:'compact'});if(t.includes('простор'))changes.push({path:'theme.density',op:'set',value:'spacious'});if(t.includes('контраст'))changes.push({path:'theme.highContrast',op:'set',value:true});if(t.includes('шрифт')&&(t.includes('увелич')||t.includes('+5')))changes.push({path:'theme.fontScale',op:'set',value:1.05});if(t.includes('темно-син')||t.includes('тёмно-син'))changes.push({path:'theme.accent',op:'set',value:'#173B6C'});if(t.includes('скрой')&&t.includes('ai')&&t.includes('логист'))changes.push({path:'modules.logistic.ai',op:'set',value:false});const requiresDeploy=changes.length===0;return{requestId:'local-'+Date.now(),summary:requiresDeploy?'Запрос требует изменения кода. Подготовлен JSON для ChatGPT.':'Безопасный live-план подготовлен локально.',risk:requiresDeploy?'medium':'low',changes,requiresDeploy,engineeringRequest:requiresDeploy?prompt:'',prompt}}
   cloud.aiProductPlan=async prompt=>{const p=localPlan(prompt);cloud.pendingPlans.set(p.requestId,p);return p};
   const setPath=(o,path,val)=>{const a=path.split('.');let c=o;for(let i=0;i<a.length-1;i++)c=c[a[i]]??={};c[a.at(-1)]=val};
@@ -868,5 +896,17 @@ async function betaResetLocal(){
 }
 
 if(window.MASTER_AI_BETA_ONLINE){const b=document.getElementById('betaResetBtn');if(b)b.hidden=true;init()}else{betaSeedLocal(false).then(()=>init()).then(()=>{const b=document.getElementById('betaResetBtn');if(b)b.onclick=betaResetLocal;}).catch(e=>{console.error('BETA bootstrap',e);alert('EliteService не смогла загрузить локальный снимок: '+e.message);init();})};
+document.addEventListener('click',async event=>{
+  const button=event.target.closest('#backfillDispatcherOrders');if(!button)return;
+  const status=document.querySelector('#dispatcherQueueRepairStatus'),cloud=window.MasterAICloud;
+  if(cloud?.profile?.role!=='owner'){if(status)status.textContent='Доступно только владельцу.';return}
+  button.disabled=true;if(status){status.className='notice';status.textContent='Сверяю очередь и проверяю версии заказов…'}
+  try{
+    const result=await cloud.backfillDispatcherOrders(progress=>{if(status)status.textContent=`Перенесено ${progress.written} из ${progress.total}; сохраняю пакет в Firestore…`});
+    if(status){status.className='notice ok';status.textContent=`Готово. В общей очереди было ${result.projectionBefore}, теперь ${result.projectionAfter}. Добавлено/обновлено: ${result.written}; пропущено более свежих изменений диспетчеров: ${result.skippedNewer}. Основные заказы и финансовые данные не изменялись.`}
+    window.MasterAICloudStatus?.('ok','Общая очередь сотрудников восстановлена');
+  }catch(error){if(status){status.className='notice warn';status.textContent='Не удалось восстановить очередь: '+(error?.message||error)}window.MasterAICloudStatus?.('error','Очередь не восстановлена: '+(error?.message||error))}
+  finally{button.disabled=false}
+});
 window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMasters():PRESETS.masters;
 </script><script>window.MASTER_AI_BUILD='18.17.21-CANDIDATE';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
