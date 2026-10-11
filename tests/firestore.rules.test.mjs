@@ -116,17 +116,31 @@ test('dispatcher can create intake fields but cannot assign master or edit money
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {master:'Иван'}));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {total:5000}));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE')));
+  const xssId='<img src=x onerror=alert(1)>';
+  await assertFails(setDoc(doc(db,'workspaces',ws,'orders',xssId), {
+    orderId:xssId, name:'Проверка', dispatcher:'Сергей',
+    _createdBy:'sergey', _createdByName:'Сергей', _createdByShift:'sergey',
+    _updatedBy:'sergey', _updatedByName:'Сергей', _updatedByShift:'sergey'
+  }));
   const actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {dispatcher:'Артём',...actor}));
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {_createdBy:'artem',...actor}));
 });
 
-test('dispatcher-logistic can operate but cannot canonical-delete', async () => {
+test('dispatcher-logistic can update operational data but cannot write finance or canonical-delete', async () => {
   const db=dbFor('ops-uid');
-  await assertSucceeds(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
+  await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
+  await assertFails(getDocs(collection(db,'workspaces',ws,'orders')));
+  await assertSucceeds(getDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN')));
   await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
-    master:'Иван', total:11000, _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+    master:'Иван', _status:'В работе', _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
   }));
+  for (const field of ['total','cleanCheck','pp','parts','masterAmount','companyShare','_fixedMaster','_autoFinance']) {
+    await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
+      [field]:field.startsWith('_')?true:999999,
+      _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+    }));
+  }
   await assertSucceeds(setDoc(doc(db,'workspaces',ws,'orders','TEST-OPS-CREATE'), {
     orderId:'TEST-OPS-CREATE', dispatcher:'Артём',
     _createdBy:'artem', _createdByName:'Артём', _createdByShift:'artem',
@@ -144,16 +158,18 @@ test('Sergey and Artem dispatcher-logistics share one workspace order queue acro
   const canonical = doc(sergey, 'workspaces', ws, 'orders', 'TEST-OWN');
   const safeMirror = doc(sergey, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN');
 
-  // Both shift profiles read the same canonical order and its role-safe mirror.
-  await assertSucceeds(getDoc(canonical));
-  await assertSucceeds(getDoc(doc(artem, 'workspaces', ws, 'orders', 'TEST-OWN')));
+  // Both shift profiles read the same sanitized mirror, never the full order.
+  await assertFails(getDoc(canonical));
+  await assertFails(getDoc(doc(artem, 'workspaces', ws, 'orders', 'TEST-OWN')));
+  await assertFails(getDocs(collection(sergey, 'workspaces', ws, 'orders')));
+  await assertFails(getDocs(collection(artem, 'workspaces', ws, 'orders')));
   await assertSucceeds(getDoc(safeMirror));
   await assertSucceeds(getDoc(doc(artem, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN')));
-  await assertSucceeds(getDocs(collection(sergey, 'workspaces', ws, 'orders')));
-  await assertSucceeds(getDocs(collection(artem, 'workspaces', ws, 'orders')));
+  await assertSucceeds(getDocs(collection(sergey, 'workspaces', ws, 'dispatcherOrders')));
+  await assertSucceeds(getDocs(collection(artem, 'workspaces', ws, 'dispatcherOrders')));
 });
 
-test('dispatcher profiles see cross-shift shared queue without canonical financial access', async () => {
+test('dispatcher profiles see only the shared sanitized queue, not canonical financial records', async () => {
   const dispatcher = dbFor('dispatch-uid');
   await assertSucceeds(getDoc(doc(dispatcher, 'workspaces', ws, 'dispatcherOrders', 'TEST-OWN')));
   await assertSucceeds(getDocs(collection(dispatcher, 'workspaces', ws, 'dispatcherOrders')));
@@ -165,9 +181,38 @@ test('logistic cannot create or delete canonical order', async () => {
   const db=dbFor('logistic-uid');
   await assertFails(setDoc(doc(db,'workspaces',ws,'orders','TEST-LOG-CREATE'), {orderId:'TEST-LOG-CREATE'}));
   await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
-    total:12000, _updatedBy:'logistic', _updatedByName:'Логист', _updatedByShift:'sergey'
+    visitTime:'14:00', _updatedBy:'logistic', _updatedByName:'Логист', _updatedByShift:'sergey'
+  }));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-OWN'), {
+    companyShare:999999, _updatedBy:'logistic', _updatedByName:'Логист', _updatedByShift:'sergey'
   }));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
+});
+
+test('employee roles cannot create, promote, disable, or edit member accounts', async () => {
+  for (const uid of ['ops-uid','dispatch-uid','logistic-uid','master-uid']) {
+    const db=dbFor(uid);
+    await assertFails(getDoc(doc(db,'workspaces',ws,'members','owner-uid')));
+    await assertFails(getDocs(collection(db,'workspaces',ws,'members')));
+    await assertFails(updateDoc(doc(db,'workspaces',ws,'members',uid), {role:'owner',active:true}));
+    await assertFails(setDoc(doc(db,'workspaces',ws,'members','injected-'+uid), {role:'owner',active:true}));
+  }
+  const staffQuery=query(collection(dbFor('ops-uid'),'workspaces',ws,'members'),where('role','!=','owner'));
+  await assertSucceeds(getDocs(staffQuery));
+  await assertFails(getDocs(collection(dbFor('master-uid'),'workspaces',ws,'members')));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'members','ops-uid')));
+  await assertSucceeds(getDocs(collection(dbFor('owner-uid'),'workspaces',ws,'members')));
+});
+
+test('operational roles cannot inject finance fields into the dispatcher mirror', async () => {
+  const db=dbFor('ops-uid');
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN'), {
+    _status:'В работе', _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN'), {
+    salary:999999, _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
+  }));
+  await assertFails(deleteDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN')));
 });
 
 test('master reads only own sanitized assignment and no canonical order', async () => {
@@ -176,6 +221,7 @@ test('master reads only own sanitized assignment and no canonical order', async 
   await assertFails(getDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-OTHER')));
   await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
   await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OTHER')));
+  await assertFails(getDoc(doc(db,'workspaces',ws,'masterAssignments','TEST-OTHER')));
 });
 
 test('master assignment query must be constrained to own uid', async () => {
@@ -227,7 +273,7 @@ test('payroll settings are owner-only', async () => {
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:9000}));
   await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payroll'), {shiftBasePay:2000}));
   await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'config','payrollPolicy'), {shiftBasePay:2400,shiftCashThreshold:30000,shiftCashRate:12}));
-  await assertSucceeds(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payrollPolicy')));
+  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payrollPolicy')));
   await assertFails(getDoc(doc(dbFor('master-uid'),'workspaces',ws,'config','payrollPolicy')));
   await assertFails(getDoc(doc(dbFor('dispatch-uid'),'workspaces',ws,'config','payrollPolicy')));
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'config','payrollPolicy'), {shiftBasePay:1}));
@@ -237,14 +283,15 @@ test('shift reports are private per staff member and use one deterministic daily
   const db=dbFor('ops-uid');
   const ref=doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem');
   const valid={id:'2026-09-23-artem',date:'2026-09-23',closedBy:'artem',closedByName:'Артём',shift:'artem',shiftName:'Смена Артёма',orders:8,financialOrders:4,completed:3,active:2,refused:1,cancelled:0,unassigned:0,reviewPending:0,reviews:2,reviewRate:66.7,turnover:60000,cash:50000,avgCheck:15000,salary:5000,basePay:2000,cashThreshold:20000,cashRate:10,orderIds:['a','b'],dataHash:'hash',closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp()};
-  await assertSucceeds(setDoc(ref,valid));
+  await assertFails(setDoc(ref,valid));
   const lateSettlement={...valid,id:'2026-09-25-artem',date:'2026-09-25',orders:1,financialOrders:1,completed:1,turnover:35000,cash:35000,shiftCash:0,deferredCash:35000,salary:3500,orderIds:['late-1'],paidOrderIds:['late-1'],deferredOrderIds:['late-1'],settlementVersion:1,serverClosedAt:serverTimestamp()};
-  await assertSucceeds(setDoc(doc(db,'workspaces',ws,'shiftReports',lateSettlement.id),lateSettlement));
+
   await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','2026-09-26-artem'),{...lateSettlement,id:'2026-09-26-artem',date:'2026-09-26',cash:35000,shiftCash:1000,deferredCash:1000,serverClosedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(dbFor('backup-ops-uid'),'workspaces',ws,'shiftReports',valid.id),{...valid,closedBy:'backup',closedByName:'Запасной',serverClosedAt:serverTimestamp()}));
   const sergeyDb=dbFor('sergey-ops-uid');
   const sergey={...valid,id:'2026-09-23-sergey',closedBy:'sergey',closedByName:'Сергей',shift:'sergey',shiftName:'Смена Сергея',cash:1000,salary:2000,turnover:5000,avgCheck:5000,serverClosedAt:serverTimestamp()};
-  await assertSucceeds(setDoc(doc(sergeyDb,'workspaces',ws,'shiftReports',sergey.id),sergey));
+  await assertFails(setDoc(doc(sergeyDb,'workspaces',ws,'shiftReports',sergey.id),sergey));
+  await env.withSecurityRulesDisabled(async ctx=>{const admin=ctx.firestore();await setDoc(doc(admin,'workspaces',ws,'shiftReports',valid.id),valid);await setDoc(doc(admin,'workspaces',ws,'shiftReports',lateSettlement.id),lateSettlement);await setDoc(doc(admin,'workspaces',ws,'shiftReports',sergey.id),sergey)});
   await assertFails(setDoc(ref,{...valid,serverClosedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','2026-09-23-artem-copy'),{...valid,id:'2026-09-23-artem-copy',serverClosedAt:serverTimestamp()}));
   await assertFails(setDoc(doc(db,'workspaces',ws,'shiftReports','wrong-pay'),{...valid,id:'wrong-pay',salary:2000,serverClosedAt:serverTimestamp()}));
@@ -261,6 +308,10 @@ test('shift reports are private per staff member and use one deterministic daily
   await assertFails(getDocs(query(collection(sergeyDb,'workspaces',ws,'shiftReports'),where('closedBy','==','artem'))));
   await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports','2026-09-23-artem')));
   await assertSucceeds(getDocs(collection(dbFor('owner-uid'),'workspaces',ws,'shiftReports')));
+  const ownerApproved={...valid,id:'2026-09-27-artem',date:'2026-09-27',closedBy:'owner-uid',closedByName:'Владелец',shift:'artem',shiftName:'Смена Артёма',turnover:5000,cash:1000,avgCheck:5000,salary:2000,subjectMemberId:'artem',approvedFor:'artem',approvedForName:'Артём',ownerConfirmed:true,ownerApprovedBy:'owner-uid',ownerApprovedByName:'Владелец',ownerApprovedAt:new Date().toISOString(),serverClosedAt:serverTimestamp(),serverApprovedAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports',ownerApproved.id),ownerApproved));
+  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'shiftReports',ownerApproved.id)));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftReports',ownerApproved.id)));
 });
 
 test('weekly shift reports are owner-only', async () => {
