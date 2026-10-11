@@ -252,7 +252,7 @@ test('master clients cannot open or submit the generic order editor', () => {
   assert.match(rules, /affectedKeys\(\)\.hasOnly\(masterMutableFields\(\)\)/);
 });
 
-test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v41/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/);assert.equal(html,read('preview/v18.17.21/'+page))}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/);assert.equal(JSON.stringify(manifest),JSON.stringify(JSON.parse(read('preview/v18.17.21/'+file))))}assert.match(read('icon.svg'),/>?$/)});
+test('external inbox and API entrypoints are disconnected from beta',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html','sw.js','cloud-config.js'])assert.doesNotMatch(read(f),/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|website-leads-inbox\.js/);assert.match(read('firestore.rules'),/b2bLeads\/{leadId} \{\s*allow read, write: if false;/);assert.doesNotMatch(read('chinilkin/index.html'),/remontcompsbp\.ru\/api\/website-leads|fonts\.googleapis\.com/) });test('published preview matches the audited disconnected build',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read('preview/v18.17.21/'+f);assert.match(h,/18\.17\.21-CANDIDATE/);assert.match(h,/premium-v181721\.css/);assert.doesNotMatch(h,/src="\.\/(?:b2bhelp-inbox|website-leads-inbox)|script\.google\.com|integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(?:B2B|WEBSITE)|__MASTER_AI_PENDING_(?:B2B|WEBSITE)_LINK|Integrator v18/)}assert.match(read('preview/v18.17.21/sw.js'),/shell-v42/);assert.doesNotMatch(read('preview/v18.17.21/sw.js'),/b2bhelp|website-leads/)});test('EliteService is the visible brand across role pages and install manifests',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/<title>EliteService<\/title>/);assert.match(html,/<h1>EliteService<\/h1>/);assert.doesNotMatch(html,/<title>MASTER AI<\/title>|<h1>MASTER AI<\/h1>/);assert.equal(html,read('preview/v18.17.21/'+page))}for(const file of ['manifest.json','manifest-dispatcher-logistic.json','manifest-master.json']){const manifest=JSON.parse(read(file));assert.match(manifest.name,/EliteService/);assert.equal(JSON.stringify(manifest),JSON.stringify(JSON.parse(read('preview/v18.17.21/'+file))))}assert.match(read('icon.svg'),/>?$/)});
 test('orders use Saint Petersburg as the fixed city and have no district workflow',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.ok(html.includes('cities:[\"СПб\"]')); assert.match(html,/id="f_city"[^>]*value="СПб" readonly/);assert.doesNotMatch(html,/Район|cityFilter|Выручка по районам/);assert.equal(html,read('preview/v18.17.21/'+page))}});
 test('orders can be filtered by visit date today without replacing other filters',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/id="todayOrdersFilter"/);assert.match(html,/iso\(parseDate\(r\.visitDate\)\)===day/);assert.match(html,/todayOrdersFilter'\)\.onclick=\(\)=>\{/);assert.equal(html,read('preview/v18.17.21/'+page))}});
 test('weekly schedule ignores stale loads and locks edits while saving', () => {
@@ -265,4 +265,24 @@ test('weekly schedule ignores stale loads and locks edits while saving', () => {
     assert.match(html, /\$\$\('#masterShiftPicker input'\)\.forEach\(x=>x\.disabled=true\)/);
     assert.match(html, /finally\{masterWeekSaving=false/);
   }
+});
+
+
+test('master fixed-rate mode is owner-controlled, profile-based, and excludes closed orders',()=>{
+  for(const page of ['index.html','dispatcher-logistic.html','master.html']){
+    const html=read(page);
+    assert.equal(html,read('preview/v18.17.21/'+page));
+    assert.match(html,/data-master-fixed/);
+    assert.match(html,/async function setMasterFixedMode\(name,enabled\)\{if\(currentRole\(\)!=='owner'\)/);
+    assert.match(html,/cloud\.setMasterFixedMode=async\(uid,enabled\)=>\{if\(cloud\.profile\?\.role!=='owner'\)/);
+    assert.match(html,/fixed=!!r\._fixedMaster\|\|masterFixedMode\(r\.master\)/);
+    assert.match(html,/r\._cashClosedAt\|\|derivedStage\(r\)==='Выполнен'/);
+    assert.match(html,/checked=!!r\._fixedMaster\|\|masterFixedMode\(r\.master\)/);
+    assert.match(html,/\$\$\('\[data-master-fixed\]'\)\.forEach/);
+    assert.match(html,/\$\$\('#orderForm input,#orderForm select,#orderForm textarea,#orderForm button'\)\.forEach/);
+    assert.ok((html.match(/subscribeMemberProfiles\?\.\(rows=>window\.MasterAIApplyMemberProfiles/g)||[]).length>=2,'member profile listener is wired for sign-in and restored sessions');
+  }
+  assert.ok(read('firestore.rules').includes('match /workspaces/{workspace}/members/{uid}'));
+  assert.match(read('firestore.rules'),/allow create, update, delete: if isOwner\(workspace\);/);
+  for(const css of ['premium-v181721.css','preview/v18.17.21/premium-v181721.css'])assert.match(read(css),/\.master-pay-mode/);
 });
