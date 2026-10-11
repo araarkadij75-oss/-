@@ -427,6 +427,8 @@ test('historical payroll reports verify against the owner payroll ledger',()=>{
 test('historical payroll backfill uses only past ledger rows and skips verified duplicates',async()=>{
   const html=read('preview/v18.17.21/index.html'),start=html.indexOf('async function backfillClosedHistoricalShifts()'),end=html.indexOf('function renderTwoDayPayrollPayouts(',start);
   assert.ok(start>=0&&end>start);
+  const backfill=html.slice(start,end);
+  assert.doesNotMatch(backfill,/draft\.(?:reportOrigin|historicalSource|legacyReportId|legacyReportPreserved)\s*=/);
   const ledger=[
     {date:'2026-10-08',person:'sergey',orders:10,cashCents:3547300,salaryCents:354700},
     {date:'2026-10-09',person:'artem',orders:9,cashCents:1175000,salaryCents:200000},

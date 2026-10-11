@@ -574,8 +574,8 @@ function renderHistoricalPayroll(){const data=state.payrollHistory,summary=$('#h
    draft.closedBy=currentUser().id;draft.closedByName=currentUser().name;
    draft.subjectMemberId=member.id;draft.approvedFor=member.id;draft.approvedForName=member.name;
    draft.ownerConfirmed=true;draft.ownerApprovedBy=currentUser().id;draft.ownerApprovedByName=currentUser().name;
-   draft.reportOrigin='owner_historical_reconciliation';draft.historicalSource=history.source?.name||'Текущие заказы ВСЕ';
-   if(existing){draft.legacyReportPreserved={id:existing.id,closedByName:existing.closedByName||'',cash:num(existing.cash),salary:num(existing.salary),dataHash:existing.dataHash||''};draft.legacyReportId=existing.id}
+   // Keep the immutable legacy document untouched. The canonical owner report
+   // uses only fields permitted by the Firestore shift-report schema.
    plan.push(draft)
   }
   if(!plan.length){show('Все '+skipped+' исторических смен уже закрыты по ведомости.','ok');return}
