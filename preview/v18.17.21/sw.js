@@ -1,4 +1,4 @@
-const CACHE='master-ai-18.17.21-shell-v47';
+const CACHE='master-ai-18.17.21-shell-v48';
 const SHELL=[
   './',
   './index.html',
