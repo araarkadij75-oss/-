@@ -16,6 +16,7 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
+  writeBatch,
   where
 } from 'firebase/firestore';
 
@@ -144,7 +145,7 @@ test('dispatcher can create intake fields but cannot assign master or edit money
   await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-DISPATCH-CREATE'), {_createdBy:'artem',...actor}));
 });
 
-test('dispatcher-logistic can close an open order with amounts, but cannot change closed orders or owner settings', async () => {
+test('dispatcher-logistic can edit a terminal order until its day is reported, but cannot edit a reported order', async () => {
   const db=dbFor('ops-uid');
   await assertFails(getDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
   await assertFails(getDocs(collection(db,'workspaces',ws,'orders')));
@@ -163,7 +164,7 @@ test('dispatcher-logistic can close an open order with amounts, but cannot chang
     }));
   }
   for (const field of ['total','masterAmount','companyShare','_status','closeDate','master']) {
-    await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSED'), {
+    await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSED'), {
       [field]:field==='_status'?'В работе':field==='master'?'Петр':999999,
       _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
     }));
@@ -184,6 +185,52 @@ test('dispatcher-logistic can close an open order with amounts, but cannot chang
     _createdByName:'Сергей', _updatedBy:'artem', _updatedByName:'Артём', _updatedByShift:'artem'
   }));
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'orders','TEST-OWN')));
+});
+
+test('closed shift report freezes regular orders while pickups remain editable until paid report', async () => {
+  const db=dbFor('sergey-ops-uid'), actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-REPORTED'),{orderId:'TEST-REPORTED',callDate:'2026-10-08',_createdBy:'sergey',_createdByName:'Сергей',_createdByShift:'sergey',_status:'Выполнен',total:5000});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-REPORTED'),{orderId:'TEST-REPORTED',callDate:'2026-10-08',_status:'Выполнен'});
+    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-PICKUP'),{orderId:'TEST-PICKUP',callDate:'2026-10-08',_createdBy:'sergey',_createdByName:'Сергей',_createdByShift:'sergey',_status:'Забор / техника у мастера',_isPickup:true,total:5000});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-PICKUP'),{orderId:'TEST-PICKUP',callDate:'2026-10-08',_status:'Забор / техника у мастера',_isPickup:true});
+    await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-08-sergey'),{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey',orderIds:['TEST-REPORTED','TEST-PICKUP'],lockedOrderIds:['TEST-REPORTED'],paidOrderIds:[]});
+  });
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-REPORTED'),{total:6000,...actor}));
+  await assertSucceeds(updateDoc(doc(db,'workspaces',ws,'orders','TEST-PICKUP'),{total:6000,_status:'Выполнен',_cashClosedOn:'2026-10-12',...actor}));
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'shiftReports','2026-10-12-sergey'),{id:'2026-10-12-sergey',date:'2026-10-12',shift:'sergey',orderIds:[],lockedOrderIds:['TEST-PICKUP'],paidOrderIds:['TEST-PICKUP']});
+    await updateDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-PICKUP'),{_reportLockId:'2026-10-12-sergey'});
+  });
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-PICKUP'),{total:7000,...actor}));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-PICKUP'),{_reportLockId:'forged',...actor}));
+});
+
+test('dispatcher-logistic closes a day with an immutable lock-only closure; closure markers require the same batch', async () => {
+  const db=dbFor('sergey-ops-uid'),actor={_updatedBy:'sergey',_updatedByName:'Сергей',_updatedByShift:'sergey'};
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const admin=ctx.firestore();
+    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-CLOSURE-ORDER'),{orderId:'TEST-CLOSURE-ORDER',callDate:'2026-10-10',_status:'Выполнен'});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-ORDER'),{orderId:'TEST-CLOSURE-ORDER',callDate:'2026-10-10',_status:'Выполнен'});
+    // A pickup can be accepted by one shift and closed by the other.
+    await setDoc(doc(admin,'workspaces',ws,'orders','TEST-CLOSURE-PICKUP'),{orderId:'TEST-CLOSURE-PICKUP',callDate:'2026-10-08',_createdBy:'artem',_createdByName:'Артём',_createdByShift:'artem',_status:'Выполнен',_isPickup:true,_cashClosedOn:'2026-10-10'});
+    await setDoc(doc(admin,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-PICKUP'),{orderId:'TEST-CLOSURE-PICKUP',callDate:'2026-10-08',_status:'Выполнен',_isPickup:true,_cashClosedOn:'2026-10-10'});
+  });
+  const closure={id:'2026-10-10-sergey',date:'2026-10-10',shift:'sergey',shiftName:'Смена Сергея',closedBy:'sergey',closedByName:'Сергей',closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp(),orderIds:['TEST-CLOSURE-ORDER','TEST-CLOSURE-PICKUP'],lockedOrderIds:['TEST-CLOSURE-ORDER','TEST-CLOSURE-PICKUP']};
+  const batch=writeBatch(db);
+  batch.set(doc(db,'workspaces',ws,'shiftClosures',closure.id),closure);
+  batch.update(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-ORDER'),{_reportLockId:closure.id,...actor});
+  batch.update(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-PICKUP'),{_reportLockId:closure.id,...actor});
+  await assertSucceeds(batch.commit());
+  await assertSucceeds(getDoc(doc(db,'workspaces',ws,'shiftClosures',closure.id)));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSURE-ORDER'),{total:9000,...actor}));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'orders','TEST-CLOSURE-PICKUP'),{total:9000,...actor}));
+  await assertFails(updateDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-CLOSURE-ORDER'),{_status:'В работе',...actor}));
+  await assertFails(setDoc(doc(db,'workspaces',ws,'shiftClosures','2026-10-11-sergey'),{...closure,id:'2026-10-11-sergey',date:'2026-10-11',salary:9000,serverClosedAt:serverTimestamp()}));
+  await assertFails(getDoc(doc(dbFor('ops-uid'),'workspaces',ws,'shiftClosures',closure.id)));
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'shiftClosures',closure.id)));
 });
 
 test('Sergey and Artem dispatcher-logistics share one workspace order queue across shifts', async () => {
@@ -249,7 +296,7 @@ test('operational roles cannot inject finance fields into the dispatcher mirror'
   await assertFails(deleteDoc(doc(db,'workspaces',ws,'dispatcherOrders','TEST-OWN')));
 });
 
-test('Sergey and Artem can prepare and close master orders, then all staff edits are denied', async () => {
+test('Sergey and Artem can prepare and close master orders until the shift report closes', async () => {
   for (const [uid,id,name,shift,orderId] of [
     ['sergey-ops-uid','sergey','Сергей','sergey','TEST-CLOSE-SERGEY'],
     ['ops-uid','artem','Артём','artem','TEST-CLOSE-ARTEM'],
@@ -260,11 +307,11 @@ test('Sergey and Artem can prepare and close master orders, then all staff edits
     const open=doc(db,'workspaces',ws,'orders',orderId);
     await assertSucceeds(updateDoc(open,{total:15000,parts:2000,cleanCheck:13000,masterAmount:6000,companyShare:7000,...actorFields}));
     await assertSucceeds(updateDoc(open,{_status:'Выполнен',closeDate:'2026-10-11',...actorFields}));
-    await assertFails(updateDoc(open,{total:1,...actorFields}));
-    await assertFails(updateDoc(open,{master:'Петр',...actorFields}));
+    await assertSucceeds(updateDoc(open,{total:1,...actorFields}));
+    await assertSucceeds(updateDoc(open,{master:'Петр',...actorFields}));
   }
   const mirror=doc(dbFor('ops-uid'),'workspaces',ws,'dispatcherOrders','TEST-CLOSED');
-  await assertFails(updateDoc(mirror,{_status:'В работе',_updatedBy:'artem',_updatedByName:'Артём',_updatedByShift:'artem'}));
+  await assertSucceeds(updateDoc(mirror,{_status:'В работе',_updatedBy:'artem',_updatedByName:'Артём',_updatedByShift:'artem'}));
   const assignment=doc(dbFor('master-uid'),'workspaces',ws,'masterAssignments','TEST-CLOSED');
   await assertFails(updateDoc(assignment,{_masterStage:'work',_status:'В работе'}));
 });

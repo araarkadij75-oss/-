@@ -45,9 +45,92 @@ service cloud.firestore {
       return role(workspace) in ['dispatcher_logistic', 'logistic'];
     }
 
-    // Staff may prepare and close an order for a master, but a terminal order
-    // (or an order whose cash has been recorded) is immutable to staff.
-    function isFinalOrder(data) {
+    function shiftReportPath(workspace, reportId) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/shiftReports/$(reportId);
+    }
+
+    function shiftClosurePath(workspace, closureId) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/shiftClosures/$(closureId);
+    }
+
+    function orderPath(workspace, orderId) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/orders/$(orderId);
+    }
+
+    function dispatcherOrderPath(workspace, orderId) {
+      return /databases/$(database)/documents/workspaces/$(workspace)/dispatcherOrders/$(orderId);
+    }
+
+    function reportHasOrder(workspace, date, shift, orderId) {
+      let path = shiftReportPath(workspace, date + '-' + shift);
+      return date is string && date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && exists(path) && get(path).data.orderIds is list
+        && orderId in get(path).data.orderIds;
+    }
+
+    function reportHasPaidOrder(workspace, reportId, orderId) {
+      let path = shiftReportPath(workspace, reportId);
+      return exists(path) && get(path).data.paidOrderIds is list
+        && orderId in get(path).data.paidOrderIds;
+    }
+
+    function reportHasLockedOrder(workspace, reportId, orderId) {
+      let report = shiftReportPath(workspace, reportId);
+      let closure = shiftClosurePath(workspace, reportId);
+      return (exists(report) && get(report).data.lockedOrderIds is list
+          && orderId in get(report).data.lockedOrderIds)
+        || (exists(closure) && get(closure).data.lockedOrderIds is list
+          && orderId in get(closure).data.lockedOrderIds);
+    }
+
+    function hasReportLockMarker(workspace, data, orderId) {
+      let markedReport = data.get('_reportLockId', '');
+      let canonicalPath = orderPath(workspace, orderId);
+      let canonicalExists = exists(canonicalPath);
+      let canonical = canonicalExists ? get(canonicalPath).data : data;
+      let mirrorPath = dispatcherOrderPath(workspace, orderId);
+      let mirrorExists = exists(mirrorPath);
+      let mirror = mirrorExists ? get(mirrorPath).data : data;
+      let canonicalReport = canonical.get('_reportLockId', '');
+      let mirrorReport = mirror.get('_reportLockId', '');
+      let reportId = markedReport != '' ? markedReport
+        : (canonicalReport != '' ? canonicalReport : mirrorReport);
+      return reportId is string
+        && reportId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}-(sergey|artem)$')
+        && reportHasLockedOrder(workspace, reportId, orderId);
+    }
+
+    function hasPickupReportLock(workspace, data, orderId) {
+      let cashDate = data.get('_cashClosedOn', '');
+      return hasReportLockMarker(workspace, data, orderId)
+        || (cashDate is string && cashDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && (reportHasOrderPaidOnDate(workspace, cashDate, 'sergey', orderId)
+            || reportHasOrderPaidOnDate(workspace, cashDate, 'artem', orderId)));
+    }
+
+    function reportHasOrderPaidOnDate(workspace, date, shift, orderId) {
+      let path = shiftReportPath(workspace, date + '-' + shift);
+      return exists(path) && get(path).data.paidOrderIds is list
+        && orderId in get(path).data.paidOrderIds;
+    }
+
+    function isPickupOrder(data) {
+      return data.get('_isPickup', false) == true
+        || data.get('_status', '') == 'Забор / техника у мастера';
+    }
+
+    // A regular order freezes only when a closed shift report lists its ID.
+    // Pickups are exempt from their original day's report; they freeze only
+    // after appearing in a settlement report's paidOrderIds.
+    function isFinalOrder(workspace, data, orderId) {
+      return isPickupOrder(data)
+        ? hasPickupReportLock(workspace, data, orderId)
+        : (hasReportLockMarker(workspace, data, orderId)
+          || reportHasOrder(workspace, data.get('callDate', ''), 'sergey', orderId)
+          || reportHasOrder(workspace, data.get('callDate', ''), 'artem', orderId));
+    }
+
+    function isTerminalOrder(data) {
       return (data.keys().hasAny(['_status'])
           && data._status in ['Выполнен', 'Закрыт', 'Закрыто', 'Отказ', 'Отмена'])
         || (data.keys().hasAny(['_masterStage']) && data._masterStage == 'approved')
@@ -56,10 +139,43 @@ service cloud.firestore {
         || (data.keys().hasAny(['closeDate']) && data.closeDate != '');
     }
 
+    function reportLockUnchanged(workspace, orderId) {
+      let oldId = resource.data.get('_reportLockId', '');
+      let newId = request.resource.data.get('_reportLockId', '');
+      let safeId = newId is string && newId != '' ? newId : 'invalid';
+      let path = shiftClosurePath(workspace, safeId);
+      let member = get(memberPath(workspace)).data;
+      let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
+      let report = existsAfter(path) ? getAfter(path).data : {};
+      return newId == oldId
+        || (isShiftCloser(workspace) && oldId == ''
+          && newId is string
+          && newId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}-(sergey|artem)$')
+          && existsAfter(path)
+          && report.closedBy == memberId
+          && report.lockedOrderIds is list
+          && orderId in report.lockedOrderIds);
+    }
+
+    function pickupMarkerValid() {
+      let oldPickup = resource.data.get('_isPickup', false);
+      let newPickup = request.resource.data.get('_isPickup', false);
+      return oldPickup == newPickup
+        || (oldPickup != true && newPickup == true
+          && resource.data.get('_status', '') == 'Забор / техника у мастера');
+    }
+
     function validStaffOrderCreate() {
       let data = request.resource.data;
-      return !isFinalOrder(data)
+      return !isTerminalOrder(data)
+        && !data.keys().hasAny(['_reportLockId'])
+        && (!data.get('_isPickup', false) || data.get('_status', '') == 'Забор / техника у мастера')
         && !data.keys().hasAny(['pp','parts','cleanCheck','total','masterAmount','companyShare']);
+    }
+
+    function validPickupCreate(data) {
+      return !data.get('_isPickup', false)
+        || data.get('_status', '') == 'Забор / техника у мастера';
     }
 
     // Client-facing operational edits are intentionally allow-listed. Any new
@@ -67,7 +183,7 @@ service cloud.firestore {
     function operationalOrderFields() {
       return [
         'orderId','a0','_origin','direction','city','callDate','callTime','visitDate','visitTime',
-        'name','phone','address','request','master','dispatcher','review','closeDate',
+        'name','phone','address','request','master','dispatcher','review','closeDate','_isPickup',
         // Only logistics roles can edit order-level closing amounts, and only
         // before the order is final. Payroll, expenses and rate settings remain owner-only.
         'pp','parts','cleanCheck','total','masterAmount','companyShare',
@@ -75,7 +191,7 @@ service cloud.firestore {
         '_assignedAt','_assignedBy','_assignedByName','_workflow','_workflowCreatedAt',
         '_requiresCloseApproval','_masterStage','_closeReviewState','_closeReviewNote',
         '_closeApprovedAt','_closeApprovedBy','_closeApprovedByName',
-        '_phoneUnlockAt','_showPhoneToMaster','_cashClosedAt','_cashClosedBy',
+        '_phoneUnlockAt','_showPhoneToMaster','_cashClosedAt','_cashClosedOn','_cashClosedBy',
         '_cashClosedByName'
       ];
     }
@@ -88,7 +204,7 @@ service cloud.firestore {
 
     function dispatcherMirrorFields() {
       return [
-        'orderId','direction','city','callDate','callTime','visitDate','visitTime',
+        'orderId','direction','city','callDate','callTime','visitDate','visitTime','_isPickup','_reportLockId',
         'name','phone','address','request','master','dispatcher','review','closeDate',
         '_status','_showPhoneToMaster','_createdAt','_updatedAt','_createdBy',
         '_createdByName','_createdByShift','_updatedBy','_updatedByName',
@@ -103,7 +219,7 @@ service cloud.firestore {
 
     function masterAssignmentFields() {
       return [
-        'orderId','direction','city','visitDate','visitTime','name','address',
+        'orderId','direction','city','callDate','callTime','visitDate','visitTime','name','address','_isPickup','_reportLockId',
         'request','master','masterUid','masterKey','dispatcher','review','closeDate',
         '_status','_showPhoneToMaster','_assignedAt','_assignedBy','_assignedByName',
         '_workflow','_workflowCreatedAt','_requiresCloseApproval','_masterStage',
@@ -132,6 +248,34 @@ service cloud.firestore {
     }
 
     function readsOwnShiftReport(workspace) {
+      let member = get(memberPath(workspace)).data;
+      let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
+      return isShiftCloser(workspace) && resource.data.closedBy == memberId;
+    }
+
+    function validShiftClosure(workspace, closureId) {
+      let data = request.resource.data;
+      let member = get(memberPath(workspace)).data;
+      let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
+      return data.keys().hasOnly([
+          'id','date','shift','shiftName','closedBy','closedByName','closedAt',
+          'serverClosedAt','orderIds','lockedOrderIds'
+        ])
+        && data.id == closureId
+        && data.date is string && data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.shift in ['sergey','artem']
+        && closureId == data.date + '-' + data.shift
+        && data.shift == member.shift
+        && data.closedBy == memberId
+        && data.closedByName == member.name
+        && data.shiftName is string
+        && data.closedAt is string
+        && data.serverClosedAt == request.time
+        && data.orderIds is list && data.orderIds.size() <= 500
+        && data.lockedOrderIds is list && data.lockedOrderIds.size() <= 500;
+    }
+
+    function readsOwnShiftClosure(workspace) {
       let member = get(memberPath(workspace)).data;
       let memberId = member.keys().hasAny(['id']) ? member.id : request.auth.uid;
       return isShiftCloser(workspace) && resource.data.closedBy == memberId;
@@ -167,6 +311,7 @@ service cloud.firestore {
           'completed','active','refused','cancelled','unassigned','reviewPending','reviews',
           'reviewRate','turnover','cash','avgCheck','salary','basePay','cashThreshold','cashRate',
           'orderIds','dataHash','closedAt','serverClosedAt','settlementVersion','shiftCash',
+          'lockedOrderIds',
           'deferredCash','paidOrderIds','deferredOrderIds','subjectMemberId','approvedFor',
           'approvedForName','ownerConfirmed','ownerApprovedBy','ownerApprovedByName',
           'ownerApprovedAt','serverApprovedAt'
@@ -199,6 +344,8 @@ service cloud.firestore {
         && data.turnover is number && data.turnover >= 0
         && data.salary is number && data.salary >= 0
         && data.orderIds is list && data.orderIds.size() <= 500
+        && (!data.keys().hasAny(['lockedOrderIds'])
+          || (data.lockedOrderIds is list && data.lockedOrderIds.size() <= 500))
         && data.dataHash is string
         && (!data.keys().hasAny(['settlementVersion'])
           || (data.settlementVersion == 1
@@ -268,7 +415,7 @@ service cloud.firestore {
 
     function dispatcherFields() {
       return [
-        'orderId','direction','city','callDate','callTime','visitDate','visitTime',
+        'orderId','direction','city','callDate','callTime','visitDate','visitTime','_isPickup',
         'name','phone','address','request','dispatcher','review','_status',
         '_createdAt','_updatedAt','_createdBy','_createdByName','_createdByShift',
         '_updatedBy','_updatedByName','_updatedByShift'
@@ -357,19 +504,23 @@ service cloud.firestore {
                         && request.resource.data.keys().hasOnly(operationalCreateFields())
                         && validCreatorIdentity(workspace, orderId))
                     || (isDispatcher(workspace)
-                        && !isFinalOrder(request.resource.data)
+                        && !isFinalOrder(workspace, request.resource.data, orderId)
+                        && validPickupCreate(request.resource.data)
                         && request.resource.data.keys().hasOnly(dispatcherFields())
                         && validCreatorIdentity(workspace, orderId));
 
       allow update: if isOwner(workspace)
                     || (role(workspace) in ['dispatcher_logistic','logistic']
-                        && !isFinalOrder(resource.data)
+                        && !isFinalOrder(workspace, resource.data, orderId)
+                        && !isFinalOrder(workspace, request.resource.data, orderId)
+                        && reportLockUnchanged(workspace, orderId) && pickupMarkerValid()
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(operationalOrderFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
                     || (isDispatcher(workspace)
-                        && !isFinalOrder(resource.data)
-                        && !isFinalOrder(request.resource.data)
+                        && !isFinalOrder(workspace, resource.data, orderId)
+                        && !isFinalOrder(workspace, request.resource.data, orderId)
+                        && reportLockUnchanged(workspace, orderId) && pickupMarkerValid()
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
@@ -385,18 +536,21 @@ service cloud.firestore {
                   && role(workspace) in ['owner','dispatcher','dispatcher_logistic','logistic'];
       allow create: if isOwner(workspace)
                     || (role(workspace) in ['dispatcher','dispatcher_logistic']
-                        && !isFinalOrder(request.resource.data)
+                        && !isFinalOrder(workspace, request.resource.data, orderId)
+                        && !request.resource.data.keys().hasAny(['_reportLockId'])
                         && request.resource.data.keys().hasOnly(dispatcherMirrorFields())
                         && validCreatorIdentity(workspace, orderId));
       allow update: if isOwner(workspace)
                     || (role(workspace) in ['dispatcher_logistic','logistic']
-                        && !isFinalOrder(resource.data)
+                        && !isFinalOrder(workspace, resource.data, orderId)
+                        && reportLockUnchanged(workspace, orderId) && pickupMarkerValid()
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherMirrorFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace))
                     || (isDispatcher(workspace)
-                        && !isFinalOrder(resource.data)
-                        && !isFinalOrder(request.resource.data)
+                        && !isFinalOrder(workspace, resource.data, orderId)
+                        && !isFinalOrder(workspace, request.resource.data, orderId)
+                        && reportLockUnchanged(workspace, orderId) && pickupMarkerValid()
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(dispatcherFields())
                         && creatorIdentityUnchanged()
                         && validUpdateIdentity(workspace));
@@ -409,16 +563,18 @@ service cloud.firestore {
 
       allow create: if isOwner(workspace)
         || (isShiftCloser(workspace)
+          && !request.resource.data.keys().hasAny(['_reportLockId'])
+          && validPickupCreate(request.resource.data)
           && request.resource.data.keys().hasOnly(masterAssignmentFields())
           && request.resource.data.orderId == orderId);
       allow delete: if isOwner(workspace) || isShiftCloser(workspace);
 
       allow update: if isOwner(workspace)
                     || (isShiftCloser(workspace)
-                    && !isFinalOrder(resource.data)
+                    && !isFinalOrder(workspace, resource.data, orderId)
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterAssignmentFields()))
                     || (isMaster(workspace)
-                        && !isFinalOrder(resource.data)
+                        && !isFinalOrder(workspace, resource.data, orderId)
                         && resource.data.masterUid == request.auth.uid
                         && request.resource.data.masterUid == request.auth.uid
                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(masterMutableFields())
@@ -472,6 +628,12 @@ service cloud.firestore {
       allow read: if isOwner(workspace)
         || readsOwnShiftReport(workspace);
       allow create: if isOwner(workspace) && validOwnerShiftReport(workspace, reportId);
+      allow update, delete: if isOwner(workspace);
+    }
+
+    match /workspaces/{workspace}/shiftClosures/{closureId} {
+      allow read: if isOwner(workspace) || readsOwnShiftClosure(workspace);
+      allow create: if isShiftCloser(workspace) && validShiftClosure(workspace, closureId);
       allow update, delete: if isOwner(workspace);
     }
 
