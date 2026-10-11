@@ -436,8 +436,8 @@ test('historical payroll backfill uses only past ledger rows and skips verified 
     {date:'2026-10-11',person:'sergey',orders:11,cashCents:0,salaryCents:0}
   ];
   const state={payrollHistory:{days:ledger},settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},shiftReports:[{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey',ownerConfirmed:true}]},created=[],errors=[];
-  const elements={'#backfillClosedShifts':{disabled:false},'#backfillStatus':{hidden:true,className:'',textContent:''}};
-  const cloud={connected:true,confirmShiftDraft:async r=>{created.push(r.date);return r}},run=new Function('currentRole','window','$','toast','today','state','currentUser','historicalPayrollShiftSnapshot','shiftIntegrity','dbWrite','renderShiftClose','renderWeeklyReports','norm','num','payrollShiftKey',html.slice(start,end)+';return backfillClosedHistoricalShifts')(
+  const elements={'#backfillClosedShifts':{disabled:false},'#backfillStatus':{hidden:true,className:'',textContent:''}},persisted=[];
+  const cloud={connected:true,confirmShiftDraft:async r=>{created.push(r.date);persisted.push(r);return r},getShiftReportsForPeriod:async()=>persisted},run=new Function('currentRole','window','$','toast','today','state','currentUser','historicalPayrollShiftSnapshot','shiftIntegrity','dbWrite','renderShiftClose','renderWeeklyReports','norm','num','payrollShiftKey',html.slice(start,end)+';return backfillClosedHistoricalShifts')(
     ()=> 'owner',{MasterAICloud:cloud},s=>elements[s],m=>errors.push(m),()=> '2026-10-11',state,()=>({id:'owner',name:'Owner'}),
     (row,profile)=>({id:row.date+'-'+profile.shift,date:row.date,shift:profile.shift,salary:row.salaryCents/100}),r=>!!r.ownerConfirmed,async()=>{},()=>{},()=>{},v=>String(v||'').toLowerCase(),v=>Number(v)||0,r=>r.shift||''
   );

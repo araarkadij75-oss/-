@@ -582,16 +582,20 @@ function renderHistoricalPayroll(){const data=state.payrollHistory,summary=$('#h
   show('Подготовлено '+plan.length+' отчётов. Будет записана только одна смена за нажатие; подтверждение — от владельца.');
   if(button)button.textContent='Записываю одну смену…';
   const draft=plan[0];
-  const result=await window.MasterAICloud.confirmShiftDraft(draft);
-  state.shiftReports=[result,...state.shiftReports.filter(r=>r.id!==result.id)];
+   const result=await window.MasterAICloud.confirmShiftDraft(draft);
+   const persisted=await window.MasterAICloud.getShiftReportsForPeriod(draft.date,draft.date);
+   const verified=persisted.find(r=>r.id===draft.id&&shiftIntegrity(r));
+   if(!verified)throw new Error('Firestore не подтвердил сохранение отчёта '+draft.date);
+   state.shiftReports=[verified,...state.shiftReports.filter(r=>r.id!==verified.id)];
   savedCount=1;
   await dbWrite();renderShiftClose();renderWeeklyReports();
-  const remaining=Math.max(0,plan.length-1);
+   const remaining=Math.max(0,plan.length-1);
   show('Отчёт владельца записан за '+draft.date+' · '+draft.approvedForName+'. Осталось смен: '+remaining+'. Новые выплаты не создавались.','ok');
   toast('Записан один исторический отчёт владельца')
- }catch(error){
-  renderShiftClose();renderWeeklyReports();
-  show('Заполнение остановлено после '+savedCount+' записей. '+(error.message||error),'warn');
+  }catch(error){
+   let renderError='';
+   try{renderShiftClose();renderWeeklyReports()}catch(e){renderError=' Не удалось обновить экран: '+(e.message||e)}
+   show('Заполнение остановлено после '+savedCount+' записей. '+(error.message||error)+renderError,'warn');
   toast('Не удалось заполнить отчёты: '+(error.message||error))
  }finally{
   const current=$('#backfillClosedShifts');
