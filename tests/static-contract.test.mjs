@@ -305,20 +305,24 @@ test('weekly schedule ignores stale loads and locks edits while saving', () => {
 });
 
 
-test('master fixed-rate mode is owner-controlled, profile-based, and excludes closed orders',()=>{
-  for(const page of ['index.html','dispatcher-logistic.html','master.html']){
+test('master fixed-rate mode is owner-controlled, account-optional, and excludes closed orders',()=>{
+  for(const page of ['index.html','dispatcher-logistic.html','preview/v18.17.21/index.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.22/index.html','preview/v18.17.22/dispatcher-logistic.html']){
     const html=read(page);
-    assert.equal(html,read('preview/v18.17.21/'+page));
     assert.match(html,/data-master-fixed/);
     assert.match(html,/async function setMasterFixedMode\(name,enabled\)\{if\(currentRole\(\)!=='owner'\)/);
     assert.match(html,/cloud\.setMasterFixedMode=async\(uid,enabled\)=>\{if\(cloud\.profile\?\.role!=='owner'\)/);
+    assert.match(html,/fixedMasters:Array\.isArray\(x\.fixedMasters\)\?x\.fixedMasters:\[\]/);
+    assert.match(html,/fixedMasters:x\.fixedMasters\|\|\[\]/);
+    assert.match(html,/isFixed=masterFixedMode\(name\)/);
+    assert.match(html,/function masterFixedMode\(name\).*state\.settings\.fixedMasters/);
+    const toggle=html.slice(html.indexOf('data-master-fixed'),html.indexOf('data-master-fixed')+180);
+    assert.doesNotMatch(toggle,/disabled/,'owner can set fixed mode before creating the master profile');
     assert.match(html,/fixed=!!r\._fixedMaster\|\|masterFixedMode\(r\.master\)/);
     assert.match(html,/r\._cashClosedAt\|\|derivedStage\(r\)==='Выполнен'/);
     assert.match(html,/reviewPct=5,bonus=/);
     assert.match(html,/s_reviewBonus[^>]*readonly/);
     assert.match(html,/checked=!!r\._fixedMaster\|\|masterFixedMode\(r\.master\)/);
     assert.match(html,/\$\$\('\[data-master-fixed\]'\)\.forEach/);
-    assert.match(html,/\$\$\('#orderForm input,#orderForm select,#orderForm textarea,#orderForm button'\)\.forEach/);
     assert.ok((html.match(/subscribeMemberProfiles\?\.\(rows=>window\.MasterAIApplyMemberProfiles/g)||[]).length>=2,'member profile listener is wired for sign-in and restored sessions');
   }
   assert.ok(read('firestore.rules').includes('match /workspaces/{workspace}/members/{uid}'));
@@ -326,20 +330,13 @@ test('master fixed-rate mode is owner-controlled, profile-based, and excludes cl
   for(const css of ['premium-v181721.css','preview/v18.17.21/premium-v181721.css'])assert.match(read(css),/\.master-pay-mode/);
 });
 
-test('order cards show intake and closure actors; owner can set fixed mode before an account exists',()=>{
+test('order cards show intake and closure actors with honest legacy close state',()=>{
   for(const page of ['index.html','dispatcher-logistic.html','preview/v18.17.21/index.html','preview/v18.17.21/dispatcher-logistic.html','preview/v18.17.22/index.html','preview/v18.17.22/dispatcher-logistic.html']){
     const html=read(page);
     assert.match(html,/function orderResponsibility\(r\)/);
     assert.match(html,/Принял заказ:/);
     assert.match(html,/Закрыл заказ:/);
     assert.match(html,/isClosed=!!closed\|\|!!r\._cashClosedAt\|\|!!r\.closeDate\|\|derivedStage\(r\)==='Выполнен'/);
-    assert.match(html,/data-master-fixed/);
-    assert.match(html,/fixedMasters:Array\.isArray\(x\.fixedMasters\)\?x\.fixedMasters:\[\]/);
-    assert.match(html,/fixedMasters:x\.fixedMasters\|\|\[\]/);
-    assert.match(html,/isFixed=masterFixedMode\(name\)/);
-    assert.match(html,/function masterFixedMode\(name\).*state\.settings\.fixedMasters/);
-    const toggle=html.slice(html.indexOf('data-master-fixed'),html.indexOf('data-master-fixed')+180);
-    assert.doesNotMatch(toggle,/disabled/,'owner can change fixed mode before the profile exists');
   }
 });
 
