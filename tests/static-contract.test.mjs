@@ -395,13 +395,27 @@ test('owner two-day payroll payout groups both worked shifts and includes late c
     {id:'2026-09-01-sergey',date:'2026-09-01',shift:'sergey',salary:2000,cash:10000,deferredCash:6000,paidOrderIds:['OLD-1']},
     {id:'2026-09-02-sergey',date:'2026-09-02',shift:'sergey',salary:2500,cash:25000,deferredCash:15000,paidOrderIds:['LATE-1']}
   ]};
-  const box={innerHTML:''},parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(+m[1],+m[2]-1,+m[3]):null},render=new Function('state','$','norm','parseDate','uniqueShiftReports','shiftIntegrity','num','money','esc',html.slice(start,end)+';return {renderTwoDayPayrollPayouts}')(
-    state,s=>s==='#payrollCyclePayoutTable'?box:null,v=>String(v||'').toLowerCase().replace(/ё/g,'е'),parse,rows=>rows,()=>true,v=>Number(v)||0,v=>`${Number(v).toFixed(0)} ₽`,v=>String(v)
+  const box={innerHTML:''},parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null},iso=d=>d.toISOString().slice(0,10),render=new Function('state','$','norm','parseDate','today','iso','uniqueShiftReports','shiftIntegrity','num','money','esc',html.slice(start,end)+';return {renderTwoDayPayrollPayouts}')(
+    state,s=>s==='#payrollCyclePayoutTable'?box:null,v=>String(v||'').toLowerCase().replace(/ё/g,'е'),parse,()=> '2026-10-11',iso,rows=>rows,()=>true,v=>Number(v)||0,v=>`${Number(v).toFixed(0)} ₽`,v=>String(v)
   );
   render.renderTwoDayPayrollPayouts(2026,9,'2026-09-01','sergey',[]);
-  assert.match(box.innerHTML,/09-01 — 09-02/);
+  assert.match(box.innerHTML,/01\.09\.2026 — 02\.09\.2026/);
   assert.match(box.innerHTML,/Касса за цикл/);
   assert.match(box.innerHTML,/21000 ₽/);
   assert.match(box.innerHTML,/4500 ₽/);
   assert.match(box.innerHTML,/Оба отчёта сверены/);
+});
+
+test('historical payroll backfill skips existing reports and never creates today or future shifts',async()=>{
+  const html=read('preview/v18.17.21/index.html'),start=html.indexOf('async function backfillClosedHistoricalShifts()'),end=html.indexOf('function renderTwoDayPayrollPayouts(',start);
+  assert.ok(start>=0&&end>start);
+  const state={settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},shiftReports:[{id:'2026-10-08-sergey',date:'2026-10-08',shift:'sergey'}]},created=[];
+  const elements={'#payrollCycleAnchor':{value:'2026-10-08'},'#payrollCycleStart':{value:'sergey'},'#backfillClosedShifts':{disabled:false}},parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null},iso=d=>d.toISOString().slice(0,10),scheduled=(date,anchor,first)=>{const delta=(parse(date)-parse(anchor))/86400000,phase=((delta%4)+4)%4;return phase<2?first:(first==='sergey'?'artem':'sergey')};
+  const cloud={connected:true,confirmShiftDraft:async r=>{created.push(r.date);return r}},run=new Function('currentRole','window','$','toast','parseDate','today','iso','payrollScheduledShift','state','currentUser','shiftSnapshot','payrollShiftKey','dbWrite','renderShiftClose','renderWeeklyReports',html.slice(start,end)+';return backfillClosedHistoricalShifts')(
+    ()=> 'owner',{MasterAICloud:cloud},s=>elements[s],()=>{},parse,()=> '2026-10-11',iso,scheduled,state,()=>({id:'owner',name:'Owner'}),(date,profile)=>({id:date+'-'+profile.shift,date,shift:profile.shift,salary:2000}),r=>r.shift,async()=>{},()=>{},()=>{}
+  );
+  await run();
+  assert.deepEqual(created,['2026-10-09','2026-10-10']);
+  assert.equal(state.shiftReports.some(r=>r.date>='2026-10-11'),false);
+  assert.equal(state.shiftReports.length,3);
 });
