@@ -374,7 +374,11 @@
 
     cloud.subscribe=function(profile,onRows){
       const role=String(profile&&profile.role||'');
-      if(!['owner','dispatcher_logistic','logistic'].includes(role)||!originalSubscribe)return originalSubscribe?originalSubscribe(profile,onRows):null;
+      /* Dispatchers must use the primary role-scoped listener. The quota-safe
+         owner cache listens to canonical `orders`, which is intentionally not
+         readable by dispatcher accounts; using it here leaves the UI on stale
+         cache and produces permission-denied real-time warnings. */
+      if(role!=='owner'||!originalSubscribe)return originalSubscribe?originalSubscribe(profile,onRows):null;
       try{cloud.unsub&&cloud.unsub()}catch(e){}
       try{googleUnsub&&googleUnsub()}catch(e){}
       if(cloud.googlePeriodicTimer){clearInterval(cloud.googlePeriodicTimer);cloud.googlePeriodicTimer=null}
