@@ -18,6 +18,8 @@ must(state.baseCurrent === '18.17.18-CURRENT', 'candidate must be based on 18.17
 must(state.environment.firebaseProject === 'master-ai-beta-9440599', 'wrong Firebase project');
 must(state.environment.workspace === 'master-ai-beta', 'wrong workspace');
 must(state.environment.billing === 'Spark / NO BILLING', 'billing policy drift');
+must(state.stableEntryPoints?.owner === 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/', 'stable owner URL drift');
+must(state.stableEntryPoints?.dispatcherLogistic === 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/dispatcher-logistic.html', 'stable dispatcher URL drift');
 must(/["']?projectId["']?\s*:\s*["']master-ai-beta-9440599["']/.test(cfg), 'cloud-config project drift');
 must(/["']?workspaceId["']?\s*:\s*["']master-ai-beta["']/.test(cfg), 'cloud-config workspace drift');
 must(cfg.includes("MASTER_AI_BUILD='18.17.19-CANDIDATE'") || cfg.includes('MASTER_AI_BUILD="18.17.19-CANDIDATE"'), 'candidate build drift');

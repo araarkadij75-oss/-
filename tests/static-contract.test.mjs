@@ -17,6 +17,10 @@ test('release state pins safe environment', () => {
   assert.equal(s.syncContract.googleSheets, false);
   assert.equal(s.syncContract.avito, false);
   assert.equal(s.promotion.allowed, false);
+  assert.deepEqual(s.stableEntryPoints, {
+    owner: 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/',
+    dispatcherLogistic: 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/dispatcher-logistic.html'
+  });
 });
 
 test('18.17.19 safety patch keeps delta/delete invariants', () => {

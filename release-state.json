@@ -2,6 +2,10 @@
   "candidate": "18.17.21-CANDIDATE",
   "baseCurrent": "18.17.18-CURRENT",
   "publishedBetaPreview": "https://araarkadij75-oss.github.io/-/preview/v18.17.21/",
+  "stableEntryPoints": {
+    "owner": "https://araarkadij75-oss.github.io/-/preview/v18.17.21/",
+    "dispatcherLogistic": "https://araarkadij75-oss.github.io/-/preview/v18.17.21/dispatcher-logistic.html"
+  },
   "environment": {
     "firebaseProject": "master-ai-beta-9440599",
     "workspace": "master-ai-beta",
