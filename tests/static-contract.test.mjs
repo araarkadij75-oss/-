@@ -23,6 +23,15 @@ test('release state pins safe environment', () => {
   });
 });
 
+test('REG.RU release helper stages only an explicit replace allowlist and hashes every payload file', () => {
+  const script = read('scripts/prepare-regru-release.mjs');
+  assert.match(script, /productionReplaceAllowlist:\s*\['index\.html', 'dispatcher-logistic\.html', 'master\.html', 'sw\.js'\]/);
+  assert.match(script, /protectedPaths:\s*\['crm-api\/', 'cloud-config\.js', 'firestore-regru\.js'/);
+  assert.match(script, /createHash\('sha256'\)/);
+  assert.match(script, /hosted-snapshot/);
+  assert.doesNotMatch(script, /crm-api.*copyFile|copyFile.*crm-api/);
+});
+
 test('18.17.19 safety patch keeps delta/delete invariants', () => {
   const p = read('quota-safe-v181719.js');
   assert.match(p, /if\(role!=='owner'\|\|!originalSubscribe\)return originalSubscribe\?originalSubscribe\(profile,onRows\):null/);
@@ -108,6 +117,31 @@ test('master workflow uses its permitted assignment document', () => {
   }
 });
 
+test('REG.RU candidate persists fixed-pay and master grid settings in a shared protected document', () => {
+  for (const file of ['hosted-snapshot/index.html', 'hosted-snapshot/dispatcher-logistic.html', 'hosted-snapshot/master.html']) {
+    const html = read(file);
+    assert.match(html, /cloud\.saveFinanceSettings=async x=>\{if\(cloud\.profile\?\.role!=='owner'\)/, file);
+    assert.match(html, /configDoc\('financePolicy'\),payload,\{merge:true\}/, file);
+    assert.match(html, /cloud\.subscribeMasterRoster=cb=>[\s\S]{0,800}configDoc\('financePolicy'\)/, file);
+    assert.match(html, /window\.MasterAIApplyMasterRoster=cfg=>[\s\S]{0,800}state\.settings=\{\.\.\.state\.settings,\.\.\.next\}/, file);
+    const saveStart = html.indexOf('async function saveSettings(){');
+    const saveEnd = html.indexOf('}', saveStart) + 1;
+    const save = html.slice(saveStart, saveEnd + 1200);
+    assert.match(save, /if\(cloudMode\(\)&&currentRole\(\)!=='owner'\)/, file + ': cloud settings require the owner');
+    assert.match(save, /saveFinanceSettings\?\.\(\{threshold1:state\.settings\.threshold1[\s\S]{0,300}fixedRate:state\.settings\.fixedRate\}\)/, file + ': persist the percent and grid');
+    assert.match(html, /subscribeMasterRoster\?\.\(cfg=>window\.MasterAIApplyMasterRoster\?\.\(cfg\)\)/, file + ': live settings subscription');
+  }
+  for (const file of ['hosted-snapshot/index.html', 'hosted-snapshot/dispatcher-logistic.html']) {
+    const html = read(file);
+    assert.match(html, /f=await fs\.getDoc\(configDoc\('financePolicy'\)\),y=f\.exists\(\)\?f\.data\(\):\{\}/, file);
+    assert.match(html, /role==='master'\?\{\}:finance/, file + ': master profile does not receive finance grid');
+  }
+  for (const file of ['hosted-snapshot/index.html', 'hosted-snapshot/dispatcher-logistic.html', 'hosted-snapshot/master.html']) {
+    const scripts = [...read(file).matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(m => m[1]).filter(s => s.trim());
+    for (const [i, script] of scripts.entries()) assert.doesNotThrow(() => new Function(script), file + ': inline script ' + i + ' syntax');
+  }
+});
+
 test('legacy production project is absent from runtime cloud config', () => {
   const c = read('cloud-config.js');
   assert.match(c, /master-ai-beta-9440599/);
@@ -115,7 +149,7 @@ test('legacy production project is absent from runtime cloud config', () => {
 });
 
 test('external Google integration is disabled in the CRM',()=>{for(const f of ['cloud-config.js','index.html','dispatcher-logistic.html','master.html'])assert.doesNotMatch(read(f),/https:\/\/script\.google\.com|id="s_google|id="googleSync"|window\.open\(.*google/i);for(const f of ['index.html','dispatcher-logistic.html','master.html']){assert.match(read(f),/cloud\.requestGoogleSync=async\(\)=>null/);assert.match(read(f),/googleCoordinatorRole=\(\)=>false/)}});test('external connector hydration is disabled without disturbing Firebase roles',()=>{for(const f of ['index.html','dispatcher-logistic.html','master.html']){const h=read(f);assert.match(h,/if\(!\['owner','dispatcher_logistic','logistic'\]\.includes\(cloud\.profile\?\.role\|\|''\)\)return\[\]/);assert.match(h,/cloud\.getGoogle=async\(\)=>\(\{\}\)/);assert.match(h,/cloud\.requestGoogleSync=async\(\)=>null/)}});test('all executable JavaScript parses', () => {
-  for (const file of ['index.html','dispatcher-logistic.html','master.html']) {
+  for (const file of ['index.html','dispatcher-logistic.html','master.html','hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']) {
     const html = read(file);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
       .map(m => m[1])
@@ -125,7 +159,7 @@ test('external Google integration is disabled in the CRM',()=>{for(const f of ['
       assert.doesNotThrow(() => new Function(script), file + ': inline script ' + i + ' syntax');
     }
   }
-  for (const file of ['cloud-config.js','quota-safe-v181719.js','sw.js']) {
+  for (const file of ['cloud-config.js','quota-safe-v181719.js','sw.js','hosted-snapshot/sw.js']) {
     assert.doesNotThrow(() => new Function(read(file)), file + ': syntax');
   }
 });
@@ -560,3 +594,56 @@ test('owner can safely backfill employee queue without touching finance or newer
 test('stable role entrypoints keep a failed sync visible until the server confirms recovery',()=>{const owner=read('preview/v18.17.21/index.html'),dispatcher=read('preview/v18.17.21/dispatcher-logistic.html');assert.match(owner,/connectionError=''/);assert.match(owner,/MasterAICloud\?\.connectionError/);assert.match(dispatcher,/connectionError:''/);assert.match(dispatcher,/connectionError=String\(message\|\|'Ошибка подключения'\)/);assert.match(dispatcher,/connectionError='';clearTimeout\(cloud\.syncRetryTimer\)/);assert.match(dispatcher,/MasterAICloud\?\.connectionError/)});
 
 test('dispatcher live server snapshot marks the shared queue online',()=>{const html=read('preview/v18.17.21/dispatcher-logistic.html');assert.match(html,/if\(!cached\)\{confirmServerSync\(\);window\.MasterAICloudStatus\?\.\('ok','Общая очередь подтверждена сервером Firebase · '\+allRows\.length\+' заказов'\)\}/)});test('dispatcher sync retry verifies current-user server access and surfaces exact Firebase errors',()=>{const html=read('preview/v18.17.21/dispatcher-logistic.html');assert.match(html,/cloud\.probeServer=async/);assert.match(html,/getDocsFromServer\(query\)/);assert.match(html,/Проверка Firebase не прошла/);assert.match(html,/err\?\.code/);assert.match(html,/setAttribute\('aria-label','Состояние облачной синхронизации\./)});
+
+test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
+
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.23-shell-v12/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+
+test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
+  const owner=read('hosted-snapshot/index.html');
+  const dispatcher=read('hosted-snapshot/dispatcher-logistic.html');
+  assert.match(owner,/function normalizeImportHeaders\(raw\)/);
+  assert.match(owner,/\['4285F4','4A86E8'\]/);
+  assert.match(owner,/\['B7B7B7','CCCCCC','D9D9D9'\]/);
+  assert.match(owner,/cloud\.syncOrdersNow=async/);
+  assert.match(owner,/await cloud\.syncOrdersNow\(syncTargets,'owner'\)/);
+  assert.match(owner,/Общая CRM подтвердила запись/);
+  assert.match(owner,/Импортировать в общую CRM/);
+  assert.match(owner,/disabled=!meaningful\.length\|\|currentUser\(\)\.role!=='owner'\|\|ownerRolePreview\(\)/);
+  assert.match(dispatcher,/const headers=normalizeImportHeaders\(matrix\[hi\]\)/);
+  assert.match(dispatcher,/Импорт в общую CRM выполняет владелец/);
+  assert.match(dispatcher,/Импорт выполняет владелец/);
+});
+
+test('REG.RU order intake groups the fast-entry fields for every role without changing access gates',()=>{
+  for(const page of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){
+    const html=read(page),start=html.indexOf('<div class="order-intake span6"'),end=html.indexOf('<div class="form-section status-section">',start);
+    assert.ok(start>=0&&end>start,`${page}: primary order intake block exists before secondary controls`);
+    const intake=html.slice(start,end);
+    const fields=['f_name','f_phone','f_callDate','f_callTime','f_visitDate','f_visitTime','f_address','f_request'];
+    const positions=fields.map(id=>intake.indexOf(`id="${id}"`));
+    assert.ok(positions.every(pos=>pos>=0),`${page}: all primary fields remain in the shared intake block`);
+    assert.deepEqual(positions,[...positions].sort((a,b)=>a-b),`${page}: keyboard sequence stays predictable`);
+    for(const id of fields)assert.equal((html.match(new RegExp(`id="${id}"`,'g'))||[]).length,1,`${page}: ${id} remains unique`);
+    assert.match(html,/const newOrder=\(\)=>\{if\(!can\('create'\)\)/,`${page}: existing role permission gate remains in place`);
+    assert.match(html,/order-intake\{grid-column:1\/-1;display:grid/);
+    assert.match(html,/@media\(max-width:480px\)\{\.order-intake/);
+  }
+  assert.match(read('hosted-snapshot/index.html'),/if\(isStaffOrderLocked\(r\)\)\$\('#cancelEdit'\)\?\.focus\(\);else\{\$\('#f_name'\)\?\.focus\(\)\}/);
+  for(const page of ['hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html'])assert.match(read(page),/setTimeout\(\(\)=>\{\$\('#f_name'\)\?\.focus\(\)\}/);
+});
+
+
+test('REG.RU order create waits for one server-confirmed write on owner and dispatcher',()=>{
+  const owner=read('hosted-snapshot/index.html'),dispatcher=read('hosted-snapshot/dispatcher-logistic.html');
+  for(const html of [owner,dispatcher]){
+    assert.match(html,/cloud\.saveOrderConfirmed=async\(order,role\)=>/);
+    assert.match(html,/await upsertOne\(order,role\)/);
+    assert.match(html,/cloud\.versions\.set\(String\(order\.orderId/);
+    assert.match(html,/Заказ не сохранён в общей базе/);
+    assert.match(html,/Заказ сохранён в общей базе/);
+  }
+  assert.match(owner,/SECURE_CLOUD_REQUIRED=!!window\.MASTER_AI_BETA_ONLINE/);
+  assert.match(dispatcher,/SECURE_CLOUD_REQUIRED=!!window\.MASTER_AI_BETA_ONLINE&&!!FORCED_APP_ROLE/);
+  assert.match(read('hosted-snapshot/master.html'),/const newOrder=\(\)=>\{if\(!can\('create'\)\)/);
+});
