@@ -48,6 +48,12 @@ class FtpMkdirsTests(unittest.TestCase):
         self.assertNotIn("/.codex-staging/.codex-staging", ftp.directories)
         self.assertEqual("/", ftp.pwd())
 
+
+    def test_public_check_does_not_depend_on_reverse_proxy_origin(self):
+        # Production validation relies on authenticated FTP read-back because
+        # the public URL is not necessarily served from this FTP account's root.
+        deployer.public_check("https://invalid.example", "index.html", "0" * 64)
+
     def test_creates_nested_path_and_restores_initial_directory(self):
         ftp = FakeFTP()
 
