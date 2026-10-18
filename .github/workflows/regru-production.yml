@@ -48,6 +48,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run gate:static
       - run: npm run test:unit
+      - name: Test FTPS deployer path handling
+        run: python3 -m unittest discover --start-directory tests --pattern 'test_*.py'
       - run: npm run test:rules
       - name: Build immutable REG.RU package
         run: npm run release:regru
