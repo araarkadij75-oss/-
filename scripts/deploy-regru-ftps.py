@@ -41,18 +41,19 @@ def safe_child(root: str, *parts: str) -> str:
 
 
 def ftp_mkdirs(ftp: ftplib.FTP_TLS, path: str) -> None:
-    current = ""
-    for component in path.split("/"):
-        if not component:
-            continue
-        current = posixpath.join(current, component)
-        try:
-            ftp.mkd(current)
-        except ftplib.error_perm as exc:
+    """Create each path component and restore the FTP home directory."""
+    original_dir = ftp.pwd()
+    try:
+        for component in path.split("/"):
+            if not component or component == ".":
+                continue
             try:
-                ftp.cwd(current)
+                ftp.cwd(component)
             except ftplib.error_perm:
-                raise exc
+                ftp.mkd(component)
+                ftp.cwd(component)
+    finally:
+        ftp.cwd(original_dir)
 
 
 def ftp_read(ftp: ftplib.FTP_TLS, path: str) -> bytes:
