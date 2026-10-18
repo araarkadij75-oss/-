@@ -72,7 +72,22 @@ jobs:
         with:
           name: regru-release-${{ github.run_id }}-${{ github.run_attempt }}
           path: release
+      - name: Check FTPS configuration
+        id: ftps
+        env:
+          FTP_HOST: ${{ vars.REG_RU_FTP_HOST }}
+          FTP_USER: ${{ secrets.REG_RU_FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.REG_RU_FTP_PASSWORD }}
+        shell: bash
+        run: |
+          if [[ -n "$FTP_HOST" && -n "$FTP_USER" && -n "$FTP_PASSWORD" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::FTPS credentials are not configured; production publish is skipped."
+          fi
       - name: Download current production files and publish with rollback
+        if: steps.ftps.outputs.ready == 'true'
         env:
           REG_RU_FTP_HOST: ${{ vars.REG_RU_FTP_HOST }}
           REG_RU_FTP_PORT: ${{ vars.REG_RU_FTP_PORT }}
@@ -84,7 +99,7 @@ jobs:
           LIVE_BASE_URL: https://crm.remontpkspb.ru/candidate
         run: python3 scripts/deploy-regru-ftps.py
       - name: Preserve production pre-image for rollback
-        if: always()
+        if: always() && steps.ftps.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: crm-production-preimage-${{ github.run_id }}-${{ github.run_attempt }}

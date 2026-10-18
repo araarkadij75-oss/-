@@ -26,6 +26,7 @@
 - FTPS доступен снаружи и его сертификат действителен для указанного hostname.
 - В environment `production` secrets и variables заданы без пробелов по краям.
 - Workflow прошёл проверочные job после PR; после merge на `main` в Actions видны `verify` и `deploy`.
+- Если реквизиты FTPS ещё не заданы, `deploy` безопасно пропустит публикацию. После сохранения секретов один раз запустите **CRM production (REG.RU) → Run workflow** на `main`; последующие изменения будут публиковаться автоматически.
 - Первый успешный релиз показывает четыре URL и совпадающие SHA-256; pre-image `crm-production-preimage-*` доступен в Actions Artifacts.
 
 ## Ограничения безопасности и откат
