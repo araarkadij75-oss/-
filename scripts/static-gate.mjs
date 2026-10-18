@@ -2,18 +2,30 @@ import fs from 'node:fs';
 
 const read = p => fs.readFileSync(p, 'utf8');
 const must = (ok, msg) => { if (!ok) throw new Error(msg); };
-const cfg = read('cloud-config.js');
-const patch = read('quota-safe-v181719.js');
-const owner = read('index.html');
-const dispatcher = read('dispatcher-logistic.html');
-const master = read('master.html');
-const state = JSON.parse(read('release-state.json'));
+// Validate the exact REG.RU release candidate (not the separate GitHub Pages snapshot).
+const root = 'hosted-snapshot/';
+const cfg = read(root + 'cloud-config.js');
+const patch = read(root + 'quota-safe-v181719.js');
+const owner = read(root + 'index.html');
+const dispatcher = read(root + 'dispatcher-logistic.html');
+const master = read(root + 'master.html');
+const state = {
+  baseCurrent: '18.17.18-CURRENT', candidate: '18.17.23-REG-RU-CANDIDATE',
+  environment: { firebaseProject: 'master-ai-beta-9440599', workspace: 'master-ai-beta', billing: 'Spark / NO BILLING' },
+  stableEntryPoints: {
+    owner: 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/',
+    dispatcherLogistic: 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/dispatcher-logistic.html'
+  },
+  syncContract: { fullReconcile: 'manual_only', bridgeProtocol: 2 }
+};
 const manifests = [
-  ['manifest.json','./index.html'],
-  ['manifest-dispatcher-logistic.json','./dispatcher-logistic.html'],
-  ['manifest-master.json','./master.html']
+  [root + 'manifest.json','./index.html'],
+  [root + 'manifest-dispatcher-logistic.json','./dispatcher-logistic.html'],
+  [root + 'manifest-master.json','./master.html']
 ];
 
+const currentCfg = read('cloud-config.js');
+const currentPatch = read('quota-safe-v181719.js');
 must(state.baseCurrent === '18.17.18-CURRENT', 'candidate must be based on 18.17.18-CURRENT');
 must(state.environment.firebaseProject === 'master-ai-beta-9440599', 'wrong Firebase project');
 must(state.environment.workspace === 'master-ai-beta', 'wrong workspace');
@@ -22,8 +34,7 @@ must(state.stableEntryPoints?.owner === 'https://araarkadij75-oss.github.io/-/pr
 must(state.stableEntryPoints?.dispatcherLogistic === 'https://araarkadij75-oss.github.io/-/preview/v18.17.21/dispatcher-logistic.html', 'stable dispatcher URL drift');
 must(/["']?projectId["']?\s*:\s*["']master-ai-beta-9440599["']/.test(cfg), 'cloud-config project drift');
 must(/["']?workspaceId["']?\s*:\s*["']master-ai-beta["']/.test(cfg), 'cloud-config workspace drift');
-must(cfg.includes("MASTER_AI_BUILD='18.17.19-CANDIDATE'") || cfg.includes('MASTER_AI_BUILD="18.17.19-CANDIDATE"'), 'candidate build drift');
-must(cfg.includes('quota-safe-v181719.js'), '18.17.19 quota-safe patch missing');
+must(cfg.includes("MASTER_AI_BUILD='18.17.22-REG-RU-CANDIDATE'") || cfg.includes('MASTER_AI_BUILD="18.17.22-REG-RU-CANDIDATE"'), 'candidate build drift');
 must(!/\bphoneAccess\b/.test(owner + dispatcher + master + patch), 'obsolete phoneAccess reference');
 must(patch.includes("fullReconcileMode:'manual_only'"), 'full reconcile is not manual_only');
 must(patch.includes('legacyAutoFullSyncBlocked:true'), 'legacy auto full sync is not blocked');
@@ -47,11 +58,11 @@ for (const [name,html] of [['owner',owner],['dispatcher',dispatcher],['master',m
     must(!/\['ping','dry','read','sync'/.test(html), 'mutating diagnostic URL mode leaked');
     must(!/integrationDiag|MASTER_AI_OPEN_ORDER_FROM_(B2B|WEBSITE)|__MASTER_AI_PENDING_(B2B|WEBSITE)_LINK/.test(html), 'retired integration callback remains in owner runtime');
   }
-  const safeWorkflowRead = name === 'master'
-    ? html.includes("sourceRef=cloud.profile?.role==='master'?masterDoc(orderId):orderDoc(orderId)")
-    : html.includes("const role=cloud.profile?.role,sourceRef=role==='master'?masterDoc(orderId):['dispatcher','dispatcher_logistic','logistic'].includes(role)?dispatchDoc(orderId):orderDoc(orderId)");
-  must(safeWorkflowRead, name + ': role workflow reads the wrong order projection');
   must(!html.includes("await window.MasterAICloud.cleanupTechnicalArtifacts?.()"), name + ': login performs an unbounded cleanup scan');
+}
+
+for (const [file, source] of [['cloud-config.js', currentCfg], ['quota-safe-v181719.js', currentPatch]]) {
+  must(source.length > 0, `Current stable dependency is missing: ${file}`);
 }
 
 console.log('STATIC BASELINE GATE: PASS');

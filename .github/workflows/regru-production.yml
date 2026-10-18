@@ -1,0 +1,93 @@
+name: CRM production (REG.RU)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hosted-snapshot/**'
+      - 'scripts/prepare-regru-release.mjs'
+      - 'scripts/deploy-regru-ftps.py'
+      - '.github/workflows/regru-production.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/**'
+  push:
+    branches: [main]
+    paths:
+      - 'hosted-snapshot/**'
+      - 'scripts/prepare-regru-release.mjs'
+      - 'scripts/deploy-regru-ftps.py'
+      - '.github/workflows/regru-production.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crm-regru-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Audit and build release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --ignore-scripts
+      - run: npm run gate:static
+      - run: npm run test:unit
+      - run: npm run test:rules
+      - name: Build immutable REG.RU package
+        run: npm run release:regru
+      - name: Save release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: regru-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/regru-releases/*/
+          if-no-files-found: error
+          retention-days: 30
+
+  deploy:
+    name: Publish verified release over FTPS
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: regru-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release
+      - name: Download current production files and publish with rollback
+        env:
+          REG_RU_FTP_HOST: ${{ vars.REG_RU_FTP_HOST }}
+          REG_RU_FTP_PORT: ${{ vars.REG_RU_FTP_PORT }}
+          REG_RU_FTP_USER: ${{ secrets.REG_RU_FTP_USER }}
+          REG_RU_FTP_PASSWORD: ${{ secrets.REG_RU_FTP_PASSWORD }}
+          REG_RU_FTP_ROOT: ${{ vars.REG_RU_FTP_ROOT }}
+          RELEASE_DIR: release
+          BACKUP_DIR: ${{ runner.temp }}/crm-production-backup
+          LIVE_BASE_URL: https://crm.remontpkspb.ru/candidate
+        run: python3 scripts/deploy-regru-ftps.py
+      - name: Preserve production pre-image for rollback
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crm-production-preimage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/crm-production-backup/
+          if-no-files-found: warn
+          retention-days: 90
