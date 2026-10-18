@@ -178,8 +178,29 @@ def main() -> None:
                     raise
                 changed.append(name)
 
+            # Some REG.RU frontends/CDN nodes can lag or normalize a just-published
+            # response briefly. Retry the uncached public check before rollback.
+            import time
+
+            public_errors: dict[str, str] = {}
             for name in ALLOWLIST:
-                public_check(live_base_url, name, hashes[name])
+                last_error: Exception | None = None
+                for attempt in range(6):
+                    try:
+                        public_check(live_base_url, name, hashes[name])
+                        last_error = None
+                        break
+                    except RuntimeError as exc:
+                        last_error = exc
+                        if attempt < 5:
+                            time.sleep(5)
+                if last_error is not None:
+                    public_errors[name] = str(last_error)
+            if public_errors:
+                raise RuntimeError(
+                    "Public smoke checks failed after retries: "
+                    + "; ".join(f"{name}: {error}" for name, error in public_errors.items())
+                )
 
         except Exception as deploy_error:
             rollback_errors: list[str] = []
