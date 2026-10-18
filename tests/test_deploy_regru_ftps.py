@@ -1,8 +1,16 @@
 import ftplib
+import importlib.util
 import posixpath
 import unittest
+from pathlib import Path
 
-from scripts.deploy_regru_ftps import ftp_mkdirs
+module_path = Path(__file__).resolve().parents[1] / "scripts" / "deploy-regru-ftps.py"
+spec = importlib.util.spec_from_file_location("deploy_regru_ftps", module_path)
+if spec is None or spec.loader is None:
+    raise RuntimeError(f"Could not load {module_path}")
+deployer = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(deployer)
+ftp_mkdirs = deployer.ftp_mkdirs
 
 
 class FakeFTP:
