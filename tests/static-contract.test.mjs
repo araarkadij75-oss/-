@@ -232,6 +232,25 @@ test('dispatcher-logistic dashboards use a shared all-shifts queue by default', 
   }
 });
 
+test('master role maps unique abbreviated order names without exposing ambiguous assignments', () => {
+  const html=read('hosted-snapshot/index.html');
+  const start=html.indexOf('function masterNamesEquivalent'),end=html.indexOf('function roleVisibleOrders',start);
+  assert.ok(start>=0&&end>start,'master identity helpers are present before role filtering');
+  const canonicalKey=(value)=>String(value??'').trim().toLowerCase().replace(/ё/g,'е').replace(/[.]/g,'').replace(/\s+/g,' ');
+  const helpers=new Function('canonicalKey','unique','state','PRESETS',html.slice(start,end)+';return {masterNamesEquivalent,masterRoleOrderMatch}');
+  const unique=(items)=>[...new Set(items)];
+  const state={settings:{masterRoster:['Пак Семён'],staff:[{role:'master',active:true,master:'Пак Семён'}]}};
+  const run=helpers(canonicalKey,unique,state,{masters:[]});
+  assert.equal(run.masterNamesEquivalent('Пак С.','Пак Семён'),true);
+  assert.equal(run.masterRoleOrderMatch('Пак С.','Пак Семён'),true);
+  assert.equal(run.masterRoleOrderMatch('Пак С.','Семёнов Павел'),false);
+  state.settings.masterRoster.push('Пак Савченков');
+  assert.equal(run.masterRoleOrderMatch('Пак С.','Пак Семён'),false,'ambiguous initials must not reveal the order');
+  for(const file of ['index.html','dispatcher-logistic.html','master.html','hosted-snapshot/index.html','hosted-snapshot/master.html']){
+    assert.match(read(file),/function roleVisibleOrders\(rows=state\.orders\)[^\n]*masterRoleOrderMatch\(r\.master,master\)/,file+' uses alias-safe role filtering');
+  }
+});
+
 test('owner view merges the canonical and dispatcher queues and reads close totals', () => {
   for (const file of ['index.html', 'dispatcher-logistic.html', 'preview/v18.17.21/index.html', 'preview/v18.17.21/dispatcher-logistic.html']) {
     const html = read(file);
@@ -608,7 +627,7 @@ test('dispatcher live server snapshot marks the shared queue online',()=>{const 
 
 test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.25-shell-v15/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v16/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
