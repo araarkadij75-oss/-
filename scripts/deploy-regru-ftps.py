@@ -192,6 +192,27 @@ def main() -> None:
                     raise
                 changed.append(name)
 
+            # Verify the promoted live paths through the same FTP session before
+            # consulting the public URL. This separates a wrong FTP target or a
+            # failed rename from stale routing/cache at the HTTP layer.
+            ftp_errors: dict[str, str] = {}
+            for name in ALLOWLIST:
+                try:
+                    live_bytes = ftp_read(ftp, safe_child(root, name))
+                    actual_hash = sha256(live_bytes)
+                    if actual_hash != hashes[name]:
+                        ftp_errors[name] = (
+                            f"expected sha256 {hashes[name]}, got {actual_hash} "
+                            f"(FTP PWD {ftp.pwd()!r}, configured root {root!r})"
+                        )
+                except Exception as exc:
+                    ftp_errors[name] = f"FTP live-path readback failed (PWD {ftp.pwd()!r}, root {root!r}): {exc}"
+            if ftp_errors:
+                raise RuntimeError(
+                    "FTPS live-path verification failed after promotion: "
+                    + "; ".join(f"{name}: {error}" for name, error in ftp_errors.items())
+                )
+
             # Some REG.RU frontends/CDN nodes can lag or normalize a just-published
             # response briefly. Retry the uncached public check before rollback.
             import time
