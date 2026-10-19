@@ -692,6 +692,8 @@ test('REG.RU order create waits for one server-confirmed write on owner and disp
 
 test('confirmed payroll reports stay authoritative when order cards change',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes('.filter(r=>!r.closureOnly&&(shiftIntegrity(r)||(r.ownerConfirmed&&r.subjectMemberId)))'));assert.ok(html.includes('frozen=!!(report&&(verified||(report.ownerConfirmed&&report.subjectMemberId)))'));assert.ok(html.includes('if(existing&&(shiftIntegrity(existing)||(existing.ownerConfirmed&&existing.subjectMemberId))){skipped++;continue}'));assert.ok(html.includes('savedReports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&!r.closureOnly)'));});
 
+test('owner shift history shows recalculated cash for changed reports without overwriting the saved snapshot',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes("recalc=role==='owner'&&!r.closureOnly&&!verified?window.__ownerShiftDrafts?.[r.id]:null"));assert.ok(html.includes('shownCash=recalc?.shiftCash??r.shiftCash??r.cash'));assert.ok(html.includes('shownDeferred=recalc?.deferredCash??r.deferredCash??0'));assert.ok(html.includes('shownSalary=recalc?.salary??r.salary'));assert.ok(html.includes('Предварительная сверка по текущим заказам; сохранённый отчёт не изменён.'));});
+
 test('REG.RU green completed orders count as surrendered cash exactly once', () => {
   const source = read('hosted-snapshot/index.html');
   const cashRule = source.match(/function payrollOrderCashRecorded\(r\)\{[^\n]+?\}/);
