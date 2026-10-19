@@ -406,6 +406,8 @@ test('dispatcher-logistic can create a new order and all live projections in one
   const batch=writeBatch(db);
   batch.set(doc(db,'workspaces',ws,'orders',id),order);
   batch.set(doc(db,'workspaces',ws,'dispatcherOrders',id),queue);
+  batch.set(doc(db,'workspaces',ws,'masterAssignments',id),{orderId:id,callDate:order.callDate,name:order.name,master:'',masterUid:'',masterKey:'',_status:order._status});
+  batch.set(doc(db,'workspaces',ws,'masterPhones',id),{orderId:id,phone:'',masterUid:'',unlockAt:Timestamp.fromMillis(0),earlyAccess:false,updatedAt:Timestamp.fromMillis(0)});
   batch.set(doc(db,'workspaces',ws,'orderCloseData',id),close);
   await assertSucceeds(batch.commit());
   const edit=writeBatch(db),changedAt='2026-10-11T16:05:00.000Z';
