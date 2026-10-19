@@ -638,7 +638,7 @@ test('dispatcher live server snapshot marks the shared queue online',()=>{const 
 
 test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v17/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v18/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
