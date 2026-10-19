@@ -105,6 +105,18 @@ test('order saves await Firebase confirmation and commit all order projections a
   }
 });
 
+test('owner deletes every order projection from the supplied deletion list exactly once per session',async()=>{
+  for(const file of ['index.html','dispatcher-logistic.html']){
+    const html=read(file),start=html.indexOf('async function persistDeleteTombstones(deleted)'),end=html.indexOf('\n',start);
+    assert.ok(start>=0&&end>start,file+': delete IDs come from current CRM state');
+    const helper=new Function(html.slice(start,end)+';return persistDeleteTombstones')();
+    assert.deepEqual(await helper([{orderId:'TEST-DELETE-1'},{orderId:'TEST-DELETE-1'},{orderId:'TEST-DELETE-2'},{}]),['TEST-DELETE-1','TEST-DELETE-2']);
+    assert.match(html,/appliedDeleteIds:new Set\(\)/,file+': avoid repeated Firestore deletes');
+    assert.match(html,/tombstones\.filter\(id=>!cloud\.appliedDeleteIds\.has\(id\)\)/,file+': schedule new deletes');
+    assert.match(html,/deleteDoc\(orderDoc\(id\)\)[\s\S]{0,180}cloud\.appliedDeleteIds\.add\(id\)/,file+': remove canonical and role projections before marking complete');
+  }
+});
+
 test('unassigned orders keep role projections atomic without dispatcher deletes',()=>{
   for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html']){
     const html=read(file),start=html.indexOf('async function mirrorOrder(r,batch=null)'),end=html.indexOf('if(!batch)await b.commit()',start);
