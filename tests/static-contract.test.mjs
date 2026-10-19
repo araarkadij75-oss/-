@@ -105,6 +105,17 @@ test('order saves await Firebase confirmation and commit all order projections a
   }
 });
 
+test('unassigned orders keep role projections atomic without dispatcher deletes',()=>{
+  for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html']){
+    const html=read(file),start=html.indexOf('async function mirrorOrder(r,batch=null)'),end=html.indexOf('if(!batch)await b.commit()',start);
+    assert.ok(start>=0&&end>start,file+': batch-aware mirror writer');
+    const mirror=html.slice(start,end);
+    assert.match(mirror,/else if\(cloud\.profile\?\.role==='owner'\)\{b\.delete\(masterDoc\(id\)\);b\.delete\(phoneDoc\(id\)\)\}/,file+': only owner removes projections');
+    assert.match(mirror,/b\.set\(masterDoc\(id\),stripUndefined\(masterSafe\(r,''\)\)/,file+': unassigned master projection revokes access without deletion');
+    assert.match(mirror,/b\.set\(phoneDoc\(id\),\{orderId:id,phone:'',masterUid:''/,file+': unassigned phone projection contains no phone');
+    assert.match(html,/await mirrorOrder\(r,batch\);await batch\.commit\(\)/,file+': canonical and role projections commit together');
+  }
+});
 test('master workflow uses its permitted assignment document', () => {
   for (const file of ['index.html', 'dispatcher-logistic.html', 'master.html']) {
     const html = read(file);
