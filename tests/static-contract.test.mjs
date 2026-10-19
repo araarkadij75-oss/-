@@ -106,7 +106,7 @@ test('order saves await Firebase confirmation and commit all order projections a
 });
 
 test('owner deletes every order projection from the supplied deletion list exactly once per session',async()=>{
-  for(const file of ['index.html','dispatcher-logistic.html']){
+  for(const file of ['index.html','dispatcher-logistic.html','hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html']){
     const html=read(file),start=html.indexOf('async function persistDeleteTombstones(deleted)'),end=html.indexOf('\n',start);
     assert.ok(start>=0&&end>start,file+': delete IDs come from current CRM state');
     const helper=new Function(html.slice(start,end)+';return persistDeleteTombstones')();
