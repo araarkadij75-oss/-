@@ -105,6 +105,18 @@ test('order saves await Firebase confirmation and commit all order projections a
   }
 });
 
+test('owner deletes every order projection from the supplied deletion list exactly once per session',async()=>{
+  for(const file of ['index.html','dispatcher-logistic.html']){
+    const html=read(file),start=html.indexOf('async function persistDeleteTombstones(deleted)'),end=html.indexOf('\n',start);
+    assert.ok(start>=0&&end>start,file+': delete IDs come from current CRM state');
+    const helper=new Function(html.slice(start,end)+';return persistDeleteTombstones')();
+    assert.deepEqual(await helper([{orderId:'TEST-DELETE-1'},{orderId:'TEST-DELETE-1'},{orderId:'TEST-DELETE-2'},{}]),['TEST-DELETE-1','TEST-DELETE-2']);
+    assert.match(html,/appliedDeleteIds:new Set\(\)/,file+': avoid repeated Firestore deletes');
+    assert.match(html,/tombstones\.filter\(id=>!cloud\.appliedDeleteIds\.has\(id\)\)/,file+': schedule new deletes');
+    assert.match(html,/deleteDoc\(orderDoc\(id\)\)[\s\S]{0,180}cloud\.appliedDeleteIds\.add\(id\)/,file+': remove canonical and role projections before marking complete');
+  }
+});
+
 test('unassigned orders keep role projections atomic without dispatcher deletes',()=>{
   for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html']){
     const html=read(file),start=html.indexOf('async function mirrorOrder(r,batch=null)'),end=html.indexOf('if(!batch)await b.commit()',start);
@@ -638,7 +650,7 @@ test('dispatcher live server snapshot marks the shared queue online',()=>{const 
 
 test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v17/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v18/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -693,6 +705,7 @@ test('REG.RU order create waits for one server-confirmed write on owner and disp
 test('confirmed payroll reports stay authoritative when order cards change',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes('.filter(r=>!r.closureOnly&&(shiftIntegrity(r)||(r.ownerConfirmed&&r.subjectMemberId)))'));assert.ok(html.includes('frozen=!!(report&&(verified||(report.ownerConfirmed&&report.subjectMemberId)))'));assert.ok(html.includes('if(existing&&(shiftIntegrity(existing)||(existing.ownerConfirmed&&existing.subjectMemberId))){skipped++;continue}'));assert.ok(html.includes('savedReports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&!r.closureOnly)'));});
 
 test('owner shift history shows recalculated cash for changed reports without overwriting the saved snapshot',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes("recalc=role==='owner'&&!r.closureOnly&&!verified?window.__ownerShiftDrafts?.[r.id]:null"));assert.ok(html.includes('shownCash=recalc?.shiftCash??r.shiftCash??r.cash'));assert.ok(html.includes('shownDeferred=recalc?.deferredCash??r.deferredCash??0'));assert.ok(html.includes('shownSalary=recalc?.salary??r.salary'));assert.ok(html.includes('Предварительная сверка по текущим заказам; сохранённый отчёт не изменён.'));});
+test('shift report history sorts by shift date so a newer closed shift is visible',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes("String(b.date||b.closedAt||'').localeCompare(String(a.date||a.closedAt||''))"));assert.ok(html.includes("String(b.closedAt||'').localeCompare(String(a.closedAt||''))"));});
 
 test('REG.RU green completed orders count as surrendered cash exactly once', () => {
   const source = read('hosted-snapshot/index.html');
