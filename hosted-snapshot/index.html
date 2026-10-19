@@ -424,7 +424,7 @@ function roleLabel(role){role=canonicalRole(role);return ROLE_META[role]?.label|
 function employeeLaunchMode(){return (!!FORCED_APP_ROLE&&FORCED_APP_ROLE!=='owner')||new URLSearchParams(location.search).get('employee')==='1'}
 
 function parseDate(v){if(!v)return null;if(v instanceof Date&&!isNaN(v))return new Date(Date.UTC(v.getFullYear(),v.getMonth(),v.getDate()));if(typeof v==='number'&&v>1000&&v<90000)return new Date(Date.UTC(1899,11,30)+Math.floor(v)*86400000);let s=clean(v);let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));m=s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/);if(m){let y=+m[3];if(y<100)y+=2000;return new Date(Date.UTC(y,+m[2]-1,+m[1]))}return null}
-const iso=d=>d instanceof Date&&!isNaN(d)?d.toISOString().slice(0,10):clean(d).match(/^\d{4}-\d{2}-\d{2}$/)?.[0]||'';
+const iso=d=>d instanceof Date&&!isNaN(d)?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:clean(d).match(/^\d{4}-\d{2}-\d{2}$/)?.[0]||'';
 const fmtDate=v=>{const d=parseDate(v);return d?new Intl.DateTimeFormat('ru-RU',{timeZone:'UTC'}).format(d):clean(v)||'—'};
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const ddmm=()=>{const d=new Date();return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}`};
