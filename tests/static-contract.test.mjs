@@ -660,7 +660,7 @@ test('dispatcher header exposes only the saved order total in desktop and mobile
 
 test('CRM calendar serialization preserves Moscow local shift dates across UTC midnight',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const html=read(file),match=html.match(/const iso=d=>[^\n]+/);assert.ok(match);assert.match(match[0],/d\.getFullYear\(\).*d\.getMonth\(\).*d\.getDate\(\)/);assert.doesNotMatch(match[0],/toISOString/)}const FakeDate=class{valueOf(){return 1}getFullYear(){return 2026}getMonth(){return 9}getDate(){return 19}toISOString(){return '2026-10-18T21:00:00.000Z'}};const iso=new Function('Date','clean',`return (${read('hosted-snapshot/index.html').match(/const iso=d=>([^\n]+)/)[0].replace(/^const iso=/,'').replace(/;\r?$/,'')})`)(FakeDate,String);assert.equal(iso(new FakeDate()),'2026-10-19')});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v20/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.26-shell-v21/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -781,4 +781,25 @@ test('payroll follows visit date and accepts a table surrender date without a ye
   assert.equal(recordedDate(order), '2026-10-19', 'a dd.mm surrender date uses the order year');
   assert.equal(settlementDate(order), '2026-10-19', 'settlement uses the recorded date');
   assert.ok(source.includes('cashDate=shiftCashRecordedDate(r)'), 'shift cards display the source surrender date');
+});
+test('late payroll queue separates pending closure, late cash awaiting reconciliation, and already accounted orders',()=>{
+  const html=read('hosted-snapshot/index.html'),start=html.indexOf('function renderLatePayrollQueue('),end=html.indexOf('\nfunction renderDailyPayrollReconciliation(',start);assert.ok(start>=0&&end>start);
+  const parseDate=v=>{const m=String(v||'').match(/^(\d{4})-(\d\d)-(\d\d)/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null},iso=d=>d?d.toISOString().slice(0,10):'';
+  const state={settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher_logistic',shift:'sergey'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'artem'}]},orders:[
+    {orderId:'LATE',dispatcher:'Сергей',callDate:'2026-10-15',visitDate:'2026-10-22',_status:'Выполнен',closeDate:'2026-10-19',companyShare:6000},
+    {orderId:'OPEN',dispatcher:'Сергей',visitDate:'2026-10-15',_status:'В работе',companyShare:0},
+    {orderId:'ONTIME',dispatcher:'Сергей',visitDate:'2026-10-15',_status:'Выполнен',closeDate:'2026-10-16',companyShare:3000},
+    {orderId:'USED',dispatcher:'Сергей',visitDate:'2026-10-15',_status:'Выполнен',closeDate:'2026-10-19',companyShare:4000},
+    {orderId:'ARTEM-LATE',dispatcher:'Артём',callDate:'2026-10-17',visitDate:'2026-10-24',_status:'Выполнен',closeDate:'2026-10-20',companyShare:5000}
+  ],shiftReports:[{id:'2026-10-19-sergey',date:'2026-10-19',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['USED']},{id:'2026-10-19-artem',date:'2026-10-19',shift:'artem',ownerConfirmed:true,subjectMemberId:'a',paidOrderIds:['LATE']}]};
+  const box={innerHTML:'',hidden:false},elements={'#latePayrollQueue':box};const fn=new Function('state','$','currentUser','today','uniqueShiftReports','payrollShiftKey','shiftIntegrity','orderPayrollShift','shiftOrderDate','derivedStage','payrollScheduledShift','iso','payrollOrderCashRecorded','shiftCashRecordedDate','parseDate','num','money','esc',html.slice(start,end)+';return renderLatePayrollQueue')(
+    state,s=>elements[s],()=>({role:'owner'}),()=> '2026-10-20',rows=>rows,
+    r=>String(r.shift||'').toLowerCase(),()=>true,
+    r=>r.dispatcher==='Сергей'?'sergey':r.dispatcher==='Артём'?'artem':'',
+    r=>r.visitDate, r=>r._status,(date,anchor,first)=>{const d=parseDate(date),a=parseDate(anchor),n=Math.floor((d-a)/86400000),phase=((n%4)+4)%4;return phase<2?first:first==='sergey'?'artem':'sergey'},iso,
+    r=>['Выполнен','Закрыт','Закрыто'].includes(r._status)&&Number(r.companyShare)>0,r=>r.closeDate||'',parseDate,v=>Number(v)||0,v=>`${Number(v).toFixed(0)} ₽`,v=>String(v));
+  fn('2026-10-15','sergey');
+  assert.match(box.innerHTML,/LATE/);assert.match(box.innerHTML,/OPEN/);assert.match(box.innerHTML,/USED/);assert.match(box.innerHTML,/ARTEM-LATE/);assert.match(box.innerHTML,/2 закрытых заказов на 11000 ₽/);assert.doesNotMatch(box.innerHTML,/ONTIME/);
+  assert.match(box.innerHTML,/Готово к сверке/);assert.match(box.innerHTML,/Ожидает закрытия/);assert.match(box.innerHTML,/Учтено в отчёте за 2026-10-19/);assert.ok(html.includes('if(valid){reservedByOwner.set(ownerKey,new Set([...reserved,...(Array.isArray(existing.paidOrderIds)?existing.paidOrderIds:[]).map(String)]))}'),'confirmed order IDs are reserved before later shift drafts');
+  const nonOwner=new Function('state','$','currentUser',html.slice(start,end)+';return renderLatePayrollQueue')(state,s=>elements[s],()=>({role:'dispatcher_logistic'}));nonOwner('2026-10-15','sergey');assert.equal(box.hidden,true);
 });
