@@ -597,7 +597,7 @@ test('dispatcher live server snapshot marks the shared queue online',()=>{const 
 
 test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.24-shell-v13/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.24-shell-v14/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -650,3 +650,34 @@ test('REG.RU order create waits for one server-confirmed write on owner and disp
 
 
 test('confirmed payroll reports stay authoritative when order cards change',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes('.filter(r=>!r.closureOnly&&(shiftIntegrity(r)||(r.ownerConfirmed&&r.subjectMemberId)))'));assert.ok(html.includes('frozen=!!(report&&(verified||(report.ownerConfirmed&&report.subjectMemberId)))'));assert.ok(html.includes('if(existing&&(shiftIntegrity(existing)||(existing.ownerConfirmed&&existing.subjectMemberId))){skipped++;continue}'));assert.ok(html.includes('savedReports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&!r.closureOnly)'));});
+
+test('REG.RU green completed orders count as surrendered cash exactly once', () => {
+  const source = read('hosted-snapshot/index.html');
+  const cashRule = source.match(/function payrollOrderCashRecorded\(r\)\{[^\n]+?\}/);
+  assert.ok(cashRule, 'cash reconciliation rule exists');
+  const isCashRecorded = new Function('num', 'derivedStage', 'parseDate', `return (${cashRule[0]})`)(
+    value => Number(value) || 0,
+    row => row._status || '',
+    value => !!value
+  );
+  assert.equal(isCashRecorded({ _status: 'Выполнен', companyShare: 1500 }), true);
+  assert.equal(isCashRecorded({ _status: 'В работе', companyShare: 1500 }), false);
+  assert.equal(isCashRecorded({ _status: 'Выполнен', companyShare: 0 }), false);
+
+  const settlementSource = source.match(/function shiftSettlementOrders\([^\n]+/);
+  assert.ok(settlementSource, 'cash settlement source exists');
+  const state = { shiftReports: [], orders: [
+    { orderId: 'green-complete', _createdByShift: 'sergey', _status: 'Выполнен', callDate: '2026-10-11', companyShare: 5500 },
+    { orderId: 'still-open', _createdByShift: 'sergey', _status: 'В работе', callDate: '2026-10-11', companyShare: 7000 },
+    { orderId: 'no-company-cash', _createdByShift: 'sergey', _status: 'Выполнен', callDate: '2026-10-11', companyShare: 0 }
+  ] };
+  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'derivedStage', 'shiftOrderDate', `return (${settlementSource[0]})`)(
+    state, value => Number(value) || 0, String, value => String(value || '').toLowerCase(),
+    value => value ? String(value).slice(0, 10) : '', value => value || null,
+    row => row._status || '', row => row.callDate
+  );
+  const profile = { id: 'sergey', name: 'Сергей', shift: 'sergey' };
+  assert.deepEqual(settlement('2026-10-11', profile).map(row => row.orderId), ['green-complete']);
+  state.shiftReports.push({ approvedFor: 'sergey', date: '2026-10-11', paidOrderIds: ['green-complete'] });
+  assert.deepEqual(settlement('2026-10-12', profile), [], 'paid order IDs cannot be counted twice');
+});
