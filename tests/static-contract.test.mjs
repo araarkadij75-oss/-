@@ -356,36 +356,47 @@ test('shift close, protected payroll, and Saint Petersburg analytics ship togeth
   assert.match(rules, /shiftReports/);
 });
 
-test('late cash settlements roll into the original shift exactly once', () => {
-  const source = read('index.html');
+test('cash payroll stays with the order shift and deferred orders are claimed once', () => {
+  const source = read('hosted-snapshot/index.html');
   const payroll = source.match(/function shiftPayroll\([^\n]+/);
   assert.ok(payroll, 'payroll calculation exists');
   const calculate = new Function('num', `return (${payroll[0]})`)(value => Number(value) || 0);
   assert.equal(calculate(35000, { shiftBasePay: 2000, shiftCashThreshold: 20000, shiftCashRate: 10 }), 3500);
   assert.equal(calculate(20000, { shiftBasePay: 2000, shiftCashThreshold: 20000, shiftCashRate: 10 }), 2000);
   assert.match(source, /function shiftSettlementOrders\(/);
-  assert.match(source, /r\.paidOrderIds\)\?r\.paidOrderIds/);
+  assert.match(source, /function shiftSettlementDate\(/);
+  assert.match(source, /r\.paidOrderIds\)\?r\.paidOrderIds:\[\]/);
   assert.match(source, /!r\._cashClosedAt/);
   assert.match(source, /deferredOrderIds/);
   assert.match(source, /id="payrollAccrualTable"/);
   assert.match(read('firestore.rules'), /request\.resource\.data\.shiftCash \+ request\.resource\.data\.deferredCash == request\.resource\.data\.cash/);
   const settlementSource = source.match(/function shiftSettlementOrders\([^\n]+/);
-  const settlementState = { shiftReports: [{ closedBy: 'sergey', date: '2026-10-09', orderIds: ['already-paid'] }], orders: [
-      { orderId: 'late-old', _createdByShift: 'sergey', callDate: '2026-10-05', _cashClosedAt: '2026-10-11T10:00:00Z', companyShare: 3000 },
-      { orderId: 'same-day', _createdByShift: 'sergey', callDate: '2026-10-11', _cashClosedAt: '2026-10-11T11:00:00Z', companyShare: 32000 },
-      { orderId: 'already-paid', _createdByShift: 'sergey', callDate: '2026-10-08', _cashClosedAt: '2026-10-11T12:00:00Z', companyShare: 9000 },
-      { orderId: 'artem', _createdByShift: 'artem', callDate: '2026-10-08', _cashClosedAt: '2026-10-11T12:00:00Z', companyShare: 4000 }
+  const orderShiftSource=source.match(/function orderPayrollShift\([^\n]+/);
+  assert.ok(orderShiftSource,'payroll owner resolver exists');
+  const settlementState = { settings:{staff:[{id:'sergey',name:'Сергей',shift:'sergey'},{id:'artem',name:'Артём',shift:'artem'}]},shiftReports: [{ approvedFor: 'sergey', date: '2026-10-09', paidOrderIds: ['already-paid'] }], orders: [
+      { orderId: 'sergey-order-closed-by-artem', _createdByShift: 'sergey', callDate: '2026-10-05', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T10:00:00Z', _cashClosedBy:'artem', _cashClosedByName:'Артём', companyShare: 3000 },
+      { orderId: 'sergey-same-day-closed-by-artem', _createdByShift: 'artem', dispatcher:'Сергей', callDate: '2026-10-11', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T11:00:00Z', _cashClosedBy:'artem', _cashClosedByName:'Артём', companyShare: 32000 },
+      { orderId: 'already-paid', _createdByShift: 'sergey', callDate: '2026-10-08', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T12:00:00Z', _cashClosedBy:'sergey', _cashClosedByName:'Сергей', companyShare: 9000 },
+      { orderId: 'sergey-order-closed-by-sergey', _createdByShift: 'sergey', callDate: '2026-10-08', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T12:30:00Z', _cashClosedBy:'sergey', _cashClosedByName:'Сергей', companyShare: 4000 },
+      { orderId: 'artem-owner-sergey-metadata', _createdByShift: 'sergey', dispatcher:'Артем', callDate:'2026-10-11', _cashClosedOn:'2026-10-11', companyShare:500 }
     ] };
-  settlementState.orders.forEach(r => { r._cashClosedOn = '2026-10-11'; });
-  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', `return (${settlementSource[0]})`)(
+  const payrollShiftKey=report=>{const raw=String(report.shift||report.id||report.approvedFor||'').toLowerCase(),label=String(report.approvedForName||report.shiftName||report.closedByName||'').toLowerCase().replace(/ё/g,'е');if(raw.includes('artem')||raw==='2'||label.includes('арт'))return'artem';if(raw.includes('sergey')||raw==='1'||label.includes('серг'))return'sergey';return''};
+  const orderPayrollShift=new Function('state','norm','payrollShiftKey',`return (${orderShiftSource[0]})`)(settlementState,value=>String(value||'').toLowerCase().replace(/ё/g,'е').trim(),payrollShiftKey);
+  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'shiftSettlementDate', 'payrollShiftKey', 'orderPayrollShift', `return (${settlementSource[0]})`)(
     settlementState, value => Number(value) || 0, String, value => String(value || '').toLowerCase(),
-    value => typeof value === 'string' ? value.slice(0, 10) : '', value => value
+    value => typeof value === 'string' ? value.slice(0, 10) : '', value => value,
+    row => row._cashClosedOn || (row._cashClosedAt ? row._cashClosedAt.slice(0,10) : '') || row.closeDate || row.callDate,
+    payrollShiftKey,orderPayrollShift
   );
-  const sergey = { id: 'sergey', name: 'Сергей', shift: 'sergey' };
-  assert.deepEqual(settlement('2026-10-11', sergey).map(r => r.orderId), ['late-old', 'same-day']);
+  const sergey = { id: 'sergey', name: 'Сергей', shift: 'sergey' }, artem={id:'artem',name:'Артём',shift:'artem'};
+  assert.deepEqual(settlement('2026-10-11', artem).map(r=>r.orderId), ['artem-owner-sergey-metadata'], 'dispatcher ownership wins over mismatched legacy shift metadata and actual closer');
+  const sergeyIds=['sergey-order-closed-by-artem','sergey-same-day-closed-by-artem','sergey-order-closed-by-sergey'];
+  assert.deepEqual(settlement('2026-10-11', sergey).map(r => r.orderId), sergeyIds);
   assert.deepEqual(settlement('2026-10-10', sergey), [], 'a future surrender cannot affect an earlier shift');
-  settlementState.shiftReports.push({ closedBy: 'sergey', date: '2026-10-11', paidOrderIds: ['late-old', 'same-day'] });
-  assert.deepEqual(settlement('2026-10-12', sergey), [], 'paid order IDs do not accrue twice');
+  assert.deepEqual(settlement('2026-10-12', sergey,new Set(sergeyIds)), [], 'unconfirmed chronological drafts reserve earlier cash');
+  settlementState.shiftReports.push({ approvedFor: 'sergey', date: '2026-10-11', paidOrderIds: sergeyIds });
+  assert.deepEqual(settlement('2026-10-12', sergey), [], 'saved order IDs stay claimed for their responsible employee');
+  assert.deepEqual(settlement('2026-10-12', artem).map(r=>r.orderId), ['artem-owner-sergey-metadata'], 'a stale claim under Sergey cannot block the correct Artem owner');
 });
 
 test('master clients cannot open or submit the generic order editor', () => {
@@ -597,7 +608,7 @@ test('dispatcher live server snapshot marks the shared queue online',()=>{const 
 
 test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.24-shell-v14/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.25-shell-v15/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -671,10 +682,18 @@ test('REG.RU green completed orders count as surrendered cash exactly once', () 
     { orderId: 'still-open', _createdByShift: 'sergey', _status: 'В работе', callDate: '2026-10-11', companyShare: 7000 },
     { orderId: 'no-company-cash', _createdByShift: 'sergey', _status: 'Выполнен', callDate: '2026-10-11', companyShare: 0 }
   ] };
-  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'derivedStage', 'shiftOrderDate', `return (${settlementSource[0]})`)(
+  const ownerShiftSource = source.match(/function payrollShiftKey\([\s\S]*?\n(?=function )/);
+  assert.ok(ownerShiftSource, 'payroll shift normalization exists');
+  const orderOwnerSource = source.match(/function orderPayrollShift\([\s\S]*?\n(?=function )/);
+  assert.ok(orderOwnerSource, 'order payroll owner resolver exists');
+  const resolveShift = new Function('state', 'norm', 'String', `${ownerShiftSource[0]}; ${orderOwnerSource[0]}; return { payrollShiftKey: payrollShiftKey, orderPayrollShift: orderPayrollShift }`)(
+    state, value => String(value || '').trim().toLowerCase(), String
+  );
+  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'derivedStage', 'shiftOrderDate', 'shiftSettlementDate', 'payrollShiftKey', 'orderPayrollShift', `return (${settlementSource[0]})`)(
     state, value => Number(value) || 0, String, value => String(value || '').toLowerCase(),
     value => value ? String(value).slice(0, 10) : '', value => value || null,
-    row => row._status || '', row => row.callDate
+    row => row._status || '', row => row.callDate, row => row._cashClosedOn || row._cashClosedAt?.slice(0,10) || row.closeDate || row.callDate,
+    resolveShift.payrollShiftKey, resolveShift.orderPayrollShift
   );
   const profile = { id: 'sergey', name: 'Сергей', shift: 'sergey' };
   assert.deepEqual(settlement('2026-10-11', profile).map(row => row.orderId), ['green-complete']);
