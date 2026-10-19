@@ -597,7 +597,7 @@ test('dispatcher live server snapshot marks the shared queue online',()=>{const 
 
 test('dispatcher header exposes only the saved order total in desktop and mobile lists',()=>{const html=read('hosted-snapshot/dispatcher-logistic.html');assert.match(html,/function dispatcherTotalChip\(r\).*currentRole\(\)==='dispatcher_logistic'.*money\(total\)/);assert.match(html,/order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/mobile-order-id.*dispatcherTotalChip\(r\)/);assert.match(html,/dispatcher_logistic:\{label:'Диспетчер‑логист'.*money:false/)});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.23-shell-v12/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.24-shell-v13/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -647,3 +647,6 @@ test('REG.RU order create waits for one server-confirmed write on owner and disp
   assert.match(dispatcher,/SECURE_CLOUD_REQUIRED=!!window\.MASTER_AI_BETA_ONLINE&&!!FORCED_APP_ROLE/);
   assert.match(read('hosted-snapshot/master.html'),/const newOrder=\(\)=>\{if\(!can\('create'\)\)/);
 });
+
+
+test('confirmed payroll reports stay authoritative when order cards change',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes('.filter(r=>!r.closureOnly&&(shiftIntegrity(r)||(r.ownerConfirmed&&r.subjectMemberId)))'));assert.ok(html.includes('frozen=!!(report&&(verified||(report.ownerConfirmed&&report.subjectMemberId)))'));assert.ok(html.includes('if(existing&&(shiftIntegrity(existing)||(existing.ownerConfirmed&&existing.subjectMemberId))){skipped++;continue}'));assert.ok(html.includes('savedReports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&!r.closureOnly)'));});
