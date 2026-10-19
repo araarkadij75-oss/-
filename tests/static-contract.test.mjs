@@ -755,3 +755,26 @@ test('REG.RU green completed orders count as surrendered cash exactly once', () 
   state.shiftReports.push({ approvedFor: 'sergey', date: '2026-10-11', paidOrderIds: ['green-complete'] });
   assert.deepEqual(settlement('2026-10-12', profile), [], 'paid order IDs cannot be counted twice');
 });
+
+test('payroll follows visit date and accepts a table surrender date without a year', () => {
+  const source = read('hosted-snapshot/index.html');
+  const orderDateSource = source.match(/function shiftOrderDate\(r\)\{[^\n]+\}/);
+  const settlementDateSource = source.match(/function shiftSettlementDate\(r\)\{[^\n]+\}/);
+  assert.ok(orderDateSource && settlementDateSource, 'payroll date resolvers exist');
+  const parseDate = value => {
+    if (!value) return null;
+    const text = String(value).trim();
+    let m = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    m = text.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/);
+    if (m) return new Date(Date.UTC(+m[3], +m[2] - 1, +m[1]));
+    return null;
+  };
+  const iso = date => date ? date.toISOString().slice(0, 10) : '';
+  const clean = value => String(value || '').trim();
+  const orderDate = new Function('iso', 'parseDate', `return (${orderDateSource[0]})`)(iso, parseDate);
+  const settlementDate = new Function('iso', 'parseDate', 'clean', 'Date', `return (${settlementDateSource[0]})`)(iso, parseDate, clean, Date);
+  const order = { callDate: '2026-10-16', visitDate: '2026-10-19', closeDate: '19.10' };
+  assert.equal(orderDate(order), '2026-10-19', 'work belongs to the visit day');
+  assert.equal(settlementDate(order), '2026-10-19', 'a dd.mm surrender date uses the order year');
+});
