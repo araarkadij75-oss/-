@@ -3,6 +3,7 @@ import importlib.util
 import posixpath
 import unittest
 from pathlib import Path
+from unittest import mock
 
 module_path = Path(__file__).resolve().parents[1] / "scripts" / "deploy-regru-ftps.py"
 spec = importlib.util.spec_from_file_location("deploy_regru_ftps", module_path)
@@ -49,10 +50,29 @@ class FtpMkdirsTests(unittest.TestCase):
         self.assertEqual("/", ftp.pwd())
 
 
-    def test_public_check_does_not_depend_on_reverse_proxy_origin(self):
-        # Production validation relies on authenticated FTP read-back because
-        # the public URL is not necessarily served from this FTP account's root.
-        deployer.public_check("https://invalid.example", "index.html", "0" * 64)
+    def test_public_check_requires_the_published_bytes_to_be_served(self):
+        payload = b"<!doctype html><script>window.MASTER_AI_BUILD='test'</script>"
+        digest = deployer.sha256(payload)
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = payload
+
+        with mock.patch.object(deployer.urllib.request, "urlopen", return_value=response) as urlopen:
+            deployer.public_check("https://crm.example/candidate", "index.html", digest)
+
+        request = urlopen.call_args.args[0]
+        self.assertEqual(
+            request.full_url,
+            f"https://crm.example/candidate/index.html?codex_release_check={digest[:16]}",
+        )
+        self.assertEqual(request.get_header("Cache-control"), "no-cache, no-store, max-age=0")
+
+    def test_public_check_rejects_stale_content(self):
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = b"old release"
+
+        with mock.patch.object(deployer.urllib.request, "urlopen", return_value=response):
+            with self.assertRaisesRegex(RuntimeError, "Public URL is serving different content"):
+                deployer.public_check("https://crm.example/candidate", "index.html", "0" * 64)
 
     def test_creates_nested_path_and_restores_initial_directory(self):
         ftp = FakeFTP()
