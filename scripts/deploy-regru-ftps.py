@@ -69,9 +69,28 @@ def ftp_write(ftp: ftplib.FTP_TLS, path: str, data: bytes) -> None:
 
 
 def public_check(base_url: str, name: str, expected_hash: str) -> None:
-    # The authenticated FTPS read-back is the authoritative byte-for-byte
-    # verification. The public hostname may be routed through another origin.
-    return
+    """Verify that the public URL serves the exact bytes just published over FTPS."""
+    url = f"{base_url.rstrip('/')}/{name}?codex_release_check={expected_hash[:16]}"
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept-Encoding": "identity",
+            "Cache-Control": "no-cache, no-store, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            public_bytes = response.read()
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        raise RuntimeError(f"Public URL check failed for {name}: {exc}") from exc
+
+    actual_hash = sha256(public_bytes)
+    if actual_hash != expected_hash:
+        raise RuntimeError(
+            f"Public URL is serving different content for {name} "
+            f"(expected sha256 {expected_hash}, got {actual_hash})"
+        )
 
 
 
