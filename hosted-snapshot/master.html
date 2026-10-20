@@ -241,12 +241,9 @@ html,body,button,input,select,textarea,table{font-family:Arial,Helvetica,sans-se
 </style>
 <style id="order-field-polish">
 /* Use the same compact value surface inside each field; remove the heavy full-cell fills. */
-.orders-table-wrap .table thead th:nth-child(11){background:#f0f5fc!important;color:#285b95!important;border-left:1px solid #d8e3f1!important;border-right:1px solid #d8e3f1!important;border-radius:9px 0 0 9px}
-.orders-table-wrap .table thead th:nth-child(12){background:#f4f0fa!important;color:#674d90!important;border-left:1px solid #e2d9ed!important;border-right:1px solid #e2d9ed!important;border-radius:0 9px 9px 0}
-.orders-table-wrap .table thead th:nth-child(13),.orders-table-wrap .table thead th:nth-child(14),.orders-table-wrap .table thead th:nth-child(15),.orders-table-wrap .table thead th:nth-child(16){background:#f1f6f2!important;color:#45634b!important;border-color:#dce7de!important}
-.orders-table-wrap .table thead th:nth-child(13){border-radius:9px 0 0 9px}
-.orders-table-wrap .table thead th:nth-child(16){border-radius:0 9px 9px 0}
-.orders-table-wrap .table tbody td:nth-child(11),.orders-table-wrap .table tbody td:nth-child(12),.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15),.orders-table-wrap .table tbody td:nth-child(16){background:transparent!important;box-shadow:none!important;border-left-color:transparent!important;border-right-color:transparent!important;vertical-align:middle;text-align:center;padding:6px 5px}
+.orders-table-wrap .table thead th:nth-child(11),.orders-table-wrap .table thead th:nth-child(12){background:#eef3fa!important;color:#45566f!important;border:0!important;border-radius:9px}
+.orders-table-wrap .table thead th:nth-child(13),.orders-table-wrap .table thead th:nth-child(14),.orders-table-wrap .table thead th:nth-child(15),.orders-table-wrap .table thead th:nth-child(16){background:#f0f5f1!important;color:#506657!important;border:0!important;border-radius:9px}
+.orders-table-wrap .table tbody td:nth-child(11),.orders-table-wrap .table tbody td:nth-child(12),.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15),.orders-table-wrap .table tbody td:nth-child(16){background:transparent!important;box-shadow:none!important;border-left:0!important;border-right:0!important;vertical-align:middle;text-align:center;padding:6px 5px}
 .orders-table-wrap .table tbody td:nth-child(11) .inline-master-input{box-sizing:border-box;width:100%;min-width:0;min-height:34px;border:1px solid #cbd9ea;border-radius:9px;background:#f5f8fd;padding:6px 8px;text-align:left;font-size:11px;line-height:1.2;font-weight:650;color:#315b86;box-shadow:none}
 .orders-table-wrap .table tbody td:nth-child(11) .inline-master-input:focus{outline:2px solid rgba(68,130,205,.18);border-color:#9bb8db;background:#fff}
 .order-value-chip{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:34px;padding:6px 7px;border:1px solid #d5dee9;border-radius:9px;background:#fff;color:#344054;font-size:11px;font-weight:650;line-height:1.2;overflow-wrap:anywhere}
@@ -833,4 +830,4 @@ async function betaResetLocal(){
 
 if(window.MASTER_AI_BETA_ONLINE){const b=document.getElementById('betaResetBtn');if(b)b.hidden=true;init()}else{betaSeedLocal(false).then(()=>init()).then(()=>{const b=document.getElementById('betaResetBtn');if(b)b.onclick=betaResetLocal;}).catch(e=>{console.error('BETA bootstrap',e);alert('EliteService не смогла загрузить локальный снимок: '+e.message);init();})};
 window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMasters():PRESETS.masters;
-</script><script>window.MASTER_AI_BUILD='18.17.31-REG-RU-VALUE-CHIPS';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
+</script><script>window.MASTER_AI_BUILD='18.17.32-REG-RU-SOFT-CELLS';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
