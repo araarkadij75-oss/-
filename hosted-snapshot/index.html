@@ -239,6 +239,33 @@ html,body,button,input,select,textarea,table{font-family:Arial,Helvetica,sans-se
 .mobile-order-meta .team-master-field .mobile-inline-master{width:100%;min-width:0}
 @media(max-width:680px){.mobile-order-meta{gap:6px}.mobile-order-meta>div{min-width:0;padding:7px}.mobile-order-meta b{font-size:12px;line-height:1.3}.mobile-order-meta .team-master-field,.mobile-order-meta .team-dispatcher-field{min-height:60px}}
 </style>
+<style id="order-field-polish">
+/* Soft, consistently aligned value surfaces for responsibility and money fields. */
+.orders-table-wrap .table thead th:nth-child(11),.orders-table-wrap .table thead th:nth-child(12),.orders-table-wrap .table thead th:nth-child(13),.orders-table-wrap .table thead th:nth-child(14),.orders-table-wrap .table thead th:nth-child(15),.orders-table-wrap .table thead th:nth-child(16){vertical-align:middle;text-align:center;padding-inline:5px}
+.orders-table-wrap .table tbody td:nth-child(11),.orders-table-wrap .table tbody td:nth-child(12),.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15),.orders-table-wrap .table tbody td:nth-child(16){vertical-align:middle;text-align:center;padding:7px 5px}
+.orders-table-wrap .table tbody td:nth-child(11){background:linear-gradient(180deg,#edf4ff,#e7f0fc)!important;box-shadow:none!important;border-color:#d6e3f4!important;border-radius:10px 0 0 10px;color:#214f80}
+.orders-table-wrap .table tbody td:nth-child(12){background:linear-gradient(180deg,#f5f0ff,#eee8fa)!important;box-shadow:none!important;border-color:#e1d7f2!important;border-radius:0 10px 10px 0;color:#59437c}
+.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15),.orders-table-wrap .table tbody td:nth-child(16){background:linear-gradient(180deg,#f2f8f3,#eaf4ec)!important;border-color:#d8e7db!important;color:#294f35}
+.orders-table-wrap .table tbody td:nth-child(13){border-radius:10px 0 0 10px}
+.orders-table-wrap .table tbody td:nth-child(16){border-radius:0 10px 10px 0}
+.orders-table-wrap .table tbody td:nth-child(11) .inline-master-input{box-sizing:border-box;min-height:32px;border:1px solid #bfd2eb;border-radius:9px;background:rgba(255,255,255,.88);padding:6px 9px;text-align:left;font-size:11.5px;line-height:1.25;color:#214f80;box-shadow:0 1px 2px rgba(32,68,110,.06)}
+.orders-table-wrap .table tbody td:nth-child(11) .inline-master-input:focus{outline:2px solid rgba(68,130,205,.2);border-color:#78a1d2}
+.orders-table-wrap .table tbody td:nth-child(12){font-weight:650;text-align:left;overflow-wrap:anywhere}
+.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15){font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+.orders-table-wrap .table tbody td:nth-child(15){font-weight:800;color:#245c36}
+.orders-table-wrap .table tbody td:nth-child(16){white-space:nowrap;font-size:10.5px}
+.mobile-order-card{padding:12px;border:1px solid #d5deeb;border-left:4px solid var(--status);border-radius:15px;box-shadow:0 2px 7px rgba(25,45,78,.055)}
+.mobile-order-meta{gap:8px;align-items:stretch}
+.mobile-order-meta>div{min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center;border-radius:11px;padding:8px 10px;box-shadow:0 1px 2px rgba(31,48,73,.045)}
+.mobile-order-meta span{font-size:10px;line-height:1.25;letter-spacing:.01em;font-weight:650}
+.mobile-order-meta b{margin-top:4px;font-size:12px;line-height:1.3;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.mobile-order-meta .team-master-field{background:linear-gradient(145deg,#f0f6ff,#e6effb);border-color:#c8d9ef;color:#214f80}
+.mobile-order-meta .team-dispatcher-field{background:linear-gradient(145deg,#f7f3ff,#eee8fa);border-color:#d9cdef;color:#59437c}
+.mobile-order-meta .finance-col{background:linear-gradient(145deg,#f4faf5,#eaf4ec);border-color:#cfdfd2;color:#294f35}
+.mobile-order-meta>div:nth-child(1),.mobile-order-meta>div:nth-child(2){background:#f2f4f7;border-color:#e0e4ea}
+.mobile-order-meta>div:nth-child(1) span,.mobile-order-meta>div:nth-child(2) span{color:#5f6876}
+@media(max-width:680px){.mobile-order-meta{gap:7px}.mobile-order-meta>div{padding:8px;min-height:56px}.mobile-order-meta b{font-size:12px;line-height:1.3}}
+</style>
 </head>
 <body class="auth-locked"><div class="app" id="app">
 <div class="top"><div class="brand"><h1>EliteService</h1><p>Управление заказами, сотрудниками и рабочими процессами.</p></div><div class="top-actions"><button class="btn primary" id="newOrderTop">+ Новый заказ</button><button class="btn" id="backupTop" data-owner-action>Резервная копия</button><div class="admin-switch" id="adminRoleSwitch" hidden><b style="font-size:11px">Просмотр как</b><select class="select" id="adminViewRole"><option value="owner">Владелец</option><option value="dispatcher_logistic">Диспетчер‑логист</option><option value="master">Мастер</option></select><select class="select role-preview-staff" id="adminViewStaff" hidden aria-label="Профиль диспетчера-логиста"><option value="sergey">Сергей</option><option value="artem">Артём</option></select><select class="select role-preview-master" id="adminViewMaster" hidden><option value="">Выберите мастера</option></select><button class="btn small" id="adminViewReset" type="button">Сбросить</button></div><span class="user-badge" id="userBadge"><span class="role-dot"></span><span id="userBadgeText">Владелец</span></span><button class="btn small" id="enableNotificationsTop" type="button">🔔 Уведомления</button><button class="btn small" id="installAppTop">⬇ Установить</button><span class="badge cloud-badge" id="cloudBadge"><span class="dot"></span><span id="cloudBadgeText">Подключение…</span></span><button class="btn small" id="logoutBtn" hidden>Выйти</button><span class="badge"><span class="dot"></span><span id="dbBadge">Заказов: 0</span></span><span class="badge" id="testBadgeWrap" hidden><span class="dot"></span><span id="testBadge">Проверка</span></span></div></div>
@@ -952,4 +979,4 @@ async function betaResetLocal(){
 
 if(window.MASTER_AI_BETA_ONLINE){const b=document.getElementById('betaResetBtn');if(b)b.hidden=true;init()}else{betaSeedLocal(false).then(()=>init()).then(()=>{const b=document.getElementById('betaResetBtn');if(b)b.onclick=betaResetLocal;}).catch(e=>{console.error('BETA bootstrap',e);alert('EliteService не смогла загрузить локальный снимок: '+e.message);init();})};
 window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMasters():PRESETS.masters;
-</script><script>window.MASTER_AI_BUILD='18.17.29-REG-RU-UI-AUDIT';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
+</script><script>window.MASTER_AI_BUILD='18.17.30-REG-RU-FIELD-POLISH';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
