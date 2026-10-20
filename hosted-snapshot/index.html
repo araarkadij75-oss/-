@@ -874,3 +874,19 @@ async function betaResetLocal(){
 if(window.MASTER_AI_BETA_ONLINE){const b=document.getElementById('betaResetBtn');if(b)b.hidden=true;init()}else{betaSeedLocal(false).then(()=>init()).then(()=>{const b=document.getElementById('betaResetBtn');if(b)b.onclick=betaResetLocal;}).catch(e=>{console.error('BETA bootstrap',e);alert('EliteService не смогла загрузить локальный снимок: '+e.message);init();})};
 window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMasters():PRESETS.masters;
 </script><script>window.MASTER_AI_BUILD='18.17.29-REG-RU-UI-AUDIT';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script></body></html>
+
+<style id="cohesive-order-row-colors">
+.order-status-row td{background:#fff!important;background-image:none!important;border-bottom:1px solid #dce4ee}
+.order-status-row:nth-child(even) td{background:#f7f9fc!important}
+.order-status-row:hover td{background:#edf4ff!important}
+.order-status-row.status-neutral td:first-child{border-left-color:transparent}
+.order-status-row.visit-today td:first-child{border-left:3px solid #0891b2!important;box-shadow:none!important}
+.order-status-row.visit-tomorrow td:first-child{border-left:3px solid #7c3aed!important;box-shadow:none!important}
+.order-status-row.status-yellow td:first-child{border-left-color:#e0a400!important}
+.order-status-row.status-blue td:first-child{border-left-color:#3478df!important}
+.order-status-row.status-gray td:first-child{border-left-color:#7c899b!important}
+.order-status-row.status-green td:first-child{border-left-color:#17925f!important}
+.order-status-row.status-red td:first-child{border-left-color:#d54b56!important}
+.order-status-row.status-orange td:first-child{border-left-color:#df7728!important}
+.order-status-row .status-pill{box-shadow:0 1px 2px rgba(16,24,40,.07)}
+</style>
