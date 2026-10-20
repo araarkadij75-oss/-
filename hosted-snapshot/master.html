@@ -741,4 +741,22 @@ window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMaste
 .order-status-row.status-red td:first-child{border-left-color:#d54b56!important}
 .order-status-row.status-orange td:first-child{border-left-color:#df7728!important}
 .order-status-row .status-pill{box-shadow:0 1px 2px rgba(16,24,40,.07)}
+/* Higher-contrast table grid: readable column groups without status-color patches. */
+.orders-table-wrap .table{border-collapse:separate;border-spacing:0;background:#fff}
+.orders-table-wrap .table thead th{background:#dce8f6!important;color:#16345c!important;font-size:12px;font-weight:850;letter-spacing:.025em;padding:12px 10px;border-right:1px solid #c4d2e2!important;border-bottom:2px solid #aebfd4!important;white-space:nowrap}
+.orders-table-wrap .table tbody td{font-size:13px;line-height:1.4;padding:11px 10px;border-right:1px solid #d1dbe8!important;border-bottom:1px solid #cbd6e4!important}
+.orders-table-wrap .table tbody tr:nth-child(even) td{background:#f2f6fb!important}
+.orders-table-wrap .table tbody tr:nth-child(odd) td{background:#fff!important}
+.orders-table-wrap .table tbody tr:hover td{background:#e8f1fc!important}
+.orders-table-wrap .table th:nth-child(5),.orders-table-wrap .table td:nth-child(5),.orders-table-wrap .table th:nth-child(10),.orders-table-wrap .table td:nth-child(10),.orders-table-wrap .table th:nth-child(12),.orders-table-wrap .table td:nth-child(12),.orders-table-wrap .table th:nth-child(15),.orders-table-wrap .table td:nth-child(15){border-right:2px solid #b6c6da!important}
+.orders-table-wrap .table thead th:nth-child(13),.orders-table-wrap .table thead th:nth-child(14),.orders-table-wrap .table thead th:nth-child(15){background:#cbdcf0!important}
+.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15){background:#eaf1fa!important;font-variant-numeric:tabular-nums}
+.orders-table-wrap .table tbody td:nth-child(13),.orders-table-wrap .table tbody td:nth-child(14),.orders-table-wrap .table tbody td:nth-child(15){font-weight:700}
+.orders-table-wrap .table tbody tr:hover td:nth-child(13),.orders-table-wrap .table tbody tr:hover td:nth-child(14),.orders-table-wrap .table tbody tr:hover td:nth-child(15){background:#dce9f8!important}
+.orders-table-wrap .table tbody td:nth-child(2) .order-id{font-size:12px;color:#173c68}
+.orders-table-wrap .table tbody td:nth-child(8){font-weight:700;color:#243b59}
+.orders-table-wrap .table tbody td:nth-child(3) .status-pill{font-size:11px;padding:5px 9px}
+.orders-table-wrap .table tbody td:nth-child(10){min-width:280px}
+.orders-table-wrap .table th:last-child,.orders-table-wrap .table td:last-child{border-right:0!important}
+@media(max-width:900px){.orders-table-wrap .table thead th{font-size:11px;padding:10px 8px}.orders-table-wrap .table tbody td{font-size:12px;padding:9px 8px}}
 </style>
