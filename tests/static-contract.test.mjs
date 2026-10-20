@@ -660,7 +660,7 @@ test('dispatcher header exposes only the saved order total in desktop and mobile
 
 test('CRM calendar serialization preserves Moscow local shift dates across UTC midnight',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const html=read(file),match=html.match(/const iso=d=>[^\n]+/);assert.ok(match);assert.match(match[0],/d\.getFullYear\(\).*d\.getMonth\(\).*d\.getDate\(\)/);assert.doesNotMatch(match[0],/toISOString/)}const FakeDate=class{valueOf(){return 1}getFullYear(){return 2026}getMonth(){return 9}getDate(){return 19}toISOString(){return '2026-10-18T21:00:00.000Z'}};const iso=new Function('Date','clean',`return (${read('hosted-snapshot/index.html').match(/const iso=d=>([^\n]+)/)[0].replace(/^const iso=/,'').replace(/;\r?$/,'')})`)(FakeDate,String);assert.equal(iso(new FakeDate()),'2026-10-19')});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.29-shell-v24/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.30-shell-v25/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
