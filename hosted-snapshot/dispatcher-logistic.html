@@ -329,6 +329,49 @@ html,body,button,input,select,textarea,table{font-family:Arial,Helvetica,sans-se
 @media(max-width:1100px){.payroll-daily-wrap .payroll-cycle-register-table th:nth-child(7),.payroll-daily-wrap .payroll-cycle-register-table td:nth-child(7){width:29%}.payroll-cycle-order{grid-template-columns:minmax(60px,1fr) 64px 66px minmax(90px,auto);gap:2px}}
 @media(max-width:760px){.payroll-daily-wrap{max-height:calc(100vh - 240px);min-height:240px}.payroll-cycle-orders{max-height:min(36vh,280px)}.payroll-cycle-order{grid-template-columns:minmax(0,1fr) 70px 72px minmax(94px,auto)}}
 </style>
+<style id="orders-workspace-density-v2">
+/* Keep more of the live order queue visible without hiding operational controls. */
+.app{width:100%;max-width:none;padding:8px 12px 4px}
+.tabs{margin-bottom:8px;padding:3px;gap:4px}.tab{min-height:32px;padding:6px 9px;font-size:12px}
+.section[data-panel="orders"]>.card.pad{padding:8px 10px;border-radius:12px}
+.orders-head{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:7px;margin-bottom:7px}
+.orders-head>.card.pad{min-width:0;padding:7px 9px;border-radius:11px}
+.orders-intro{min-height:0;gap:8px}.orders-intro .chart-title,.orders-head .chart-title{font-size:13px;line-height:1.2}
+.orders-intro .chart-sub,.orders-head>.card:nth-child(2)>.chart-sub{display:none}.orders-intro .status-legend{display:none!important}
+.orders-intro .btn{min-height:29px;padding:4px 9px;font-size:11px;white-space:nowrap}
+.color-audit{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-top:6px}
+.color-audit-item{display:flex;align-items:center;gap:5px;min-height:27px;padding:3px 6px;border-radius:8px;white-space:nowrap;overflow:hidden}
+.color-audit-item .color-swatch{flex:0 0 6px;width:6px;height:6px!important;margin:0;border-radius:50%}
+.color-audit-item b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;line-height:1.1}
+.color-audit-item span{flex:0 0 auto;margin-left:auto;font-size:10px;white-space:nowrap}
+#todayBox{margin-top:5px!important}.orders-head .money-preview{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.orders-head .mini{min-height:0;padding:4px 6px;border-radius:8px;text-align:left}
+.orders-head .mini .l{font-size:9px;line-height:1.1}.orders-head .mini .v{margin-top:2px;font-size:12px;line-height:1.1}
+.orders-head .status-legend{display:flex;gap:4px;margin:5px 0 0;flex-wrap:nowrap;overflow:hidden}
+.orders-head .status-legend .btn{min-height:23px;padding:2px 5px;font-size:9px;white-space:nowrap}
+.orders-head .status-legend .status-pill{padding:2px 4px;font-size:9px}
+.orders-head .status-legend b{font-size:9px}
+.section[data-panel="orders"]>.card.pad>.row{align-items:center!important;gap:8px!important}
+.section[data-panel="orders"]>.card.pad>.row>div:first-child{flex:0 0 190px;min-width:160px}
+.section[data-panel="orders"]>.card.pad>.row>div:first-child .chart-title{font-size:14px}
+.section[data-panel="orders"]>.card.pad>.row>div:first-child .chart-sub{display:inline;margin:0 0 0 5px;font-size:10px;white-space:nowrap}
+.double-click-note{display:none!important}
+.orders-toolbar{display:grid;grid-template-columns:minmax(145px,1.5fr) minmax(112px,1.1fr) minmax(130px,1.3fr) minmax(68px,.7fr) minmax(68px,.7fr) minmax(118px,1fr);gap:4px;flex:1;min-width:0;padding:0;border:0;background:transparent}
+.orders-toolbar .input,.orders-toolbar .select,.orders-toolbar .btn{width:100%;min-width:0;min-height:31px;height:31px;padding:4px 7px;border-radius:8px;font-size:10.5px;line-height:1.1}
+.orders-toolbar .btn{white-space:nowrap}
+.orders-toolbar .select{padding-right:18px}
+.order-pagination{margin-top:5px!important;padding:5px 0!important;min-height:0}
+.orders-table-wrap{max-height:calc(100vh - 175px);min-height:240px;margin-top:6px!important;scrollbar-gutter:stable}
+.orders-table-wrap .table{line-height:1.15;border-spacing:0 2px}
+.orders-table-wrap .table thead th{height:31px;padding:4px 3px;font-size:9px;line-height:1.05}
+.orders-table-wrap .table tbody td{padding:3px 2px;font-size:10px;line-height:1.15}
+.orders-table-wrap .table tbody td:nth-child(11) .inline-master-input,.orders-table-wrap .table tbody td .order-value-chip{min-height:23px;padding:3px 5px;font-size:9.5px}
+.orders-table-wrap .table .action-cell .btn{min-height:19px;padding:2px 3px;font-size:8px}
+@media(min-width:1600px){.app{padding-left:16px;padding-right:16px}.section[data-panel="orders"]>.card.pad>.row>div:first-child{flex-basis:205px}.orders-toolbar{grid-template-columns:minmax(200px,1.65fr) minmax(150px,1.1fr) minmax(175px,1.3fr) minmax(86px,.7fr) minmax(82px,.65fr) minmax(150px,1fr)}}
+@media(max-width:1299px){.app{padding:8px}.orders-head{grid-template-columns:1fr;gap:6px}.color-audit{grid-template-columns:repeat(3,minmax(0,1fr))}.orders-toolbar{grid-template-columns:minmax(130px,1.5fr) minmax(110px,1fr) minmax(120px,1.2fr) 70px 70px minmax(105px,1fr)}.section[data-panel="orders"]>.card.pad>.row{align-items:stretch!important}.section[data-panel="orders"]>.card.pad>.row>div:first-child{flex-basis:140px}.orders-table-wrap{max-height:calc(100vh - 210px)}}
+@media(max-width:900px){.section[data-panel="orders"]>.card.pad>.row{display:flex;flex-direction:column;align-items:stretch!important}.section[data-panel="orders"]>.card.pad>.row>div:first-child{flex:auto}.orders-toolbar{width:100%;grid-template-columns:repeat(3,minmax(0,1fr))}.orders-toolbar #orderSearch{grid-column:span 2}.orders-head{grid-template-columns:1fr 1fr}.orders-head .status-legend{flex-wrap:wrap}.orders-table-wrap{max-height:none}}
+@media(max-width:600px){.app{padding:6px 6px 72px}.orders-head{grid-template-columns:1fr}.color-audit{grid-template-columns:repeat(2,minmax(0,1fr))}.orders-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.orders-toolbar #orderSearch{grid-column:1/-1}.orders-head .status-legend{flex-wrap:wrap}.orders-head .status-legend .btn{flex:1}.order-pagination{flex-wrap:wrap}}
+</style>
 </head>
 <body class="auth-locked"><div class="app" id="app">
 <div class="top"><div class="brand"><h1>EliteService</h1><p>Приём, распределение и контроль заказов.</p></div><div class="top-actions"><button class="btn primary" id="newOrderTop">+ Новый заказ</button><button class="btn" id="backupTop" data-owner-action>Резервная копия</button><div class="admin-switch" id="adminRoleSwitch" hidden><b style="font-size:11px">Просмотр как</b><select class="select" id="adminViewRole"><option value="owner">Владелец</option><option value="dispatcher_logistic">Диспетчер‑логист</option><option value="master">Мастер</option></select><select class="select role-preview-master" id="adminViewMaster" hidden><option value="">Выберите мастера</option></select><button class="btn small" id="adminViewReset" type="button">Сбросить</button></div><span class="user-badge" id="userBadge"><span class="role-dot"></span><span id="userBadgeText">Владелец</span></span><button class="btn small" id="enableNotificationsTop" type="button">🔔 Уведомления</button><button class="btn small" id="installAppTop">⬇ Установить</button><span class="badge cloud-badge" id="cloudBadge"><span class="dot"></span><span id="cloudBadgeText">Подключение…</span></span><button class="btn small" id="logoutBtn" hidden>Выйти</button><span class="badge"><span class="dot"></span><span id="dbBadge">Заказов: 0</span></span><span class="badge" id="testBadgeWrap" hidden><span class="dot"></span><span id="testBadge">Проверка</span></span></div></div>
