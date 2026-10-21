@@ -827,6 +827,7 @@ test('order workspace keeps controls compact and consistent across all published
     assert.match(css,/\.orders-toolbar\{display:grid;grid-template-columns:[^}]*;[^}]*flex:1/);
     assert.match(css,/\.orders-table-wrap\{max-height:calc\(100vh - 175px\)/);
     assert.match(css,/@media\(max-width:600px\)/);
+    assert.match(css,/\.orders-intro \.status-legend\{display:none!important\}/);
   }
   assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.37-shell-v33/);
 });
