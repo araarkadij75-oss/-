@@ -835,6 +835,8 @@ test('order status and today dashboards stay compact, readable, and free of expl
     assert.match(html,/id="colorAudit"/);assert.match(html,/id="todayBox"/);
     assert.match(html,/Заказы по статусам/);assert.match(html,/Сегодня/);
     assert.doesNotMatch(html,/Рабочая очередь заказов|Шесть рабочих цветов|Карточки ниже кликабельны|Оперативные показатели без перехода/);
+    assert.match(html,/if\(\$\('#newOrderInline'\)\)\$\('#newOrderInline'\)\.onclick=newOrder/);
+    assert.match(html,/if\(\$\('#newOrderInline'\)\)\$\('#newOrderInline'\)\.hidden=!/);
   }
   assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.38-shell-v35/);
 });
