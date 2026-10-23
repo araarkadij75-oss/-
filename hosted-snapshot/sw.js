@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.41-shell-v39';
+const CACHE='eliteservice-18.17.43-shell-v40';
 const SHELL=[
   './',
   './index.html',
