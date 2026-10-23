@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.43-shell-v43';
+const CACHE='eliteservice-18.17.45-owner-invite-v1';
 const SHELL=[
   './',
   './index.html',
@@ -10,6 +10,7 @@ const SHELL=[
   './icon.svg',
   './cloud-config.js',
   './firestore-regru.js',
+  './telegram-ui.js?v=20261024-telegram3',
   './premium-v181721.css',
 ];
 
@@ -48,7 +49,7 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  const critical=/\/(?:cloud-config\.js|firestore-regru\.js)$/.test(url.pathname);
+  const critical=/\/(?:cloud-config\.js|firestore-regru\.js|telegram-ui\.js)$/.test(url.pathname);
   if(critical){
     event.respondWith(
       fetch(req).then(res=>{

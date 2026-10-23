@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-ALLOWLIST = ("index.html", "dispatcher-logistic.html", "master.html", "sw.js")
+ALLOWLIST = ("crm-api/telegram.php", "telegram-ui.js", "index.html", "dispatcher-logistic.html", "master.html", "sw.js")
 TARGET_PATH = "/var/www/u3680049/data/www/crm.remontpkspb.ru/candidate"
 
 
@@ -93,6 +93,24 @@ def public_check(base_url: str, name: str, expected_hash: str) -> None:
         )
 
 
+def public_method_check(base_url: str, name: str, expected_status: int) -> None:
+    """Verify that an executable endpoint is routed without exposing its source."""
+    url = f"{base_url.rstrip('/')}/{name}?codex_release_check=1"
+    request = urllib.request.Request(
+        url,
+        headers={"Cache-Control": "no-cache, no-store, max-age=0", "Pragma": "no-cache"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            status = response.status
+    except urllib.error.HTTPError as response:
+        status = response.code
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        raise RuntimeError(f"Public endpoint check failed for {name}: {exc}") from exc
+    if status != expected_status:
+        raise RuntimeError(f"Public endpoint check failed for {name}: expected HTTP {expected_status}, got {status}")
+
+
 
 def main() -> None:
     host = require_env("REG_RU_FTP_HOST")
@@ -155,7 +173,9 @@ def main() -> None:
         for name in ALLOWLIST:
             old = ftp_read(ftp, safe_child(root, name))
             old_files[name] = old
-            (backup_dir / name).write_bytes(old)
+            local_backup = backup_dir / name
+            local_backup.parent.mkdir(parents=True, exist_ok=True)
+            local_backup.write_bytes(old)
         (backup_dir / "manifest.json").write_text(
             json.dumps(
                 {
@@ -173,6 +193,7 @@ def main() -> None:
         # Upload into a hidden staging directory and verify bytes by downloading them back.
         for name, content in payloads.items():
             staged = safe_child(stage_rel, name)
+            ftp_mkdirs(ftp, posixpath.dirname(staged))
             ftp_write(ftp, staged, content)
             if sha256(ftp_read(ftp, staged)) != hashes[name]:
                 raise RuntimeError(f"FTPS staging checksum mismatch: {name}")
@@ -180,10 +201,11 @@ def main() -> None:
         try:
             # The service worker is promoted last so it cannot advertise a new
             # shell before the role pages have been replaced.
-            for name in ("index.html", "dispatcher-logistic.html", "master.html", "sw.js"):
+            for name in ALLOWLIST:
                 live = safe_child(root, name)
                 backup = safe_child(backup_rel, name)
                 staged = safe_child(stage_rel, name)
+                ftp_mkdirs(ftp, posixpath.dirname(backup))
                 ftp.rename(live, backup)
                 try:
                     ftp.rename(staged, live)
@@ -222,7 +244,10 @@ def main() -> None:
                 last_error: Exception | None = None
                 for attempt in range(6):
                     try:
-                        public_check(live_base_url, name, hashes[name])
+                        if name.endswith(".php"):
+                            public_method_check(live_base_url, name, 405)
+                        else:
+                            public_check(live_base_url, name, hashes[name])
                         last_error = None
                         break
                     except RuntimeError as exc:
@@ -262,6 +287,10 @@ def main() -> None:
                         pass
             for directory in (stage_rel, backup_rel):
                 try:
+                    ftp.rmd(safe_child(directory, "crm-api"))
+                except ftplib.error_perm:
+                    pass
+                try:
                     ftp.rmd(directory)
                 except ftplib.error_perm:
                     pass
@@ -279,6 +308,10 @@ def main() -> None:
             except ftplib.error_perm:
                 pass
         for directory in (stage_rel, backup_rel):
+            try:
+                ftp.rmd(safe_child(directory, "crm-api"))
+            except ftplib.error_perm:
+                pass
             try:
                 ftp.rmd(directory)
             except ftplib.error_perm as exc:
