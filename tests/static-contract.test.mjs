@@ -661,7 +661,7 @@ test('dispatcher header exposes only the saved order total in desktop and mobile
 
 test('CRM calendar serialization preserves Moscow local shift dates across UTC midnight',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const html=read(file),match=html.match(/const iso=d=>[^\n]+/);assert.ok(match);assert.match(match[0],/d\.getFullYear\(\).*d\.getMonth\(\).*d\.getDate\(\)/);assert.doesNotMatch(match[0],/toISOString/)}const FakeDate=class{valueOf(){return 1}getFullYear(){return 2026}getMonth(){return 9}getDate(){return 19}toISOString(){return '2026-10-18T21:00:00.000Z'}};const iso=new Function('Date','clean',`return (${read('hosted-snapshot/index.html').match(/const iso=d=>([^\n]+)/)[0].replace(/^const iso=/,'').replace(/;\r?$/,'')})`)(FakeDate,String);assert.equal(iso(new FakeDate()),'2026-10-19')});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v42/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v43/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -817,7 +817,7 @@ test('order role and finance fields use aligned low-contrast rounded surfaces on
 test('desktop order role, cash, amount, and surrender date use consistent rounded value chips on every role page',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.match(h,/id="order-field-polish"/);assert.match(h,/class="order-value-chip order-dispatcher-chip">\$\{esc\(r\.dispatcher\|\|'—'\)\}/);assert.match(h,/class="order-value-chip order-money-chip">\$\{numMaybe\(r\.total\)/);assert.match(h,/class="order-value-chip order-money-chip order-cash-chip">\$\{numMaybe\(r\.companyShare\)/);assert.match(h,/class="order-value-chip order-close-date-chip">\$\{esc\(r\.closeDate/);assert.match(h,/table tbody tr td:nth-child\(11\).*box-shadow:none!important/s);assert.match(h,/\.order-value-chip\{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:34px/);assert.match(h,/\.order-dispatcher-chip\{justify-content:flex-start;text-align:left/);assert.match(h,/\.order-cash-chip\{background:#edf6ef/);assert.match(h,/inline-master-input\{box-sizing:border-box;width:100%;min-width:0;min-height:34px/);assert.match(h,/mobile-order-meta \.team-dispatcher-field\{background:linear-gradient/)}});
 test('desktop owner and finance columns have no full-height divider strips and use individual rounded surfaces',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const polished=h.split('<style id="order-field-polish">')[1]?.split('</style>')[0]||'';assert.match(polished,/nth-child\(11\),\.orders-table-wrap \.table thead th:nth-child\(12\).*border:0!important;border-radius:9px/s);assert.match(polished,/tbody tr td:nth-child\(11\).*border-left:0!important;border-right:0!important/s);assert.doesNotMatch(polished,/box-shadow:inset 0 0 0 999px/);assert.match(polished,/table tbody tr td:nth-child\(11\).*box-shadow:none!important;border-left:0!important/s);assert.doesNotMatch(polished,/tbody tr td:nth-child\(11\).*background:transparent!important/);assert.match(h,/\.table tbody tr\.status-green td\{background:#dcf2e4!important/);assert.match(polished,/\.order-value-chip\{[^}]*border:1px solid[^}]*border-radius:9px/);assert.match(h,/window\.MASTER_AI_BUILD='18.17.43-REG-RU-COPY-AUDIT'/)}});
 
-test('order list uses one palette for ID and roles, coordinated finance styling, and wider compact desktop layout',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const css=h.split('<style id="order-table-compact-palette">')[1]?.split('</style>')[0]||'';assert.ok(css);assert.match(css,/\.app\{width:100%;max-width:1920px/);assert.match(css,/nth-child\(2\).*nth-child\(11\).*nth-child\(12\).*background:#eaf0f8/);assert.match(css,/nth-child\(13\).*nth-child\(14\).*nth-child\(15\).*nth-child\(16\).*background:#eaf3ec/);assert.match(css,/min-height:28px/);assert.match(css,/@media\(min-width:1300px\).*mobile-order-list\{display:none/s);assert.match(css,/@media\(max-width:1299px\)/);assert.doesNotMatch(css,/border-left:[2-9]px solid/)}assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v42/) });
+test('order list uses one palette for ID and roles, coordinated finance styling, and wider compact desktop layout',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const css=h.split('<style id="order-table-compact-palette">')[1]?.split('</style>')[0]||'';assert.ok(css);assert.match(css,/\.app\{width:100%;max-width:1920px/);assert.match(css,/nth-child\(2\).*nth-child\(11\).*nth-child\(12\).*background:#eaf0f8/);assert.match(css,/nth-child\(13\).*nth-child\(14\).*nth-child\(15\).*nth-child\(16\).*background:#eaf3ec/);assert.match(css,/min-height:28px/);assert.match(css,/@media\(min-width:1300px\).*mobile-order-list\{display:none/s);assert.match(css,/@media\(max-width:1299px\)/);assert.doesNotMatch(css,/border-left:[2-9]px solid/)}assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v43/) });
 
 test('today cash separates orders received today from all recorded cash closed today on all roles',()=>{
   for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){
@@ -833,7 +833,7 @@ test('today cash separates orders received today from all recorded cash closed t
     assert.match(html,/<style id="today-cash-split-v1">#todayBox \.money-preview\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important\}<\/style>/);
     assert.match(html,/window\.MASTER_AI_BUILD='18.17.43-REG-RU-COPY-AUDIT'/);
   }
-  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v42/);
+  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v43/);
 });
 
 test('order status and today dashboards stay compact, readable, and free of explanatory copy on all roles',()=>{
@@ -855,7 +855,7 @@ test('order status and today dashboards stay compact, readable, and free of expl
     assert.match(html,/if\(\$\('#newOrderInline'\)\)\$\('#newOrderInline'\)\.onclick=newOrder/);
     assert.match(html,/if\(\$\('#newOrderInline'\)\)\$\('#newOrderInline'\)\.hidden=!/);
   }
-  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v42/);
+  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.43-shell-v43/);
 });
 
 test('hosted dashboard and payroll rendering regression is fixed on all live roles',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.ok(h.includes("$$('[data-today]').forEach"));assert.ok(h.includes("$$('[data-today-status]').forEach"));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.43-REG-RU-COPY-AUDIT'"));if(file.endsWith('index.html')){assert.ok(h.includes('money(r.deferredCash??0)'));assert.ok(h.includes('money(r.salary??0)'))}}});
@@ -879,6 +879,17 @@ test('verified close labels wrap inside the status cell without duplicate or ove
     assert.match(html,/Подтверждено владельцем по проверенной таблице; отчёт мастера не создавался/);
     assert.match(html,/Сверено владельцем по таблице/);
     assert.match(html,/if\(r\._closeReviewState==='owner_table_verified'\)return ''/);
+  }
+});
+
+test('master and dispatcher name choices stay canonical across CRM roles and imports',()=>{
+  for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){
+    const html=read(file);
+    assert.match(html,/function canonicalMasterSelection\(value\)/);
+    assert.match(html,/function canonicalDispatcherSelection\(value\)/);
+    assert.match(html,/dispatcherList:canonicalNameChoices/);
+    assert.match(html,/r\.master=canonicalMasterSelection\(r\.master\);r\.dispatcher=canonicalDispatcherSelection\(r\.dispatcher\)/);
+    assert.match(html,/r\.master=canonicalMasterSelection\(r\.master\);r\.dispatcher=canonicalDispatcherSelection\(r\.dispatcher\);return r/);
   }
 });
 
