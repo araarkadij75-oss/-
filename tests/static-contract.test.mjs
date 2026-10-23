@@ -896,3 +896,20 @@ test('master and dispatcher name choices stay canonical across CRM roles and imp
   }
 });
 
+test('AI center uses current CRM rows and honest evidence across role pages',()=>{
+  for(const file of ['hosted-snapshot/index.html','dispatcher-logistic.html','master.html']){
+    const html=read(file);
+    assert.match(html,/id="aiLiveMetrics"/);
+    assert.match(html,/id="aiAttentionList"/);
+    assert.match(html,/rows\.filter\(r=>iso\(parseDate\(r\.callDate\)\)===day\)/);
+    assert.match(html,/data-ai-open/);
+    assert.match(html,/data-ai-status/);
+    assert.match(html,/function aiIsCashClosed\(r\)\{return !!aiCashDay\(r\)\}/);
+    assert.match(html,/сходных заказов:/);
+    assert.doesNotMatch(html,/Math\.max\(\.12,Math\.min\(\.96/);
+    assert.doesNotMatch(html,/a\*\.65\+b\*\.35/);
+    const command=html.slice(html.indexOf('function runAICommand()'),html.indexOf('function applyAICommand()'));
+    assert.ok(command.indexOf('const oid=parseOrderIdFromText(raw)') < command.indexOf('for(const [key,st] of statusMap)'));
+  }
+});
+
