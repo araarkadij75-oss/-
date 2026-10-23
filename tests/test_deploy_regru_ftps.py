@@ -74,6 +74,23 @@ class FtpMkdirsTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Public URL is serving different content"):
                 deployer.public_check("https://crm.example/candidate", "index.html", "0" * 64)
 
+    def test_public_method_check_accepts_expected_endpoint_status_without_reading_source(self):
+        response = mock.MagicMock()
+        response.code = 405
+        with mock.patch.object(deployer.urllib.request, "urlopen", side_effect=deployer.urllib.error.HTTPError(
+            "https://crm.example/candidate/crm-api/telegram.php", 405, "method", {}, None
+        )) as urlopen:
+            deployer.public_method_check("https://crm.example/candidate", "crm-api/telegram.php", 405)
+        self.assertIn("/crm-api/telegram.php?codex_release_check=1", urlopen.call_args.args[0].full_url)
+
+    def test_public_method_check_rejects_unexpected_status(self):
+        response = mock.MagicMock()
+        response.status = 200
+        response.__enter__.return_value = response
+        with mock.patch.object(deployer.urllib.request, "urlopen", return_value=response):
+            with self.assertRaisesRegex(RuntimeError, "expected HTTP 405, got 200"):
+                deployer.public_method_check("https://crm.example/candidate", "crm-api/telegram.php", 405)
+
     def test_creates_nested_path_and_restores_initial_directory(self):
         ftp = FakeFTP()
 

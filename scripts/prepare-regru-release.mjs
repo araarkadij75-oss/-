@@ -13,6 +13,8 @@ const files = [
   'dispatcher-logistic.html',
   'master.html',
   'sw.js',
+  'telegram-ui.js',
+  'crm-api/telegram.php',
   'cloud-config.js',
   'firestore-regru.js',
   'premium-v181721.css',
@@ -37,13 +39,15 @@ const manifest = {
   source: 'hosted-snapshot',
   createdAt: new Date().toISOString(),
   productionTarget: '/var/www/u3680049/data/www/crm.remontpkspb.ru/candidate',
-  productionReplaceAllowlist: ['index.html', 'dispatcher-logistic.html', 'master.html', 'sw.js'],
-  protectedPaths: ['crm-api/', 'cloud-config.js', 'firestore-regru.js', 'premium-v181721.css', 'quota-safe-v181719.js', 'icon.svg', 'manifest.json', 'manifest-dispatcher-logistic.json', 'manifest-master.json'],
+  productionReplaceAllowlist: ['crm-api/telegram.php', 'telegram-ui.js', 'index.html', 'dispatcher-logistic.html', 'master.html', 'sw.js'],
+  protectedPaths: ['cloud-config.js', 'firestore-regru.js', 'premium-v181721.css', 'quota-safe-v181719.js', 'icon.svg', 'manifest.json', 'manifest-dispatcher-logistic.json', 'manifest-master.json'],
   files: {},
 };
 for (const name of files) {
   const bytes = fs.readFileSync(path.join(source, name));
-  fs.writeFileSync(path.join(output, name), bytes, { flag: 'wx' });
+  const destination = path.join(output, name);
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.writeFileSync(destination, bytes, { flag: 'wx' });
   manifest.files[name] = {
     size: bytes.length,
     sha256: crypto.createHash('sha256').update(bytes).digest('hex'),
