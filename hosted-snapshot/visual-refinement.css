@@ -255,3 +255,4 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
 .app .master-shift-hero .section-head { background:transparent; border-color:#ffffff40; margin-bottom:0; }
 .app .master-shift-hero :is(.chart-title,.chart-sub) { color:#fff; }
 @media(min-width:1100px) { .app #schemeSummary { grid-template-columns:repeat(5,minmax(0,1fr)); } }
+.app .master-week-scroll { max-width:100%; overflow-x:auto; }
