@@ -157,6 +157,7 @@ function tg_call(string $method, array $payload): array {
     // Never expose curl_error(): it can include the credential-bearing URL.
     if (!is_string($raw)) throw new RuntimeException(tg_network_code($errno));
     if (!is_array($result) || !array_key_exists('ok', $result)) throw new RuntimeException('telegram_invalid_api_response');
+    if (($result['ok'] ?? false) !== true && $method === 'editMessageText' && stripos((string)($result['description'] ?? ''), 'message is not modified') !== false) return ['unchanged'=>true];
     if (($result['ok'] ?? false) !== true) throw new RuntimeException((int)($result['error_code'] ?? 0) === 401 ? 'telegram_token_rejected' : 'telegram_api_rejected_request');
     if (!array_key_exists('result', $result)) throw new RuntimeException('telegram_invalid_api_response');
     return is_array($result['result']) ? $result['result'] : ['value' => $result['result']];
@@ -588,6 +589,24 @@ function tg_send_order(PDO $pdo, array $actor, string $orderId): array {
     return ['ok' => true, 'state' => 'pending'];
 }
 
+function tg_edit_decision(array $ticket, array $query, array $order): void {
+    $state=(string)($ticket['state']??'');
+    if(!in_array($state,['accepted','declined'],true))return;
+    $orderId=(string)$ticket['orderId'];
+    $fullAddress=tg_address_apartment((string)($order['address']??''));
+    $answer=$state==='accepted'?'Заказ '.$orderId.' принят.'.($fullAddress!==''?"\nПолный адрес: ".$fullAddress:''):'Отказ по заявке '.$orderId.'. Свяжитесь с диспетчером, если нужна новая заявка.';
+    $answer=function_exists('mb_substr')?mb_substr($answer,0,3900):substr($answer,0,3900);
+    // Failure propagates so polling retries the message edit without repeating the decision.
+    tg_call('editMessageText',['chat_id'=>(string)$ticket['chatId'],'message_id'=>(int)($ticket['messageId']??$query['message']['message_id']??0),'text'=>$answer,'reply_markup'=>['inline_keyboard'=>[]]]);
+}
+
+function tg_ack_callback(array $payload): bool {
+    // Callback popups expire before a one-minute polling run can process them.
+    // Their failure must never undo a durable decision or block the update queue.
+    try { tg_call('answerCallbackQuery', $payload); return true; }
+    catch (Throwable) { return false; }
+}
+
 function tg_decide(PDO $pdo, array $update): void {
     $query = $update['callback_query'] ?? null;
     if (!is_array($query) || !is_array($query['message'] ?? null) || !is_array($query['from'] ?? null)) return;
@@ -595,16 +614,22 @@ function tg_decide(PDO $pdo, array $update): void {
     $telegramUserId = (string)($query['from']['id'] ?? '');
     $callbackId = (string)($query['id'] ?? '');
     $data = (string)($query['data'] ?? '');
-    if (!preg_match('/^(accept|decline)\|([a-f0-9]{32})$/', $data, $m)) { tg_call('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => 'Кнопка недействительна']); return; }
+    if (!preg_match('/^(accept|decline)\|([a-f0-9]{32})$/', $data, $m)) { tg_ack_callback(['callback_query_id' => $callbackId, 'text' => 'Кнопка недействительна']); return; }
     $uid = '';
     $q = $pdo->prepare('SELECT document_id,data_json FROM crm_documents WHERE workspace_id=? AND collection_path=?');
     $q->execute([tg_workspace(), 'workspaces/' . tg_workspace() . '/telegramUsers']);
     foreach ($q->fetchAll() as $row) { $x = json_decode((string)$row['data_json'], true); if (is_array($x) && (string)($x['telegramUserId'] ?? '') === $telegramUserId && (string)($x['groupChatId'] ?? '') === $chatId) { $uid = (string)$row['document_id']; break; } }
-    if ($uid === '') { tg_call('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => 'Сначала привяжите аккаунт мастера в CRM']); return; }
+    if ($uid === '') { tg_ack_callback(['callback_query_id' => $callbackId, 'text' => 'Сначала привяжите аккаунт мастера в CRM']); return; }
     $ticketPath = tg_path('telegramDeliveries', $m[2]);
     $ticket = tg_read($pdo, $ticketPath);
-    if (!$ticket || (string)($ticket['masterUid'] ?? '') !== $uid || (string)($ticket['chatId'] ?? '') !== $chatId || (int)($ticket['expiresAt'] ?? 0) < time()) { tg_call('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => 'Заявка недоступна или уже истекла']); return; }
-    if (($ticket['state'] ?? '') !== 'pending') { tg_call('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => 'Ответ уже принят']); return; }
+    if (!$ticket || (string)($ticket['masterUid'] ?? '') !== $uid || (string)($ticket['chatId'] ?? '') !== $chatId || (int)($ticket['expiresAt'] ?? 0) < time()) { tg_ack_callback(['callback_query_id' => $callbackId, 'text' => 'Заявка недоступна или уже истекла']); return; }
+    if (($ticket['state'] ?? '') !== 'pending') {
+        $currentAssignment=tg_read($pdo,tg_path('masterAssignments',(string)$ticket['orderId']));
+        $currentOrder=tg_read($pdo,tg_path('orders',(string)$ticket['orderId']));
+        $currentMember=tg_active_master($pdo,$uid);
+        if($currentAssignment && $currentOrder && $currentMember && tg_same_assignment($ticket,$currentAssignment) && tg_master_key((string)($currentOrder['master']??''))===tg_master_key((string)($currentMember['master']??$currentMember['name']??''))) tg_edit_decision($ticket,$query,$currentOrder);
+        tg_ack_callback(['callback_query_id'=>$callbackId,'text'=>'Ответ уже принят']); return;
+    }
     $orderId = (string)$ticket['orderId'];
     $assignmentPath = tg_path('masterAssignments', $orderId);
     $orderPath = tg_path('orders', $orderId);
@@ -631,18 +656,10 @@ function tg_decide(PDO $pdo, array $update): void {
         }
         tg_write_many($pdo, $writes, $uid, 'master', 'telegram_' . $state);
         $pdo->commit();
-    } catch (DomainException $e) { if ($pdo->inTransaction()) $pdo->rollBack(); tg_call('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => 'Назначение изменилось. Обратитесь к диспетчеру.']); return; }
+    } catch (DomainException $e) { if ($pdo->inTransaction()) $pdo->rollBack(); tg_ack_callback(['callback_query_id' => $callbackId, 'text' => 'Назначение изменилось. Обратитесь к диспетчеру.']); return; }
     catch (Throwable $e) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $e; }
-    tg_call('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => $state === 'accepted' ? 'Заказ принят' : 'Вы отказались от заказа']);
-    $messageId = (int)($query['message']['message_id'] ?? 0);
-    if ($state === 'accepted') {
-        $answer = 'Заказ ' . $orderId . ' принят.' . ($fullAddress !== '' ? "\nПолный адрес: " . $fullAddress : '');
-    } else {
-        $answer = 'Отказ по заявке ' . $orderId . '. Свяжитесь с диспетчером, если нужна новая заявка.';
-    }
-    $answer = function_exists('mb_substr') ? mb_substr($answer, 0, 3900) : substr($answer, 0, 3900);
-    $edit = ['chat_id' => $chatId, 'message_id' => $messageId, 'text' => $answer, 'reply_markup' => ['inline_keyboard' => []]];
-    try { tg_call('editMessageText', $edit); } catch (Throwable) { /* DB decision is authoritative; webhook retry remains safe. */ }
+    tg_edit_decision($lockedTicket,$query,$order);
+    tg_ack_callback(['callback_query_id' => $callbackId, 'text' => $state === 'accepted' ? 'Заказ принят' : 'Вы отказались от заказа']);
 }
 
 function tg_poll_lock(PDO $pdo): bool {
@@ -674,7 +691,7 @@ function tg_process_update(PDO $pdo,array $update): void {
     if(isset($update['message']))tg_update_member_link($pdo,$update);
     elseif(isset($update['callback_query']))tg_decide($pdo,$update);
 }
-function tg_poll_cli(string $command): array {
+function tg_poll_cli(string $command, int $deadline = 0): array {
     if(PHP_SAPI!=='cli')throw new DomainException('CLI only');
     $_SERVER['DOCUMENT_ROOT']=dirname(__DIR__,2);
     $pdo=tg_db();
@@ -692,7 +709,7 @@ function tg_poll_cli(string $command): array {
         if(($runtime['mode']??'')!=='polling')return ['ok'=>true,'state'=>'polling_disabled'];
         $processed=0;
         try {
-            $updates=tg_call('getUpdates',['offset'=>tg_poll_offset($runtime),'timeout'=>0,'limit'=>20,'allowed_updates'=>['message','callback_query']]);
+            $updates=tg_call('getUpdates',['offset'=>tg_poll_offset($runtime),'timeout'=>0,'limit'=>($deadline>0?5:20),'allowed_updates'=>['message','callback_query']]);
             foreach($updates as $update) {
                 if(!is_array($update)||!isset($update['update_id'])||!is_int($update['update_id']))throw new RuntimeException('Invalid update');
                 if($update['update_id']<tg_poll_offset($runtime))continue;
@@ -711,6 +728,19 @@ function tg_poll_cli(string $command): array {
     } finally {tg_poll_unlock($pdo);}
 }
 
+function tg_poll_worker(): array {
+    if(PHP_SAPI!=='cli')throw new DomainException('CLI only');
+    $deadline=time()+55; $processed=0;
+    do {
+        $result=tg_poll_cli('--poll',$deadline);
+        $processed+=(int)($result['processed']??0);
+        if(empty($result['ok']) || (isset($result['state']) && $result['state']!=='already_running'))return $result+['processed'=>$processed];
+        if(time()>=$deadline)break;
+        sleep(min(2,max(1,$deadline-time())));
+    } while(time()<$deadline);
+    return ['ok'=>true,'processed'=>$processed,'state'=>'worker_complete'];
+}
+
 function tg_webhook(PDO $pdo, array $update): void {
     $provided = tg_read_token_header();
     if ($provided === '' || !hash_equals(tg_webhook_secret(), $provided)) tg_reply(403, ['ok' => false]);
@@ -722,7 +752,7 @@ function tg_webhook(PDO $pdo, array $update): void {
 
 try {
     if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST' && PHP_SAPI==='cli') {
-        try { $result=tg_poll_cli((string)($argv[1]??'')); echo json_encode($result,JSON_UNESCAPED_UNICODE).PHP_EOL; exit(empty($result['ok'])?1:0); }
+        try { $result=(($argv[1]??'')==='--poll-worker')?tg_poll_worker():tg_poll_cli((string)($argv[1]??'')); echo json_encode($result,JSON_UNESCAPED_UNICODE).PHP_EOL; exit(empty($result['ok'])?1:0); }
         catch(Throwable $e) { echo '{"ok":false,"error":"telegram_cli_failed"}'.PHP_EOL; exit(1); }
     }
     if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') tg_reply(405, ['ok' => false, 'error' => 'method']);
