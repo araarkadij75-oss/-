@@ -149,6 +149,71 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
     }
 }
 
+function fin_reconciliation_patch(array $patch): array {
+    $allowed=['closeDate','companyShare','dispatcher','_status'];
+    $id=fin_text($patch['orderId']??'',128);
+    if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$id))throw new InvalidArgumentException('invalid_order_id');
+    $before=$patch['before']??null;$after=$patch['after']??null;
+    if(!is_array($before)||!is_array($after)||!count($after))throw new InvalidArgumentException('invalid_patch');
+    $bk=array_keys($before);$ak=array_keys($after);sort($bk);sort($ak);
+    if($bk!==$ak||array_diff($ak,$allowed))throw new InvalidArgumentException('invalid_patch_fields');
+    foreach($before as $v)if(!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v))throw new InvalidArgumentException('invalid_before');
+    foreach($after as $key=>$value){
+        if($key==='companyShare'){
+            if(!is_string($value)&&!is_int($value)&&!is_float($value))throw new InvalidArgumentException('invalid_cash');
+            if(!preg_match('/^\d+(?:\.\d{1,2})?$/',(string)$value)||(float)$value>1000000000)throw new InvalidArgumentException('invalid_cash');
+        }else{
+            if(!is_string($value)||strlen($value)>200)throw new InvalidArgumentException('invalid_patch_value');
+            if($key==='closeDate'&&$value!==''){
+                if(!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/',$value,$m)||!checkdate((int)$m[2],(int)$m[3],(int)$m[1]))throw new InvalidArgumentException('invalid_close_date');
+            }
+            if($key==='_status'&&!in_array($value,['В работе','Забор / техника у мастера','Будущая дата','На проверке','Выполнен','Отказ','Отмена'],true))throw new InvalidArgumentException('invalid_status');
+        }
+    }
+    $source=fin_text($patch['sourceSpreadsheet']??'',500);
+    $row=$patch['sourceRow']??null;
+    if($source===''||!is_int($row)||$row<1)throw new InvalidArgumentException('source_required');
+    return ['orderId'=>$id,'_id'=>isset($patch['_id'])?fin_text($patch['_id'],200):null,'before'=>$before,'after'=>$after,'sourceRow'=>$row,'sourceSpreadsheet'=>$source];
+}
+function fin_reconciliation_matches(array $order,array $patch): bool {
+    if((string)($order['orderId']??'')!==$patch['orderId'])return false;
+    if($patch['_id']!==null&&($order['_id']??null)!==$patch['_id'])return false;
+    foreach($patch['before'] as $key=>$value){
+        if($value===null){if(array_key_exists($key,$order))return false;}
+        elseif(!array_key_exists($key,$order)||$order[$key]!==$value)return false;
+    }
+    return true;
+}
+function fin_reconcile(PDO $pdo,array $actor,array $body): array {
+    fin_owner($actor);
+    $patches=$body['patches']??null;
+    if(!is_array($patches)||count($patches)<1||count($patches)>200)throw new InvalidArgumentException('invalid_patch_count');
+    $normalized=[];$seen=[];
+    foreach($patches as $patch){if(!is_array($patch))throw new InvalidArgumentException('invalid_patch');$p=fin_reconciliation_patch($patch);if(isset($seen[$p['orderId']]))throw new InvalidArgumentException('duplicate_patch_order');$seen[$p['orderId']]=true;$normalized[]=$p;}
+    $applied=[];$conflicts=[];
+    foreach($normalized as $patch){
+        $pdo->beginTransaction();
+        try{
+            $path=tg_path('orders',$patch['orderId']);$order=tg_read($pdo,$path,true);
+            if(!$order||!fin_reconciliation_matches($order,$patch)){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>$order?'before_mismatch':'not_found'];continue;}
+            $stamp=gmdate('c');$auditId=bin2hex(random_bytes(16));
+            $audit=$patch+['id'=>$auditId,'actorUid'=>(string)$actor['uid'],'appliedAt'=>$stamp];
+            foreach($patch['after'] as $key=>$value)$order[$key]=$value;
+            $order['_updatedAt']=$stamp;$order['_updatedBy']=(string)$actor['uid'];
+            $order['_sourceReconciliation']=['auditId'=>$auditId,'sourceRow'=>$patch['sourceRow'],'sourceSpreadsheet'=>$patch['sourceSpreadsheet'],'appliedAt'=>$stamp,'actorUid'=>(string)$actor['uid']];
+            $writes=[$path=>$order,tg_path('reconciliationAudit',$auditId)=>$audit];
+            foreach(['dispatcherOrders','masterAssignments'] as $collection){
+                $projectionPath=tg_path($collection,$patch['orderId']);$projection=tg_read($pdo,$projectionPath,true);
+                if(!$projection)continue;
+                foreach($patch['after'] as $key=>$value)if($key!=='companyShare')$projection[$key]=$value;
+                $projection['_updatedAt']=$stamp;$writes[$projectionPath]=$projection;
+            }
+            tg_write_many($pdo,$writes,(string)$actor['uid'],'owner','source_reconciliation');$pdo->commit();$applied[]=$patch['orderId'];
+        }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>'save_failed'];}
+    }
+    return ['ok'=>true,'applied'=>$applied,'conflicts'=>$conflicts];
+}
+
 if (defined('ELITESERVICE_FINANCE_LIBRARY') && ELITESERVICE_FINANCE_LIBRARY) return;
 try {
     if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') tg_reply(405, ['ok' => false, 'error' => 'method']);
@@ -159,6 +224,7 @@ try {
     $pdo = tg_db();
     $actor = tg_jwt_actor($pdo);
     fin_owner($actor);
+    if (($body['op'] ?? '') === 'reconcile') tg_reply(200,fin_reconcile($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'list') tg_reply(200, ['ok' => true, 'expenses' => fin_list($pdo, $actor)] + fin_reports($pdo, $actor));
     tg_reply(200, fin_mutate($pdo, $actor, $body));
 } catch (InvalidArgumentException $e) { tg_reply(400, ['ok' => false, 'error' => $e->getMessage()]);
