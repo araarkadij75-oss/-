@@ -5,6 +5,8 @@ import vm from 'node:vm';
 for(const role of ['index','master','dispatcher-logistic'])test(`${role}: import and form retain source city, owner can correct it`,()=>{
  const html=fs.readFileSync(new URL(`../hosted-snapshot/${role}.html`,import.meta.url),'utf8');
  const clean=x=>String(x??'').trim();
+ const cityDisplay=vm.runInNewContext(html.match(/function spbArea\([^\n]+/)[0]+';spbArea',{clean});
+ assert.equal(cityDisplay({city:'КРД'}),'КРД');assert.equal(cityDisplay({city:''}),'СПб');
  const merge=html.slice(html.indexOf('for(const r of state.importRows)'),html.indexOf('for(const r of state.importRows)')+250);
  const assignment=merge.match(/r\.city=[^;]+;/)?.[0];assert.ok(assignment);
  for(const [input,want] of [['КРД','КРД'],['СПб','СПб'],['','СПб']]){const r={city:input};vm.runInNewContext(assignment,{r,clean});assert.equal(r.city,want)}
