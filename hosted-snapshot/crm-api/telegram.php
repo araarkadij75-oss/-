@@ -750,6 +750,8 @@ function tg_webhook(PDO $pdo, array $update): void {
     } catch (Throwable) { tg_reply(503, ['ok' => false]); }
 }
 
+if (defined('ELITESERVICE_BRIDGE_LIBRARY') && ELITESERVICE_BRIDGE_LIBRARY) return;
+
 try {
     if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST' && PHP_SAPI==='cli') {
         try { $result=(($argv[1]??'')==='--poll-worker')?tg_poll_worker():tg_poll_cli((string)($argv[1]??'')); echo json_encode($result,JSON_UNESCAPED_UNICODE).PHP_EOL; exit(empty($result['ok'])?1:0); }

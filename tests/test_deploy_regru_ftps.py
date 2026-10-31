@@ -100,5 +100,60 @@ class FtpMkdirsTests(unittest.TestCase):
         self.assertEqual("/", ftp.pwd())
 
 
+
+class FirstDeploymentTests(unittest.TestCase):
+    def test_new_asset_absence_requires_successful_listing(self):
+        ftp = mock.Mock()
+        ftp.retrbinary.side_effect = ftplib.error_perm("550 not found or denied")
+        ftp.nlst.return_value = ["/site/index.html"]
+        self.assertIsNone(deployer.ftp_read_existing(ftp, "/site/profit-ui.js", True))
+        ftp.nlst.assert_called_once_with("/site")
+        ftp.nlst.return_value = ["profit-ui.js"]
+        with self.assertRaises(ftplib.error_perm):
+            deployer.ftp_read_existing(ftp, "/site/profit-ui.js", True)
+        ftp.nlst.side_effect = ftplib.error_perm("550 permission denied")
+        with self.assertRaises(ftplib.error_perm):
+            deployer.ftp_read_existing(ftp, "/site/profit-ui.js", True)
+
+    def test_existing_role_file_is_required_even_if_listing_says_absent(self):
+        ftp = mock.Mock()
+        ftp.retrbinary.side_effect = ftplib.error_perm("550 missing")
+        with self.assertRaises(ftplib.error_perm):
+            deployer.ftp_read_existing(ftp, "/site/index.html")
+        ftp.nlst.assert_not_called()
+
+    def test_first_deploy_rollback_restores_old_files_and_removes_new_only(self):
+        files = {"stage/new.js": b"new", "live/index.html": b"old", "stage/index.html": b"updated"}
+        class MemoryFTP:
+            def rename(self, source, target):
+                if source not in files or target in files:
+                    raise ftplib.error_perm("550 invalid rename")
+                files[target] = files.pop(source)
+            def delete(self, name):
+                if name not in files:
+                    raise ftplib.error_perm("550 absent")
+                del files[name]
+        ftp = MemoryFTP()
+        deployer.ftp_promote(ftp, "live/new.js", "stage/new.js", "backup/new.js", False)
+        deployer.ftp_promote(ftp, "live/index.html", "stage/index.html", "backup/index.html", True)
+        self.assertNotIn("backup/new.js", files)
+        deployer.ftp_restore(ftp, "live/index.html", "backup/index.html", True)
+        deployer.ftp_restore(ftp, "live/new.js", "backup/new.js", False)
+        self.assertEqual(files, {"live/index.html": b"old"})
+
+    def test_failed_new_promotion_does_not_restore_nonexistent_backup(self):
+        ftp = mock.Mock()
+        ftp.rename.side_effect = ftplib.error_perm("550 failed")
+        with self.assertRaises(ftplib.error_perm):
+            deployer.ftp_promote(ftp, "live/new.js", "stage/new.js", "backup/new.js", False)
+        ftp.rename.assert_called_once_with("stage/new.js", "live/new.js")
+
+    def test_failed_existing_promotion_restores_previous_file(self):
+        ftp = mock.Mock()
+        ftp.rename.side_effect = [None, ftplib.error_perm("550 failed"), None]
+        with self.assertRaises(ftplib.error_perm):
+            deployer.ftp_promote(ftp, "live/index.html", "stage/index.html", "backup/index.html", True)
+        self.assertEqual(ftp.rename.call_args_list[-1], mock.call("backup/index.html", "live/index.html"))
+
 if __name__ == "__main__":
     unittest.main()

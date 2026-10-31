@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.55-telegram-callback-recovery-v1';
+const CACHE='eliteservice-18.17.56-avito-profit-v1';
 const SHELL=[
   './',
   './index.html',
@@ -11,6 +11,11 @@ const SHELL=[
   './cloud-config.js',
   './firestore-regru.js',
   './telegram-ui.js?v=20261031-telegram9',
+  './avito-profit.js?v=20261031-profit1',
+  './profit-accounting.js?v=20261031-profit1',
+  './profit-bridge.js?v=20261031-profit1',
+  './profit-ui.js?v=20261031-profit1',
+  './visual-refinement.css?v=20261031-profit1',
   './premium-v181721.css',
 ];
 
