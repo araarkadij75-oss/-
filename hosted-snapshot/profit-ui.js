@@ -6,7 +6,7 @@
   const state = { expenses: [], workbook: null, raw: [], parsed: null, selected: new Set(), busy: false, source: '' };
   const bridge = () => window.MasterAIProfitBridge;
   const snapshot = () => bridge()?.snapshot() || {};
-  const owner = () => { const s = snapshot(); return (s.userRole || s.userrole || s.role || s.user?.role) === 'owner'; };
+  const owner = () => { const s = snapshot(); return s.connected === true && (s.userRole || s.userrole || s.role || s.user?.role) === 'owner'; };
   function notice(text, error = false) { const el = $('#profitNotice'); if (el) { el.textContent = text; el.className = 'notice ' + (error ? 'error' : 'ok'); el.hidden = !text; } }
   function expensePayload(r, account = '') {
     const cents=Math.round(Math.abs(Number(r.amount))*100);
