@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.54-telegram-group-admin-v1';
+const CACHE='eliteservice-18.17.55-telegram-callback-recovery-v1';
 const SHELL=[
   './',
   './index.html',
@@ -10,7 +10,7 @@ const SHELL=[
   './icon.svg',
   './cloud-config.js',
   './firestore-regru.js',
-  './telegram-ui.js?v=20261031-telegram8',
+  './telegram-ui.js?v=20261031-telegram9',
   './premium-v181721.css',
 ];
 

@@ -45,5 +45,14 @@ try {
     catch (RuntimeException $e) { verify($e->getMessage() === 'telegram_token_rejected', 'Token response must be sanitized'); }
     $responses = [['{"ok":true,"result":false}', 0]];
     verify(tg_call('setWebhook', []) === ['value' => false], 'False result must remain false');
+    $responses = [['{"ok":false,"error_code":400,"description":"Bad Request: message is not modified"}', 0]];
+    verify(tg_call('editMessageText', []) === ['unchanged'=>true], 'Idempotent replay edit succeeds');
+    $responses = [['{"ok":false,"error_code":400,"description":"Bad Request: message is not modified"}', 0]];
+    try { tg_call('sendMessage', []); throw new RuntimeException('Expected rejection'); }
+    catch (RuntimeException $e) { verify($e->getMessage()==='telegram_api_rejected_request','Not modified is not success for send'); }
+    $requests=[]; $responses=[[false,28]];
+    try { tg_call('editMessageText', []); throw new RuntimeException('Expected timeout'); }
+    catch (RuntimeException $e) { verify($e->getMessage()==='telegram_network_timeout','Edit network failure must propagate for polling retry'); }
+    verify(count($requests)===1,'No ambiguous transport retry for edit');
     echo "Telegram transport regressions passed\n";
 } finally { unlink($tokenFile); putenv('ELITESERVICE_TELEGRAM_TOKEN'); }

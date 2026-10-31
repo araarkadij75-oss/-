@@ -159,6 +159,8 @@
   }
 
   let lastOrderId = '';
+  let statusOrderId = '';
+  let statusRequest = 0;
   async function groupFromOwner(button) {
     button.disabled = true;
     try {
@@ -227,11 +229,16 @@
   async function refreshStatus(orderId = '') {
     const id = String(orderId || $('#f_orderId')?.value || '').trim();
     const label = $('#telegramOrderStatus');
-    if (!id || !label || !window.MasterAICloud?.profile) return;
+    if (!label) return;
+    const currentId = String($('#f_orderId')?.value || '').trim();
+    if (id !== currentId) return;
+    if (statusOrderId !== id || !id) { label.textContent = ''; statusOrderId = id; }
+    const request = ++statusRequest;
+    if (!id || !window.MasterAICloud?.profile) return;
     try {
       const result = await call('order_status', { orderId: id });
       const text = ({ not_sent: 'Ещё не отправлено в Telegram', sending: 'Отправляется в Telegram…', pending: 'Ожидает ответа мастера в Telegram', accepted: 'Мастер принял заказ', declined: 'Мастер отказался от заказа', unknown: 'Доставка не подтверждена — проверьте Telegram мастера', failed: 'Отправка не прошла — обратитесь к владельцу' })[result.state] || '';
-      if (String($('#f_orderId')?.value || '').trim() === id && label.isConnected) label.textContent = text;
+      if (request === statusRequest && String($('#f_orderId')?.value || '').trim() === id && label.isConnected) label.textContent = text;
     } catch { /* The status line is informational; preserve the CRM form. */ }
   }
 
@@ -269,7 +276,16 @@
       if (!status) { status = document.createElement('span'); status.id = 'telegramOrderStatus'; status.className = 'tg-order-status'; row.append(status); }
       if (!row.parentElement) masterField.append(row);
       const id = String($('#f_orderId')?.value || '').trim();
-      if (id && id !== lastOrderId) { lastOrderId = id; refreshStatus(id); }
+      if (id !== lastOrderId) { lastOrderId = id; refreshStatus(id); }
+      const modal = $('#orderModal');
+      if (modal && !modal.dataset.telegramStatusBound) {
+        modal.dataset.telegramStatusBound = '1';
+        new MutationObserver(() => {
+          if (!modal.classList.contains('open')) return;
+          status.textContent = ''; statusOrderId = '';
+          refreshStatus();
+        }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+      }
       const idInput = $('#f_orderId');
       if (idInput && !idInput.dataset.telegramBound) {
         idInput.dataset.telegramBound = '1';

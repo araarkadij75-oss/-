@@ -50,6 +50,7 @@ jobs:
         run: |
           php -l hosted-snapshot/crm-api/telegram.php
           php tests/telegram-bridge.test.php
+          php tests/telegram-callback-ack.test.php
           php -n tests/telegram-transport.test.php
       - run: npm run gate:static
       - run: npm run test:unit

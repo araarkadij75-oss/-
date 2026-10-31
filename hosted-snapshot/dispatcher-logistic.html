@@ -989,4 +989,4 @@ async function betaResetLocal(){
 
 if(window.MASTER_AI_BETA_ONLINE){const b=document.getElementById('betaResetBtn');if(b)b.hidden=true;init()}else{betaSeedLocal(false).then(()=>init()).then(()=>{const b=document.getElementById('betaResetBtn');if(b)b.onclick=betaResetLocal;}).catch(e=>{console.error('BETA bootstrap',e);alert('EliteService не смогла загрузить локальный снимок: '+e.message);init();})};
 window.MasterAIMasters=()=>typeof aiEligibleMasters==='function'?aiEligibleMasters():PRESETS.masters;
-</script><script>window.MASTER_AI_BUILD='18.17.54-REG-RU-TELEGRAM-GROUP-ADMIN';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script><script defer src="./telegram-ui.js?v=20261031-telegram8"></script></body></html>
+</script><script>window.MASTER_AI_BUILD='18.17.55-REG-RU-TELEGRAM-CALLBACK-RECOVERY';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script><script defer src="./telegram-ui.js?v=20261031-telegram9"></script></body></html>
