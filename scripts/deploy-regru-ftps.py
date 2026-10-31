@@ -16,7 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-ALLOWLIST = ("crm-api/telegram.php", "telegram-ui.js", "index.html", "dispatcher-logistic.html", "master.html", "sw.js")
+NEW_ASSETS = ("avito-profit.js", "profit-accounting.js", "profit-bridge.js", "profit-ui.js", "visual-refinement.css", "crm-api/finance.php")
+ALLOWLIST = NEW_ASSETS + ("crm-api/telegram.php", "telegram-ui.js", "index.html", "dispatcher-logistic.html", "master.html", "sw.js")
 TARGET_PATH = "/var/www/u3680049/data/www/crm.remontpkspb.ru/candidate"
 
 
@@ -60,6 +61,39 @@ def ftp_read(ftp: ftplib.FTP_TLS, path: str) -> bytes:
     chunks: list[bytes] = []
     ftp.retrbinary(f"RETR {path}", chunks.append)
     return b"".join(chunks)
+
+
+def ftp_read_existing(ftp: ftplib.FTP_TLS, path: str, allow_missing: bool = False) -> bytes | None:
+    try:
+        return ftp_read(ftp, path)
+    except ftplib.error_perm as error:
+        if not allow_missing or not str(error).startswith("550"):
+            raise
+        # RETR 550 can mean permission denied. Only a successful directory
+        # listing that excludes this name proves a first-deploy absence.
+        names = ftp.nlst(posixpath.dirname(path) or ".")
+        if posixpath.basename(path) in {posixpath.basename(name.rstrip("/")) for name in names}:
+            raise error
+        return None
+
+
+def ftp_promote(ftp: ftplib.FTP_TLS, live: str, staged: str, backup: str, existed: bool) -> None:
+    if existed:
+        ftp.rename(live, backup)
+    try:
+        ftp.rename(staged, live)
+    except Exception:
+        if existed:
+            ftp.rename(backup, live)
+        raise
+
+
+def ftp_restore(ftp: ftplib.FTP_TLS, live: str, backup: str, existed: bool) -> None:
+    # A successfully promoted new file must be deleted, never renamed from a
+    # nonexistent backup. Fail explicitly if removal cannot be confirmed.
+    ftp.delete(live)
+    if existed:
+        ftp.rename(backup, live)
 
 
 def ftp_write(ftp: ftplib.FTP_TLS, path: str, data: bytes) -> None:
@@ -169,10 +203,12 @@ def main() -> None:
         remote_backup = backup_rel
 
         # Save and hash-check the old production files before any production mutation.
-        old_files: dict[str, bytes] = {}
+        old_files: dict[str, bytes | None] = {}
         for name in ALLOWLIST:
-            old = ftp_read(ftp, safe_child(root, name))
+            old = ftp_read_existing(ftp, safe_child(root, name), allow_missing=name in NEW_ASSETS)
             old_files[name] = old
+            if old is None:
+                continue
             local_backup = backup_dir / name
             local_backup.parent.mkdir(parents=True, exist_ok=True)
             local_backup.write_bytes(old)
@@ -182,7 +218,7 @@ def main() -> None:
                     "releaseId": release_id,
                     "target": TARGET_PATH,
                     "capturedAt": datetime.now(timezone.utc).isoformat(),
-                    "files": {name: {"size": len(data), "sha256": sha256(data)} for name, data in old_files.items()},
+                    "files": {name: ({"existed": False} if data is None else {"existed": True, "size": len(data), "sha256": sha256(data)}) for name, data in old_files.items()},
                 },
                 indent=2,
             )
@@ -206,12 +242,7 @@ def main() -> None:
                 backup = safe_child(backup_rel, name)
                 staged = safe_child(stage_rel, name)
                 ftp_mkdirs(ftp, posixpath.dirname(backup))
-                ftp.rename(live, backup)
-                try:
-                    ftp.rename(staged, live)
-                except Exception:
-                    ftp.rename(backup, live)
-                    raise
+                ftp_promote(ftp, live, staged, backup, old_files[name] is not None)
                 changed.append(name)
 
             # Verify the promoted live paths through the same FTP session before
@@ -268,11 +299,7 @@ def main() -> None:
                 try:
                     live = safe_child(root, name)
                     backup = safe_child(backup_rel, name)
-                    try:
-                        ftp.delete(live)
-                    except ftplib.error_perm:
-                        pass
-                    ftp.rename(backup, live)
+                    ftp_restore(ftp, live, backup, old_files[name] is not None)
                 except Exception as rollback_error:  # report the specific failures
                     rollback_errors.append(f"{name}: {rollback_error}")
             if rollback_errors:
@@ -298,6 +325,8 @@ def main() -> None:
 
         # The verified pre-image is stored as an Actions artifact; remove temporary public-tree copies.
         for name in ALLOWLIST:
+            if old_files[name] is None:
+                continue
             try:
                 ftp.delete(safe_child(backup_rel, name))
             except ftplib.error_perm as exc:

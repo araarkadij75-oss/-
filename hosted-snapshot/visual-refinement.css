@@ -1,0 +1,110 @@
+/* Shared finishing layer: preserve layout, order status colors and font scaling. */
+#profitPanel > * { margin-bottom: 14px; }
+#profitPanel h2, #profitPanel h3 { margin: 0 0 8px; color: #243e60; }
+#profitPanel .profit-head { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+#profitPanel .profit-head p { margin:0; }
+#profitPanel .profit-period { display:flex; align-items:end; gap:10px; flex-wrap:wrap; }
+#profitPanel label { display:block; font-size:13px; line-height:1.5; color:#42566f; }
+#profitPanel .profit-metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
+#profitPanel .profit-metric { padding:16px; border:1px solid #cbdcf3; background:#f1f6ff; border-radius:14px; min-width:0; }
+#profitPanel .profit-metric span { display:block; font-size:13px; font-weight:700; }
+#profitPanel .profit-metric strong { display:block; font-size:clamp(20px,1.65vw,28px); margin:8px 0; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+#profitPanel .profit-metric small { display:block; font-size:12px; line-height:1.5; color:#52647c; }
+#profitPanel .profit-metric.green { background:#edf9f1; border-color:#b5dbc4; }
+#profitPanel .profit-metric.red { background:#fff0ed; border-color:#e6b8af; }
+#profitPanel .profit-metric.violet { background:#f5f1ff; border-color:#d9caef; }
+#profitPanel .profit-metric.amber { background:#fff8e9; border-color:#e9d6ab; }
+#profitPanel .profit-mapping { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:14px 0; }
+#profitPanel .profit-table { min-width:760px; font-size:13px; }
+#profitPanel .profit-table th { font-size:12px; }
+#profitPanel td small { display:block; margin-top:4px; color:#52647c; }
+#profitPanel .profit-void { color:#68758a; background:#f3f5f8; }
+#profitPanel .profit-consent { display:flex; align-items:start; gap:8px; margin:16px 0; }
+#profitPanel input[type=checkbox] { width:18px; height:18px; accent-color:#245fd3; flex-shrink:0; }
+#profitPanel .profit-errors { color:#a3221a; white-space:pre-line; max-height:160px; overflow:auto; }
+#profitPanel input[type=file] { max-width:100%; font-size:14px; }
+@media(max-width:1100px) { #profitPanel .profit-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:560px) { #profitPanel .profit-metrics { grid-template-columns:1fr; } #profitPanel .profit-period > * { flex:1 1 120px; } }
+.app {
+  --border: #d6e0ed;
+  --muted: #52647c;
+  --accent: #245fd3;
+  --accent2: #1c4eaf;
+}
+.app .card {
+  border-color: #d6e0ed;
+  box-shadow: 0 4px 16px rgb(30 58 100 / 5%);
+}
+.app .tabs {
+  background: #eef3fa;
+  border: 1px solid #d4e0f0;
+}
+.app .tab { color: #405875; }
+.app .tab:hover:not(.active) { background: #e0eafa; color: #184da7; }
+.app .tab.active {
+  background: #245fd3;
+  color: #fff;
+  box-shadow: 0 2px 6px rgb(36 95 211 / 18%);
+}
+.app .btn:not(.primary):not(.danger):not(:disabled):hover {
+  background: #edf4ff;
+  border-color: #99b8e8;
+}
+.app .btn.primary { background: #245fd3; border-color: #245fd3; color: #fff; }
+.app .btn.primary:hover:not(:disabled) { background: #1c4eaf; border-color: #1c4eaf; }
+.app .btn.danger { background: #fff4f3; border-color: #ecc4bf; color: #a3221a; }
+.app .btn.danger:hover:not(:disabled) { background: #ffe6e3; border-color: #d99389; }
+.app .btn:disabled { cursor: not-allowed; }
+.app :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible,
+.modal :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+.app :is(.input, .select, .textarea),
+.modal :is(.input, .select, .textarea) { border-color: #c7d5e7; }
+.app :is(.input, .select, .textarea):focus,
+.modal :is(.input, .select, .textarea):focus { border-color: #245fd3; }
+.app [aria-invalid="true"], .modal [aria-invalid="true"] {
+  border-color: #ba3026;
+  box-shadow: 0 0 0 2px rgb(186 48 38 / 12%);
+}
+.app .notice {
+  border: 1px solid #c5d9f5;
+  background: #eff6ff;
+  color: #24476f;
+  border-radius: 10px;
+}
+.app .notice.ok { border-color: #acd8be; background: #eef9f1; color: #19623b; }
+.app .notice.warn { border-color: #e6ce96; background: #fff8e9; color: #80500c; }
+.app .notice:is(.error, .bad) { border-color: #e4b6b0; background: #fff1ef; color: #a3221a; }
+.app :is(.chart-title, .form-section) { color: #263f61; }
+.app :is(.kpi .l, .kpi .s, .mini .l, .field label) {
+  font-size: max(12px, .75rem);
+  line-height: 1.4;
+}
+.app :is(.kpi .v, .mini .v, .num) { font-variant-numeric: tabular-nums; }
+.app .order-pagination { align-items: center; gap: 8px; }
+.app .order-pagination .btn { flex-shrink: 0; }
+.app .chart-row:focus-visible, .app .clickable-row:focus-visible {
+  outline-offset: -3px;
+}
+/* Long names and descriptions remain readable inside their own controls. */
+.app :is(.order-dispatcher-chip, .order-value-chip) {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+@media (max-width: 680px) {
+  .app .top-actions, .app .toolbar { gap: 8px; }
+  .app .order-pagination { flex-wrap: wrap; }
+  .app .tabs .tab { min-height: 42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app .btn, .app .tab { transition: none; }
+}
+@media (forced-colors: active) {
+  .app .tab.active { border: 2px solid Highlight; }
+  .app .notice { border: 1px solid CanvasText; }
+}
+
+#profitPanel #avitoColumnMapping:not([hidden]) { display:contents; }
+#profitPanel #avitoStatisticsPeriod { margin:12px 0; }
