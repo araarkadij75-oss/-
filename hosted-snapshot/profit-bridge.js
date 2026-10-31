@@ -3,7 +3,7 @@
  let completeReports=null,reportsTruncated=false;
  const owner=()=>currentRole()==='owner'&&!ownerPreviewActive()&&!!window.MasterAICloud?.connected;
  const requireOwner=()=>{if(!owner())throw new Error('Доступно только владельцу с подключённой сессией')};
- const clear=()=>{completeReports=null;reportsTruncated=false;if(!owner()){state.expenses=[];state.shiftReports=[]}};
+ const clear=()=>{completeReports=null;reportsTruncated=false;if(!owner()){state.expenses=[]}};
  window.addEventListener('masterai:session',clear);
  window.MasterAIProfitBridge={
   snapshot:()=>owner()?({role:currentRole(),userrole:currentRole(),userRole:currentRole(),connected:!!window.MasterAICloud?.connected,orders:state.orders,shiftReports:completeReports||state.shiftReports,settings:state.settings,expenses:state.expenses}):({role:currentRole(),userRole:currentRole(),connected:!!window.MasterAICloud?.connected}),

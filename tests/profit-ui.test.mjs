@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 const source=fs.readFileSync(new URL('../hosted-snapshot/profit-ui.js',import.meta.url),'utf8');
 const start=source.indexOf('  function expensePayload('),end=source.indexOf('  async function action(',start);
-const context={owner:()=>true,window:{MasterAICloud:{connected:true,getIdToken:async()=> 'test'}},fetch:async()=>({ok:true,json:async()=>({ok:true,expenses:[]})})};
+const context={money:n=>String(n)+' ₽',owner:()=>true,window:{MasterAICloud:{connected:true,getIdToken:async()=> 'test'}},fetch:async()=>({ok:true,json:async()=>({ok:true,expenses:[]})})};
 const methods=vm.runInNewContext(source.slice(start,end)+';({expensePayload,api})',context);
 test('Preview expenses and credits preserve cents and stable operation identity',()=>{
  const expense=methods.expensePayload({date:'2026-10-31',amount:1234.56,operationId:'op-1',description:'Продвижение'},' cabinet ');
@@ -25,4 +25,9 @@ test('Import errors distinguish funding from expenses and conflicting operation 
  assert.match(issue({code:'ambiguous_operation_type'}),/Пополнение баланса не является расходом/);
  assert.match(issue({code:'conflicting_operation_id'}),/разными данными/);
  assert.match(issue({code:'invalid_date'}),/дата/);
+});
+
+test('Monthly statistics payload preserves explicit period instead of publication date',()=>{
+ const row=methods.expensePayload({date:'2026-10-31',periodFrom:'2026-10-01',periodTo:'2026-10-31',amount:1250.5,bonus:75.25,statisticId:'ad123',operationId:'avito-stat:account:ad:oct'});
+ assert.equal(row.date,'2026-10-31');assert.equal(row.periodFrom,'2026-10-01');assert.equal(row.periodTo,'2026-10-31');assert.equal(row.amountCents,125050);assert.equal(row.statisticId,'ad123');assert.match(row.note,/75.25 ₽.*сумму расхода не меняют/);
 });

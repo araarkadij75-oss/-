@@ -22,7 +22,34 @@ function fin_normalize(array $row): array {
     if (!in_array($source, ['avito', 'manual', 'legacy'], true) || !in_array($kind, ['expense', 'refund'], true)) throw new InvalidArgumentException('invalid_source_or_kind');
     $category = fin_text($row['category'] ?? 'Прочие', 200);
     if ($category === '') throw new InvalidArgumentException('category_required');
-    return ['date' => $date, 'amountCents' => $amount, 'kind' => $kind, 'category' => $category, 'source' => $source, 'externalId' => fin_text($row['externalId'] ?? '', 200), 'account' => fin_text($row['account'] ?? '', 200), 'note' => fin_text($row['note'] ?? '', 4000)];
+    $normalized = ['date' => $date, 'amountCents' => $amount, 'kind' => $kind, 'category' => $category, 'source' => $source, 'externalId' => fin_text($row['externalId'] ?? '', 200), 'account' => fin_text($row['account'] ?? '', 200), 'note' => fin_text($row['note'] ?? '', 4000)];
+    if (array_key_exists('periodFrom', $row) || array_key_exists('periodTo', $row)) {
+        foreach (['periodFrom', 'periodTo'] as $key) {
+            $v = fin_text($row[$key] ?? '', 10);
+            if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $v, $m) || !checkdate((int)$m[2], (int)$m[3], (int)$m[1]) || (int)$m[1] < 2000 || (int)$m[1] > 2100) throw new InvalidArgumentException('invalid_period');
+            $normalized[$key] = $v;
+        }
+        if ($normalized['periodFrom'] > $normalized['periodTo'] || $date !== $normalized['periodTo']) throw new InvalidArgumentException('invalid_period');
+    }
+    if (array_key_exists('statisticId', $row)) $normalized['statisticId'] = fin_text($row['statisticId'], 200);
+    return $normalized;
+}
+function fin_overlap(array $existing, array $row): bool {
+    if (($existing['active'] ?? true) === false || ($existing['source'] ?? '') !== 'avito' || ($row['source'] ?? '') !== 'avito' || ($existing['account'] ?? '') !== ($row['account'] ?? '')) return false;
+    $ep = isset($existing['periodFrom'], $existing['periodTo']);
+    $rp = isset($row['periodFrom'], $row['periodTo']);
+    if (!$ep && !$rp) return false;
+    if ($ep && $rp) {
+        if ($existing['periodTo'] < $row['periodFrom'] || $row['periodTo'] < $existing['periodFrom']) return false;
+        $a = $existing['statisticId'] ?? '';
+        $b = $row['statisticId'] ?? '';
+        // Distinct explicit ad IDs are independent. Without identity, an
+        // overlap is ambiguous and must be reviewed rather than double-counted.
+        return $a === '' || $b === '' || $a === $b;
+    }
+    $period = $ep ? $existing : $row;
+    $transaction = $ep ? $row : $existing;
+    return $transaction['date'] >= $period['periodFrom'] && $transaction['date'] <= $period['periodTo'];
 }
 function fin_id(array $row): string {
     $identity = $row['externalId'] !== '' ? [$row['source'], $row['account'], $row['externalId']] : $row;
@@ -92,6 +119,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
                 $duplicates++;
                 continue;
             }
+            foreach ($map as $prior) if (fin_overlap($prior, $row)) throw new UnexpectedValueException('expense_overlap');
             if (count($map) >= 20000) throw new LengthException('expense_capacity');
             $data = $row + ['id' => $id, 'active' => true, 'createdAt' => $now, 'updatedAt' => $now, 'createdBy' => $actor['uid'], 'updatedBy' => $actor['uid']];
             $map[$id] = $data;
@@ -101,6 +129,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
         if ($op === 'void') {
             $id = $body['id'];
             if (!isset($map[$id])) throw new OutOfBoundsException('expense_not_found');
+            if ($body['active']) foreach ($map as $otherId => $prior) if ($otherId !== $id && fin_overlap($prior, $map[$id])) throw new UnexpectedValueException('expense_overlap');
             if (($map[$id]['active'] ?? true) !== $body['active']) {
                 $map[$id]['active'] = $body['active'];
                 $map[$id]['updatedAt'] = $now;
@@ -134,7 +163,7 @@ try {
     tg_reply(200, fin_mutate($pdo, $actor, $body));
 } catch (InvalidArgumentException $e) { tg_reply(400, ['ok' => false, 'error' => $e->getMessage()]);
 } catch (DomainException $e) { tg_reply(403, ['ok' => false, 'error' => $e->getMessage()]);
-} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => 'expense_conflict']);
+} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => $e->getMessage() === 'expense_overlap' ? 'expense_overlap' : 'expense_conflict']);
 } catch (OutOfBoundsException $e) { tg_reply(404, ['ok' => false, 'error' => 'expense_not_found']);
 } catch (LengthException $e) { tg_reply(413, ['ok' => false, 'error' => 'expense_capacity']);
 } catch (Throwable $e) { tg_reply(503, ['ok' => false, 'error' => 'finance_service_unavailable']); }

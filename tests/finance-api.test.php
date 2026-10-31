@@ -24,3 +24,19 @@ fin_check(str_contains($source,"'finance_import'") && str_contains($source,'tg_w
 fin_check(str_contains($source,'GET_LOCK(?,10)') && str_contains($source,'$pdo->beginTransaction()') && str_contains($source,'$pdo->rollBack()'),'Import serialized and atomic');
 fin_check(str_contains($source,"'reportsTruncated' => \$truncated"),'Incomplete report read flagged');
 echo "finance API validation and authorization contracts passed\n";
+
+$monthly=$row;$monthly['periodFrom']='2026-10-01';$monthly['periodTo']='2026-10-31';
+fin_check(fin_normalize($monthly)['periodFrom']==='2026-10-01','Monthly period accepted');
+fin_check(!array_key_exists('periodFrom',fin_normalize($row)),'Legacy rows remain unchanged');
+foreach ([['2026-11-01','2026-10-31'],['2026-02-30','2026-10-31'],['2026-10-01','2026-10-30'],['2026-10-01',null]] as [$from,$to]) { $bad=$row;$bad['periodFrom']=$from;if($to!==null)$bad['periodTo']=$to;fin_reject(fn()=>fin_normalize($bad),'Invalid period accepted'); }
+
+$month=fin_normalize($monthly+['statisticId'=>'ad-1']);
+$wide=$month;$wide['periodFrom']='2026-01-01';
+fin_check(fin_overlap($month,$wide),'Overlapping same ad periods rejected');
+$distinct=$wide;$distinct['statisticId']='ad-2';
+fin_check(!fin_overlap($month,$distinct),'Different ads may cover same period');
+$next=$month;$next['periodFrom']='2026-11-01';$next['periodTo']=$next['date']='2026-11-30';
+fin_check(!fin_overlap($month,$next),'Nonoverlapping periods allowed');
+fin_check(fin_overlap($month,$a) && fin_overlap($a,$month),'Mixed transaction and period rejected both directions');
+$inactive=$month;$inactive['active']=false;fin_check(!fin_overlap($inactive,$wide),'Voided expense does not block replacement');
+$otherAccount=$wide;$otherAccount['account']='different';fin_check(!fin_overlap($month,$otherAccount),'Separate accounts do not overlap');

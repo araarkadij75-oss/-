@@ -125,6 +125,8 @@
   }
 
   function parseRows(matrix, suppliedMapping) {
+    var statistics = detectStatistics(matrix);
+    if (statistics.isStatistics) return { rows: [], errors: [], skipped: [], requiresMapping: true, requiresStatisticsPeriod: true, issues: ['statistics_period_required'], detected: statistics, mapping: statistics.mapping };
     var detected = detectColumns(matrix), mapping = suppliedMapping ? Object.assign({}, suppliedMapping) : detected.mapping;
     if (suppliedMapping && !own(mapping, 'headerRow')) mapping.headerRow = detected.headerRow == null ? 0 : detected.headerRow;
     var issues = suppliedMapping ? validateMapping(mapping) : detected.issues;
@@ -168,6 +170,7 @@
         } else amount = { value: Math.abs(debit.value) * (type === 'refund' ? -1 : 1), error: null };
       }
       if (amount.error) { result.errors.push({ sourceRow: sourceRow, code: amount.error, field: 'amount' }); return; }
+      if (amount.value === 0) { result.skipped.push({ sourceRow: sourceRow, reason: 'zero_expense' }); return; }
       if (amount.value < 0) kind = 'credit';
       var cents = Math.round(amount.value * 100), base = JSON.stringify([date.value, norm(description), cents]);
       var key;
@@ -202,5 +205,87 @@
       byDate: Array.from(days.values()).sort(function (a, b) { return a.date.localeCompare(b.date); }).map(function (d) { return { date: d.date, count: d.count, total: d.cents / 100, expenses: d.expenseCents / 100, credits: d.creditCents / 100 }; }) };
   }
 
-  return Object.freeze({ detectColumns: detectColumns, parseRows: parseRows, summarize: summarize, parseMoney: parseMoney, parseDate: parseDate });
+  // Only the literal display argument is extracted; no spreadsheet expression is evaluated.
+  function hyperlinkDisplay(formula) {
+    if (typeof formula !== 'string') return null;
+    var match = formula.trim().match(/^=?HYPERLINK\(\s*"(?:[^"]|"")*"\s*[,;]\s*"((?:[^"]|"")*)"\s*\)$/i);
+    return match ? match[1].replace(/""/g, '"') : null;
+  }
+
+  function filenamePeriod(filename) {
+    var basename = text(filename).split(/[\\/]/).pop();
+    var match = basename.match(/^Статистика_с_(\d{4}-\d{2}-\d{2})_по_(\d{4}-\d{2}-\d{2})(?:\s*\(\d+\))?\.xlsx?$/i);
+    if (!match) return { from: null, to: null, error: 'period_not_in_filename' };
+    var from = parseDate(match[1]), to = parseDate(match[2]);
+    if (from.error || to.error || from.value > to.value) return { from: null, to: null, error: 'invalid_period' };
+    return { from: from.value, to: to.value, error: null };
+  }
+
+  function detectStatistics(matrix) {
+    var empty = { isStatistics: false, headerRow: null, mapping: {}, requiresMapping: false, issues: [] };
+    if (!Array.isArray(matrix)) return empty;
+    for (var index = 0; index < Math.min(matrix.length, 40); index++) {
+      if (!Array.isArray(matrix[index])) continue;
+      var labels = matrix[index].map(header), mapping = { headerRow: index }, issues = [];
+      var names = { externalId: 'номер объявления', description: 'название объявления', amount: 'расходы на объявления', bonus: 'списано бонусов на объявления' };
+      if (!labels.includes(names.amount) || (!labels.includes(names.externalId) && !labels.includes(names.description))) continue;
+      Object.keys(names).forEach(function (field) {
+        var indices = []; labels.forEach(function (label, i) { if (label === names[field]) indices.push(i); });
+        if (indices.length === 1) mapping[field] = indices[0];
+        else if (indices.length > 1) issues.push('ambiguous_statistics_' + field);
+      });
+      if (!Number.isInteger(mapping.externalId)) issues.push('statistics_ad_id_column_required');
+      if (!Number.isInteger(mapping.amount)) issues.push('statistics_expense_column_required');
+      return { isStatistics: true, headerRow: index, mapping: mapping, requiresMapping: issues.length > 0, issues: issues };
+    }
+    return empty;
+  }
+
+  function parseStatistics(matrix, options) {
+    options = options || {};
+    var detected = detectStatistics(matrix), from = parseDate(options.from), to = parseDate(options.to);
+    var issues = detected.issues.slice();
+    if (!detected.isStatistics) issues.push('statistics_header_not_found');
+    if (from.error || to.error || from.value > to.value) issues.push('invalid_period');
+    var result = { rows: [], errors: [], skipped: [], detected: detected, mapping: detected.mapping, requiresMapping: detected.requiresMapping, requiresPeriod: !!(from.error || to.error || from.value > to.value), issues: issues };
+    if (issues.length) return result;
+    var mapping = detected.mapping, operations = new Map(), conflicts = new Set(), account = text(options.account);
+    matrix.slice(detected.headerRow + 1).forEach(function (raw, index) {
+      var sourceRow = detected.headerRow + index + 2;
+      if (!Array.isArray(raw)) { result.errors.push({ sourceRow: sourceRow, code: 'invalid_row' }); return; }
+      if (raw.every(function (v) { return !text(v); })) { result.skipped.push({ sourceRow: sourceRow, reason: 'blank' }); return; }
+      var cell = function (field) { return Number.isInteger(mapping[field]) ? raw[mapping[field]] : ''; };
+      var externalId = text(cell('externalId')), description = text(cell('description'));
+      if ([externalId, description].some(function (v) { return /^(?:итого|всего|общий итог|total|grand total)(?:\s|:|$)/i.test(v); }) || (!externalId && raw.some(function (v) { return /^(?:итого|всего|общий итог|total|grand total)(?:\s|:|$)/i.test(text(v)); }))) { result.skipped.push({ sourceRow: sourceRow, reason: 'total' }); return; }
+      if (header(externalId) === 'номер объявления') { result.skipped.push({ sourceRow: sourceRow, reason: 'repeated_header' }); return; }
+      if (!/^\d+$/.test(externalId) || (typeof cell('externalId') === 'number' && !Number.isSafeInteger(cell('externalId')))) { result.errors.push({ sourceRow: sourceRow, code: 'invalid_statistics_ad_id', field: 'externalId' }); return; }
+      var amount = parseMoney(cell('amount'));
+      var bonus = Number.isInteger(mapping.bonus) && text(cell('bonus')) ? parseMoney(cell('bonus')) : { value: null, error: null };
+      if (amount.error || amount.value < 0) { result.errors.push({ sourceRow: sourceRow, code: amount.error || 'negative_statistics_expense', field: 'amount' }); return; }
+      if (bonus.error || bonus.value < 0) { result.errors.push({ sourceRow: sourceRow, code: bonus.error || 'negative_statistics_bonus', field: 'bonus' }); return; }
+      if (amount.value === 0) {
+        if (bonus.value > 0) result.errors.push({ sourceRow: sourceRow, code: 'zero_expense_with_bonus', field: 'bonus' });
+        else result.skipped.push({ sourceRow: sourceRow, reason: 'zero_expense' });
+        return;
+      }
+      var operationId = ['avito-stat', account, from.value, to.value, externalId].join(':');
+      var entry = { key: 'op:' + encodeURIComponent(operationId), operationId: operationId, externalId: operationId, statisticId: externalId, account: account, date: to.value, dateBasis: 'period_end', periodFrom: from.value, periodTo: to.value, kind: 'period_summary', amount: amount.value, bonus: bonus.value, description: description || 'Объявление ' + externalId, sourceRow: sourceRow };
+      if (operations.has(entry.key)) {
+        var previous = operations.get(entry.key);
+        if (previous.amount === entry.amount && previous.bonus === entry.bonus) result.skipped.push({ sourceRow: sourceRow, reason: 'duplicate_statistics_ad', key: entry.key });
+        else { conflicts.add(entry.key); result.errors.push({ sourceRow: sourceRow, code: 'conflicting_statistics_ad', key: entry.key, previousSourceRow: previous.sourceRow }); }
+        return;
+      }
+      operations.set(entry.key, entry); result.rows.push(entry);
+    });
+    result.rows = result.rows.filter(function (r) { return !conflicts.has(r.key); });
+    result.summary = summarize(result.rows);
+    result.summary.periodFrom = from.value; result.summary.periodTo = to.value;
+    result.summary.bonus = result.rows.reduce(function (sum, row) { return sum + Math.round((row.bonus || 0) * 100); }, 0) / 100;
+    result.summary.missingBonusCount = result.rows.filter(function (row) { return row.bonus === null; }).length;
+    result.summary.dateBasis = 'period_end';
+    return result;
+  }
+
+  return Object.freeze({ detectColumns: detectColumns, parseRows: parseRows, summarize: summarize, parseMoney: parseMoney, parseDate: parseDate, detectStatistics: detectStatistics, parseStatistics: parseStatistics, filenamePeriod: filenamePeriod, hyperlinkDisplay: hyperlinkDisplay });
 });

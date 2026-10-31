@@ -95,3 +95,43 @@ test('credit columns require refund evidence; dedicated refund header is explici
  const deposit=api.parseRows([['Дата','Расход','Доход','Описание'],['31.10.2026','',5000,'Пополнение баланса']]);assert.equal(deposit.rows.length,0);assert.equal(deposit.skipped[0].reason,'balance_topup');
  const debitRefund=api.parseRows([['Дата','Расход','Описание'],['31.10.2026',-100,'Возврат за услугу']]);assert.equal(debitRefund.rows[0].amount,-100);
 });
+
+const statisticsHeader=['Номер объявления','Название объявления','Дата первой публикации','Дата снятия с публикации','Расходы на объявления','Списано бонусов на объявления','Расходы на размещение и целевые действия','Расходы на продвижение','Остальные расходы'];
+const statisticsRows=[statisticsHeader,['12345678','Объявление А','2025-08-11','2026-11-01',1000,50,1000,0,0],['23456789','Объявление Б','2026-01-01','2026-11-12',500,20,500,0,0]];
+test('Avito statistics recognized by exact total header, never treated as dated transactions',()=>{
+ const detected=api.detectStatistics(statisticsRows);assert.equal(detected.isStatistics,true);assert.equal(detected.mapping.amount,4);assert.equal(detected.mapping.bonus,5);
+ const ledger=api.parseRows(statisticsRows,{headerRow:0,date:2,amount:4});assert.equal(ledger.requiresStatisticsPeriod,true);assert.equal(ledger.rows.length,0);
+});
+test('statistics total uses only primary expense column and keeps bonuses separate',()=>{
+ const p=api.parseStatistics(statisticsRows,{from:'2026-10-01',to:'2026-10-31',account:'main'});assert.equal(p.rows.length,2);assert.equal(p.summary.total,1500);assert.equal(p.summary.bonus,70);assert.equal(p.summary.expenses,1500);assert.equal(p.rows[0].date,'2026-10-31');assert.equal(p.rows[0].dateBasis,'period_end');assert.equal(p.rows[0].periodFrom,'2026-10-01');assert.equal(p.rows[0].statisticId,'12345678');assert.ok(p.rows[0].externalId.includes('2026-10-01:2026-10-31'));
+});
+test('publication/removal dates cannot supply missing statistics period',()=>{
+ for(const o of [{},{from:'2026-11-01',to:'2026-10-31'},{from:'2026-02-30',to:'2026-10-31'}]){const p=api.parseStatistics(statisticsRows,o);assert.equal(p.rows.length,0);assert.equal(p.requiresPeriod,true);}
+});
+test('filename period accepts only explicit valid dates and preserves range boundaries',()=>{
+ const p=api.filenamePeriod('Статистика_с_2026-10-01_по_2026-10-31.xlsx');assert.equal(p.from,'2026-10-01');assert.equal(p.to,'2026-10-31');assert.equal(p.error,null);
+ assert.equal(api.filenamePeriod('Статистика_с_2026-10-01_по_2026-10-31 (1).xlsx').error,null);
+ for(const f of ['Статистика.xlsx','Статистика_с_2026-11-01_по_2026-10-31.xlsx','Статистика_с_2026-02-30_по_2026-10-31.xlsx'])assert.ok(api.filenamePeriod(f).error);
+});
+test('HYPERLINK display extraction supports literal strings only and never evaluates expressions',()=>{
+ assert.equal(api.hyperlinkDisplay('HYPERLINK("https://example.test/123","123")'),'123');assert.equal(api.hyperlinkDisplay('=HYPERLINK("https://example.test";"Название ""А""")'),'Название "А"');
+ for(const f of ['SUM(A1:A2)','HYPERLINK(A1,"123")','HYPERLINK("url",A2)','HYPERLINK("url",CONCAT("1","2"))'])assert.equal(api.hyperlinkDisplay(f),null);
+});
+test('statistics keys preserve repeated upload and distinguish periods and accounts',()=>{
+ const a=api.parseStatistics(statisticsRows,{from:'2026-10-01',to:'2026-10-31',account:'a'}),b=api.parseStatistics(statisticsRows,{from:'2026-10-01',to:'2026-10-31',account:'a'}),c=api.parseStatistics(statisticsRows,{from:'2026-10-01',to:'2026-10-30',account:'a'}),d=api.parseStatistics(statisticsRows,{from:'2026-10-01',to:'2026-10-31',account:'b'});assert.equal(a.rows[0].key,b.rows[0].key);assert.notEqual(a.rows[0].key,c.rows[0].key);assert.notEqual(a.rows[0].key,d.rows[0].key);assert.equal(a.rows[0].statisticId,c.rows[0].statisticId);
+});
+test('statistics duplicate ads counted once, changed repeated ad quarantined',()=>{
+ const rows=[...statisticsRows,statisticsRows[1],['Итого','','','',1500]];const p=api.parseStatistics(rows,{from:'2026-10-01',to:'2026-10-31'});assert.equal(p.rows.length,2);assert.equal(p.summary.total,1500);assert.deepEqual(plain(p.skipped.map(r=>r.reason)),['duplicate_statistics_ad','total']);
+ const conflict=api.parseStatistics([...statisticsRows,['12345678','А','','',1200,50]],{from:'2026-10-01',to:'2026-10-31'});assert.equal(conflict.rows.length,1);assert.equal(conflict.errors[0].code,'conflicting_statistics_ad');
+});
+test('statistics missing adID or bad bonus fails row instead of inventing financial data',()=>{
+ const p=api.parseStatistics([statisticsHeader,['','Название','','',100,0],['123','Название','','',100,'invalid']],{from:'2026-10-01',to:'2026-10-31'});assert.equal(p.rows.length,0);assert.deepEqual(plain(p.errors.map(e=>e.code)),['invalid_statistics_ad_id','invalid_amount']);
+});
+test('component-only statistics never substituted for total or silently added',()=>{
+ const d=api.detectStatistics([['Номер объявления','Расходы на продвижение'],['123',100]]);assert.equal(d.isStatistics,false);
+ const dup=api.detectStatistics([['Номер объявления','Расходы на объявления','Расходы на объявления']]);assert.equal(dup.requiresMapping,true);
+});
+test('zero spend rows do not enter selectable import; nonzero bonus with zero expense requires review',()=>{
+ const stats=api.parseStatistics([statisticsHeader,['123','Zero','','',0,0],['456','Bonus only','','',0,100],['789','Cost','','',100,0]],{from:'2026-10-01',to:'2026-10-31'});assert.equal(stats.rows.length,1);assert.equal(stats.rows[0].amount,100);assert.equal(stats.skipped[0].reason,'zero_expense');assert.equal(stats.errors[0].code,'zero_expense_with_bonus');
+ const ledger=api.parseRows([head,['31.10.2026',0,'Бесплатная услуга','0'],['31.10.2026',100,'Услуга','1']]);assert.equal(ledger.rows.length,1);assert.equal(ledger.skipped[0].reason,'zero_expense');
+});

@@ -105,3 +105,6 @@
   .app .tab.active { border: 2px solid Highlight; }
   .app .notice { border: 1px solid CanvasText; }
 }
+
+#profitPanel #avitoColumnMapping:not([hidden]) { display:contents; }
+#profitPanel #avitoStatisticsPeriod { margin:12px 0; }
