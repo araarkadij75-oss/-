@@ -30,3 +30,12 @@ check(!tg_group_actor_matches($groupPair,$groupLink,['chat'=>['type'=>'supergrou
 check(!tg_group_actor_matches($groupPair,$groupLink,['chat'=>['type'=>'private'],'from'=>['id'=>123]]), 'Private chat cannot become work group');
 check(!tg_group_actor_matches($groupPair,['telegramUserId'=>'456'],['chat'=>['type'=>'group'],'from'=>['id'=>456]]), 'Identity changed after code issue');
 check(!tg_group_actor_matches([],[],['chat'=>['type'=>'group'],'from'=>['id'=>'']]), 'Missing identity denied');
+
+foreach ([5,6,7] as $errno) check(tg_retry_transport('sendMessage',$errno), 'Preconnection send failure can retry');
+foreach ([28,35,52,56] as $errno) check(!tg_retry_transport('sendMessage',$errno), 'Ambiguous send must never retry');
+check(tg_retry_transport('getMe',28), 'Safe read may fallback');
+check(tg_public_ipv4('31.31.198.110')==='31.31.198.110','Public webhook IPv4');
+foreach (['127.0.0.1','192.168.1.1','10.0.0.1','::1','crm.example.test'] as $ip) check(tg_public_ipv4($ip)==='', 'Unsafe/unresolved webhook IP rejected');
+check(str_contains(tg_webhook_error('Read timeout expired'), 'ожидания ответа'),'Read timeout is distinct');
+check(str_contains(tg_webhook_error('Connection timed out'), 'соединения'),'Connection timeout is distinct');
+check(!str_contains(tg_webhook_error('Read timeout https://secret.example/token'), 'secret'), 'Diagnostics omit raw URL');

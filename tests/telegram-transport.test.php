@@ -29,8 +29,8 @@ try {
     $responses = [[false, 7], ['{"ok":true,"result":{"username":"test_bot"}}', 0]];
     verify(tg_call('getMe', [])['username'] === 'test_bot', 'Safe fallback failed');
     verify(count($requests) === 2, 'Safe fallback count');
-    verify($requests[0][CURLOPT_IPRESOLVE] === CURL_IPRESOLVE_V4, 'Prefer IPv4');
-    verify($requests[1][CURLOPT_IPRESOLVE] === CURL_IPRESOLVE_WHATEVER, 'Fallback route');
+    verify($requests[0][CURLOPT_IPRESOLVE] === CURL_IPRESOLVE_WHATEVER, 'Prefer system routing');
+    verify($requests[1][CURLOPT_IPRESOLVE] === CURL_IPRESOLVE_V4, 'Fallback route');
     foreach ($requests as $options) {
         verify($options[CURLOPT_SSL_VERIFYPEER] === true && $options[CURLOPT_SSL_VERIFYHOST] === 2, 'TLS verification required');
         verify($options[CURLOPT_FOLLOWLOCATION] === false, 'No credential redirect');
