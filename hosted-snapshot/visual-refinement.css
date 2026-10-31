@@ -195,3 +195,59 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
  .app #weeklyReportTotals { grid-template-columns:repeat(4,minmax(0,1fr))!important; }
  .app [data-panel="performance"] .grid4 { grid-template-columns:repeat(5,minmax(0,1fr)); }
 }
+/* Expressive section palette: navigation color is distinct from order status. */
+.app .section { --section-accent:#2563d9; --section-tint:#eaf2ff; --section-border:#aac7ee; }
+.app [data-panel=dashboard],.app [data-panel=performance] { --section-accent:#6751c5; --section-tint:#f0eaff; --section-border:#cbb8ed; }
+.app [data-panel=mastershifts] { --section-accent:#087b91; --section-tint:#e3f5f8; --section-border:#9bcfd8; }
+.app [data-panel=shiftclose],.app [data-panel=payrollcycles],.app [data-panel=reports] { --section-accent:#08795b; --section-tint:#e4f5ed; --section-border:#9dcebb; }
+.app [data-panel=profit],.app [data-panel=finance] { --section-accent:#08775d; --section-tint:#e4f6ee; --section-border:#9bceb9; }
+.app [data-panel=ai] { --section-accent:#7344c3; --section-tint:#f2e9ff; --section-border:#c9aceb; }
+.app [data-panel=quality],.app [data-panel=diagnostics] { --section-accent:#a65a08; --section-tint:#fff3dd; --section-border:#e9c585; }
+.app [data-panel=import],.app [data-panel=settings] { --section-accent:#315e91; --section-tint:#e9f2fb; --section-border:#b0c9e2; }
+.app .section .card:not(.kpi):not(.hero):not(.master-shift-hero) { border-color:var(--section-border); box-shadow:0 5px 18px #24436310; }
+.app .section :is(.section-head,.filters) { border:1px solid var(--section-border); border-radius:13px; padding:13px; background:linear-gradient(115deg,var(--section-tint),#fff); margin-bottom:14px; }
+.app .section :is(.chart-title,.order-dashboard-heading) { color:var(--section-accent); }
+.app .section .chart-card { border-top:3px solid var(--section-accent); }
+.app .section .table thead th { background:var(--section-tint); color:#26415e; border-bottom:2px solid var(--section-border); }
+.app .section :is(.table-wrap,.payroll-daily-wrap) { border-color:var(--section-border); background:#fff; }
+.app .section .form-section { background:var(--section-tint); border:1px solid var(--section-border); padding:10px 12px; border-radius:10px; color:var(--section-accent); }
+.app .section :is(.expert,.debate-item,.scheme-card) { border:1px solid var(--section-border); background:linear-gradient(120deg,#fff,var(--section-tint)); }
+.app .section .import-zone { border:2px dashed #8faee0; background:linear-gradient(120deg,#edf5ff,#f4edff); }
+.app .section details>summary { line-height:1.5; }
+.app .kpi.tone-blue { background:linear-gradient(120deg,#f4f9ff,#d1e5ff); border-color:#7eaeea; }
+.app .kpi.tone-violet { background:linear-gradient(120deg,#faf6ff,#e2d4ff); border-color:#b195e0; }
+.app .kpi.tone-green { background:linear-gradient(120deg,#f0fcf6,#c5ecd9); border-color:#80c4a4; }
+.app .kpi.tone-amber { background:linear-gradient(120deg,#fffcf1,#ffe5ac); border-color:#dfb557; }
+/* Orders: rounded internal fields, no full-height column stripes. */
+.app .orders-status-card { background:linear-gradient(115deg,#e8f1ff,#f5f0ff)!important; }
+.app .orders-today-card { background:linear-gradient(115deg,#e5f5f0,#eff8ff)!important; }
+.app .orders-head :is(.chart-title,.order-dashboard-heading) { font-size:15px; font-weight:750; margin-bottom:10px; }
+.app #colorAudit .color-audit-item { border-width:1px; }
+.app #todayBox .mini { text-align:left; border-color:#9fbedf; background:#fff; }
+.app #todayBox [data-today=cash-new] { background:#e3f6eb; border-color:#82c6a2; }
+.app #todayBox [data-today=cash-total] { background:#ceefdf; border-color:#59ad85; }
+.app #todayBox [data-today=financial] { background:#ede5ff; border-color:#b79bdc; }
+.app .orders-table-wrap { background:#edf2f9; border:1px solid #aac1df; border-radius:14px; padding:5px; }
+.app .orders-table-wrap .table { border-spacing:0 7px; }
+.app .orders-table-wrap .table thead th { background:#dce9fa!important; color:#224b7c!important; }
+.app .orders-table-wrap .table thead th:nth-child(11) { background:#d8eaff!important; }
+.app .orders-table-wrap .table thead th:nth-child(12) { background:#e9ddff!important; }
+.app .orders-table-wrap .table thead th:nth-child(n+13):nth-child(-n+16) { background:#d4eedf!important; color:#20543b!important; }
+.app .orders-table-wrap .order-value-chip { padding:6px 5px; border:1px solid #a7bfe0; background:#f7faff; border-radius:10px; font-weight:650; }
+.app .orders-table-wrap .order-dispatcher-chip { background:#eee3ff; border-color:#bba1df; color:#563383; }
+.app .orders-table-wrap .inline-master-input { background:#e3efff!important; border:1px solid #97b9e6!important; color:#234f83; border-radius:10px; min-height:32px; }
+.app .orders-table-wrap .order-money-chip { background:#f2faf5; border-color:#a1cbb3; color:#225e3e; }
+.app .orders-table-wrap .order-cash-chip { background:#ccefdc; border-color:#74b793; color:#135633; font-weight:800; }
+.app .orders-table-wrap .order-close-date-chip { background:#f4f8fc; color:#405671; border-color:#bdcbdc; }
+.app .orders-table-wrap .action-cell { gap:5px; }
+.app .orders-table-wrap .copy-master-btn { background:#e3edff; border-color:#93b2e0; color:#204d91; }
+.app .mobile-order-card { border-radius:16px; box-shadow:0 3px 12px #243d6410; }
+.app .mobile-order-meta>div { padding:8px 10px; border-radius:10px; background:#ffffffb8; border:1px solid #c6d6e7; }
+.app .mobile-order-meta .team-master-field { background:#e0edff; border-color:#a5c0e5; }
+.app .mobile-order-meta .team-dispatcher-field { background:#eee3ff; border-color:#c4a9e5; }
+.app .mobile-order-meta .finance-col { background:#e0f3e7; border-color:#a2cbb4; }
+@media(min-width:1300px) { .app .orders-today-card #todayBox .money-preview { grid-template-columns:repeat(4,minmax(0,1fr))!important; } }
+@media(max-width:700px) { .app .section :is(.section-head,.filters) { padding:10px; } }
+.app #colorAudit .color-audit-item b { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.35; }
+.app .orders-table-wrap .table :is(th,td):nth-child(8) { width:88px; }
+.app .orders-table-wrap .table td:nth-child(8)>b { overflow-wrap:break-word; word-break:normal; }
