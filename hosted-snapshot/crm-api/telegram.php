@@ -387,7 +387,13 @@ function tg_update_group_link(PDO $pdo, array $msg): void {
 function tg_bot_status(array $actor): array {
     if (($actor['role'] ?? '') !== 'owner') throw new DomainException('Только владелец может проверить подключение');
     $bot=tg_bot_info(); $info=tg_call('getWebhookInfo',[]);
-    return ['ok'=>true,'botUsername'=>(string)($bot['username']??''),'webhookConfigured'=>!empty($info['url']), 'pendingUpdateCount'=>(int)($info['pending_update_count']??0), 'lastErrorAt'=>(int)($info['last_error_date']??0), 'lastError'=>empty($info['last_error_message'])?'':'Telegram не смог доставить обновление серверу CRM'];
+    $rawError=(string)($info['last_error_message']??'');
+    $safeError=$rawError===''?'':'Telegram не смог доставить обновление серверу CRM';
+    if (preg_match('/(?:response|HTTP)[^0-9]*([45][0-9]{2})/i',$rawError,$match)) $safeError.=' · HTTP '.$match[1];
+    elseif (stripos($rawError,'SSL')!==false || stripos($rawError,'certificate')!==false) $safeError.=' · ошибка TLS/сертификата';
+    elseif (stripos($rawError,'timed out')!==false || stripos($rawError,'timeout')!==false) $safeError.=' · тайм-аут соединения';
+    elseif (stripos($rawError,'resolve')!==false) $safeError.=' · ошибка DNS';
+    return ['ok'=>true,'botUsername'=>(string)($bot['username']??''),'webhookConfigured'=>!empty($info['url']), 'pendingUpdateCount'=>(int)($info['pending_update_count']??0), 'lastErrorAt'=>(int)($info['last_error_date']??0), 'lastError'=>$safeError];
 }
 
 function tg_address_apartment(string $address): string { return tg_phone_free(trim($address)); }
