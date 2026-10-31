@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.61-payroll-clarity-v1';
+const CACHE='eliteservice-18.17.62-shift-comparison-v1';
 const SHELL=[
   './',
   './index.html',
