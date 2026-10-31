@@ -165,7 +165,7 @@
       const result = await call('list_masters');
       styleDialog();
       const masters = result.masters || [];
-      showDialog('Рабочие группы мастеров', `<p>Заказы отправляются в рабочую группу мастера. Принять или отклонить заказ может только сам назначенный мастер.</p><div id="tgGroupList"></div><p class="tg-note">Сначала мастер подтверждает свой Telegram персональной ссылкой. Затем он открывает ссылку группы и выбирает свою рабочую группу. Телефон клиента не отправляется; квартира появляется в группе после принятия.</p>`);
+      showDialog('Рабочие группы мастеров', `<p>Заказы отправляются в рабочую группу мастера. Принять или отклонить заказ может только сам назначенный мастер.</p><div id="tgGroupList"></div><p class="tg-note">Сначала мастер подтверждает свой Telegram персональной ссылкой. Затем вы, как владелец или администратор группы, открываете ссылку и добавляете бота в рабочую группу мастера. Выдавать мастеру права администратора не нужно. Телефон клиента не отправляется; квартира появляется в группе после принятия.</p>`);
       const list = $('#tgGroupList');
       for (const master of masters) {
         const row = document.createElement('div');
@@ -173,7 +173,7 @@
         row.innerHTML = `<strong>${escapeHtml(master.name)}</strong><div class="tg-note">${master.groupConnected ? `Группа подключена: ${escapeHtml(master.groupTitle || 'рабочая группа')}` : master.connected ? 'Telegram мастера подтверждён · группа не подключена' : 'Сначала пригласите мастера в Telegram'}</div>`;
         if (master.connected && !master.groupConnected) {
           const create = document.createElement('button');
-          create.type = 'button'; create.className = 'btn small'; create.textContent = 'Создать ссылку группы';
+          create.type = 'button'; create.className = 'btn small'; create.textContent = 'Подключить группу владельцем';
           create.onclick = async () => {
             create.disabled = true;
             try {
@@ -182,8 +182,9 @@
               input.style.cssText = 'width:100%;box-sizing:border-box;margin-top:8px';
               const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn small'; copy.textContent = 'Копировать ссылку';
               copy.onclick = async () => { try { await navigator.clipboard.writeText(invite.groupLink); copy.textContent = 'Скопировано'; } catch { input.focus(); input.select(); } };
-              const note = document.createElement('div'); note.className = 'tg-note'; note.textContent = 'Действует 10 минут. Передайте мастеру: открыть ссылку и выбрать рабочую группу. Ссылка не меняет личность мастера.';
-              row.append(input, copy, note); create.textContent = 'Ссылка создана';
+              const note = document.createElement('div'); note.className = 'tg-note'; note.textContent = 'Действует 10 минут. Откройте ссылку со своего Telegram и выберите рабочую группу этого мастера. Бот проверит ваши права администратора. Принимать и отклонять заказы сможет только мастер; его личная привязка не меняется.';
+              const open = document.createElement('a'); open.href = invite.groupLink; open.target = '_blank'; open.rel = 'noopener noreferrer'; open.className = 'btn small'; open.textContent = 'Открыть Telegram и выбрать группу';
+              row.append(input, open, copy, note); create.textContent = 'Ссылка создана';
             } catch (error) { notify(telegramErrorMessage(error), 'error'); create.disabled = false; }
           };
           row.append(create);

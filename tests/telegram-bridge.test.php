@@ -49,3 +49,21 @@ check($after['offset']===24 && $after['processedCount']===5,'Offset advances to 
 check($before['offset']===23,'Computing next state leaves durable baseline untouched');
 check(tg_poll_advance($before,['update_id'=>2])['offset']===23,'Offset never moves backward');
 try {tg_poll_advance($before,['update_id'=>'bad']);throw new LogicException('Missing rejection');} catch (RuntimeException $e) {check($e->getMessage()==='Invalid update identity','Malformed update rejected');}
+
+$adminMsg=['chat'=>['type'=>'supergroup','id'=>'-1001'],'from'=>['id'=>456,'is_bot'=>false]];
+$adminMember=['status'=>'administrator','user'=>['id'=>456,'is_bot'=>false],'is_anonymous'=>false];
+check(tg_group_admin_verified($adminMember,$adminMsg),'Telegram verified administrator accepted');
+check(tg_group_actor_matches($groupPair,$groupLink,$adminMsg,tg_group_admin_verified($adminMember,$adminMsg)),'Admin binds group without replacing master identity');
+check(tg_group_admin_verified(array_replace($adminMember,['status'=>'creator']),$adminMsg),'Group creator accepted');
+foreach (['member','restricted','left','kicked'] as $status) check(!tg_group_admin_verified(array_replace($adminMember,['status'=>$status]),$adminMsg),'Ordinary member denied');
+check(!tg_group_admin_verified(array_replace($adminMember,['is_anonymous'=>true]),$adminMsg),'Anonymous administrator denied');
+check(!tg_group_admin_verified($adminMember,array_replace($adminMsg,['sender_chat'=>['id'=>'-1001']])),'Sender chat cannot impersonate admin');
+check(!tg_group_admin_verified($adminMember,array_replace($adminMsg,['from'=>['id'=>123]])),'Membership response must match sender');
+check(!tg_group_actor_matches($groupPair,$groupLink,array_replace($adminMsg,['sender_chat'=>['id'=>'-1001']]),true),'Even verified flag cannot allow anonymous sender');
+check(tg_retry_safe('getChatMember'),'Membership read safely retries network errors');
+
+check(tg_retry_safe('getChatAdministrators'),'Administrator list safely retries network errors');
+check(!tg_group_admin_from_list([],$adminMsg),'Empty admin list fails closed');
+check(!tg_group_admin_from_list([['status'=>'creator','user'=>['id'=>999]]],$adminMsg),'Other administrator cannot authorize sender');
+check(tg_group_admin_from_list([['status'=>'creator','user'=>['id'=>999]],$adminMember],$adminMsg),'Matching verified administrator authorizes sender');
+check(!tg_group_admin_from_list([null,'invalid',42,[],['user'=>['id'=>456]]],$adminMsg),'Malformed admin entries fail closed');
