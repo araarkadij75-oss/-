@@ -176,3 +176,22 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
 @media(max-width:800px) { .app .section-head>div:first-child { flex-basis:100%; } .app .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .app .kpi { padding:12px; } .app .kpi .v { font-size:21px; } .app .section-head .toolbar { width:100%; } .app .shift-report-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:480px) { .app .kpis { grid-template-columns:1fr; } .app .toolbar>.field { flex:1 1 140px; min-width:0; } }
 @media(min-width:1100px) { .app .executive-kpis { grid-template-columns:repeat(5,minmax(0,1fr)); } .app .report-kpis { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+/* Final viewport audit: preserve dark banners and prevent broken narrow headings. */
+.app .card.master-shift-hero, .app .card.hero { background:linear-gradient(125deg,#173b77,#255fc0 70%,#3278dc); color:#fff; border-color:#2b62ad; }
+.app .master-shift-hero :is(.chart-title,.chart-sub) { color:#fff; opacity:1; }
+.app .orders-table-wrap .table :is(th,td):nth-child(6) { width:90px; padding-left:3px; padding-right:3px; }
+.app .orders-table-wrap .table :is(th,td):nth-child(7) { width:60px; padding-left:3px; padding-right:3px; }
+.app .orders-table-wrap .table th:nth-child(6), .app .orders-table-wrap .table th:nth-child(7) { overflow-wrap:normal; word-break:normal; }
+.app :is(.help,small) { font-size:max(11px,.6875rem)!important; line-height:1.45; }
+.app input[type=file]::file-selector-button { padding:9px 13px; border:1px solid #9cbce5; border-radius:9px; background:#e7f0ff; color:#214f8f; font:inherit; cursor:pointer; margin-right:10px; }
+@media(min-width:1300px) {
+ .app .orders-head { grid-template-columns:1fr 1fr; gap:12px; }
+ .app .orders-status-card #colorAudit { grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
+ .app .orders-today-card #todayBox .money-preview { grid-template-columns:repeat(4,minmax(0,1fr)); }
+ .app .orders-today-card .mini { min-width:0; padding:9px; }
+ .app .orders-status-card .status-pill { max-width:100%; white-space:normal; line-height:1.35; }
+}
+@media(min-width:1100px) {
+ .app #weeklyReportTotals { grid-template-columns:repeat(4,minmax(0,1fr))!important; }
+ .app [data-panel="performance"] .grid4 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+}
