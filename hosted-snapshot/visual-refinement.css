@@ -248,3 +248,6 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
 .app .mobile-order-meta .finance-col { background:#e0f3e7; border-color:#a2cbb4; }
 @media(min-width:1300px) { .app .orders-today-card #todayBox .money-preview { grid-template-columns:repeat(4,minmax(0,1fr))!important; } }
 @media(max-width:700px) { .app .section :is(.section-head,.filters) { padding:10px; } }
+.app #colorAudit .color-audit-item b { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.35; }
+.app .orders-table-wrap .table :is(th,td):nth-child(8) { width:88px; }
+.app .orders-table-wrap .table td:nth-child(8)>b { overflow-wrap:break-word; word-break:normal; }
