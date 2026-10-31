@@ -93,7 +93,7 @@ function tg_network_code(int $errno): string {
 
 function tg_retry_safe(string $method): bool {
     // Never repeat sendMessage after an ambiguous timeout: it may have arrived.
-    return in_array($method, ['getMe', 'getWebhookInfo', 'setWebhook'], true);
+    return in_array($method, ['getMe', 'getWebhookInfo', 'setWebhook', 'getUpdates', 'deleteWebhook'], true);
 }
 
 function tg_retry_transport(string $method, int $errno): bool {
@@ -275,6 +275,18 @@ function tg_safe_request(string $request): string {
 function tg_bot_info(): array { return tg_call('getMe', []); }
 
 function tg_setup_webhook(): array {
+    $pdo=tg_db();
+    if (!tg_poll_lock($pdo)) throw new DomainException('Получение Telegram ещё выполняется. Повторите подключение позже');
+    try {
+        $runtime=tg_read($pdo,tg_path('telegramRuntime','polling'))??[];
+        if (($runtime['mode']??'')==='polling') throw new DomainException('Бот подключён через серверный опрос. Используйте «Проверить Telegram»; переключение вебхука отключит этот режим');
+        $runtime['mode']='webhook'; $runtime['updatedAt']=time();
+        tg_poll_save($pdo,$runtime);
+        return tg_setup_webhook_locked();
+    } finally { tg_poll_unlock($pdo); }
+}
+
+function tg_setup_webhook_locked(): array {
     try { tg_token(); }
     catch (Throwable) { tg_reply(503, ['ok' => false, 'error' => 'telegram_token_unavailable']); }
     try { $info = tg_bot_info(); }
@@ -410,8 +422,9 @@ function tg_update_group_link(PDO $pdo, array $msg): void {
 function tg_bot_status(array $actor): array {
     if (($actor['role'] ?? '') !== 'owner') throw new DomainException('Только владелец может проверить подключение');
     $bot=tg_bot_info(); $info=tg_call('getWebhookInfo',[]);
+    $runtime=tg_read(tg_db(),tg_path('telegramRuntime','polling'))??[];
     $safeError=tg_webhook_error((string)($info['last_error_message']??''));
-    return ['ok'=>true,'botUsername'=>(string)($bot['username']??''),'webhookConfigured'=>!empty($info['url']), 'pendingUpdateCount'=>(int)($info['pending_update_count']??0), 'lastErrorAt'=>(int)($info['last_error_date']??0), 'lastError'=>$safeError, 'webhookIp'=>tg_public_ipv4((string)($info['ip_address']??''))];
+    return ['ok'=>true,'botUsername'=>(string)($bot['username']??''),'webhookConfigured'=>!empty($info['url']), 'pendingUpdateCount'=>(int)($info['pending_update_count']??0), 'lastErrorAt'=>(int)($info['last_error_date']??0), 'lastError'=>$safeError, 'webhookIp'=>tg_public_ipv4((string)($info['ip_address']??'')), 'mode'=>(string)($runtime['mode']??'webhook'), 'lastPollAt'=>(int)($runtime['lastPollAt']??0), 'lastPollError'=>empty($runtime['lastPollError'])?'':'Не удалось обработать обновление Telegram; будет повторная попытка', 'processedCount'=>(int)($runtime['processedCount']??0)];
 }
 
 function tg_address_apartment(string $address): string { return tg_phone_free(trim($address)); }
@@ -605,17 +618,86 @@ function tg_decide(PDO $pdo, array $update): void {
     try { tg_call('editMessageText', $edit); } catch (Throwable) { /* DB decision is authoritative; webhook retry remains safe. */ }
 }
 
+function tg_poll_lock(PDO $pdo): bool {
+    $q=$pdo->prepare('SELECT GET_LOCK(?, 0)');
+    $q->execute(['tg_poll_'.substr(hash('sha256',tg_workspace()),0,32)]);
+    return (int)$q->fetchColumn()===1;
+}
+function tg_poll_unlock(PDO $pdo): void {
+    $q=$pdo->prepare('SELECT RELEASE_LOCK(?)');
+    $q->execute(['tg_poll_'.substr(hash('sha256',tg_workspace()),0,32)]);
+}
+function tg_poll_save(PDO $pdo,array $runtime): void {
+    $pdo->beginTransaction();
+    try {
+        tg_write_many($pdo,[tg_path('telegramRuntime','polling')=>$runtime],'telegram-runtime','owner','telegram_runtime');
+        $pdo->commit();
+    } catch(Throwable $e) {if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+}
+function tg_poll_offset(array $runtime): int { return max(1,(int)($runtime['offset']??1)); }
+function tg_poll_advance(array $runtime,array $update): array {
+    $id=$update['update_id']??null;
+    if(!is_int($id)||$id<0)throw new RuntimeException('Invalid update identity');
+    $runtime['offset']=max(tg_poll_offset($runtime),$id+1);
+    $runtime['processedCount']=(int)($runtime['processedCount']??0)+1;
+    $runtime['lastPollAt']=time();$runtime['lastPollError']='';
+    return $runtime;
+}
+function tg_process_update(PDO $pdo,array $update): void {
+    if(isset($update['message']))tg_update_member_link($pdo,$update);
+    elseif(isset($update['callback_query']))tg_decide($pdo,$update);
+}
+function tg_poll_cli(string $command): array {
+    if(PHP_SAPI!=='cli')throw new DomainException('CLI only');
+    $_SERVER['DOCUMENT_ROOT']=dirname(__DIR__,2);
+    $pdo=tg_db();
+    if(!tg_poll_lock($pdo))return ['ok'=>true,'state'=>'already_running'];
+    try {
+        $runtime=tg_read($pdo,tg_path('telegramRuntime','polling'))??[];
+        if($command==='--enable-polling') {
+            $result=tg_call('deleteWebhook',['drop_pending_updates'=>false]);
+            if(($result['value']??false)!==true)throw new RuntimeException('Polling transition failed');
+            $runtime['mode']='polling';$runtime['offset']=tg_poll_offset($runtime);$runtime['updatedAt']=time();$runtime['lastPollError']='';
+            tg_poll_save($pdo,$runtime);
+            return ['ok'=>true,'state'=>'polling_enabled'];
+        }
+        if($command!=='--poll')throw new DomainException('Unknown CLI operation');
+        if(($runtime['mode']??'')!=='polling')return ['ok'=>true,'state'=>'polling_disabled'];
+        $processed=0;
+        try {
+            $updates=tg_call('getUpdates',['offset'=>tg_poll_offset($runtime),'timeout'=>0,'limit'=>20,'allowed_updates'=>['message','callback_query']]);
+            foreach($updates as $update) {
+                if(!is_array($update)||!isset($update['update_id'])||!is_int($update['update_id']))throw new RuntimeException('Invalid update');
+                if($update['update_id']<tg_poll_offset($runtime))continue;
+                tg_process_update($pdo,$update);
+                $runtime=tg_poll_advance($runtime,$update);
+                tg_poll_save($pdo,$runtime);
+                $processed++;
+            }
+            $runtime['lastPollAt']=time();$runtime['lastPollError']='';tg_poll_save($pdo,$runtime);
+            return ['ok'=>true,'processed'=>$processed];
+        } catch(Throwable $e) {
+            $runtime['lastPollAt']=time();$runtime['lastPollError']='processing_failed';
+            tg_poll_save($pdo,$runtime);
+            return ['ok'=>false,'error'=>'poll_processing_failed','processed'=>$processed];
+        }
+    } finally {tg_poll_unlock($pdo);}
+}
+
 function tg_webhook(PDO $pdo, array $update): void {
     $provided = tg_read_token_header();
     if ($provided === '' || !hash_equals(tg_webhook_secret(), $provided)) tg_reply(403, ['ok' => false]);
     try {
-        if (isset($update['message'])) tg_update_member_link($pdo, $update);
-        elseif (isset($update['callback_query'])) tg_decide($pdo, $update);
+        tg_process_update($pdo,$update);
         tg_reply(200, ['ok' => true]);
     } catch (Throwable) { tg_reply(503, ['ok' => false]); }
 }
 
 try {
+    if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST' && PHP_SAPI==='cli') {
+        try { $result=tg_poll_cli((string)($argv[1]??'')); echo json_encode($result,JSON_UNESCAPED_UNICODE).PHP_EOL; exit(empty($result['ok'])?1:0); }
+        catch(Throwable $e) { echo '{"ok":false,"error":"telegram_cli_failed"}'.PHP_EOL; exit(1); }
+    }
     if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') tg_reply(405, ['ok' => false, 'error' => 'method']);
     $raw = file_get_contents('php://input', false, null, 0, TG_MAX_BODY + 1);
     if (!is_string($raw) || strlen($raw) > TG_MAX_BODY) tg_reply(413, ['ok' => false, 'error' => 'too_large']);

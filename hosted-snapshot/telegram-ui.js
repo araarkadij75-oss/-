@@ -200,7 +200,9 @@
     try {
       const result = await call('bot_status');
       styleDialog();
-      showDialog('Проверка Telegram', `<p>Бот: @${escapeHtml(result.botUsername || '—')}</p><p>Ожидают обработки: ${escapeHtml(result.pendingUpdateCount ?? '—')}</p><p>${escapeHtml(result.lastError || 'Telegram не сообщил об ошибках доставки обновлений.')}</p><p class="tg-note">Регистрация подключения сама по себе не подтверждает доставку заказов. Проверка кнопок выполняется отдельно в подключённой рабочей группе.</p>`);
+      const polling = result.mode === 'polling';
+      const status = polling ? `<p>Режим: серверный опрос раз в минуту</p><p>Последняя проверка: ${result.lastPollAt ? escapeHtml(new Date(result.lastPollAt * 1000).toLocaleString('ru-RU')) : 'ещё не выполнялась'}</p><p>Обработано сообщений: ${escapeHtml(result.processedCount ?? 0)}</p><p>${result.lastPollError ? 'Последняя обработка завершилась ошибкой; сообщение оставлено для повтора.' : 'Ошибок последней обработки нет.'}</p>` : `<p>Ожидают обработки: ${escapeHtml(result.pendingUpdateCount ?? '—')}</p><p>${escapeHtml(result.lastError || 'Telegram не сообщил об ошибках доставки обновлений.')}</p>`;
+      showDialog('Проверка Telegram', `<p>Бот: @${escapeHtml(result.botUsername || '—')}</p>${status}<p class="tg-note">Регистрация подключения сама по себе не подтверждает доставку заказов. Проверка кнопок выполняется отдельно в подключённой рабочей группе.</p>`);
     } catch (error) { notify(telegramErrorMessage(error), 'error'); }
     finally { button.disabled = false; }
   }
