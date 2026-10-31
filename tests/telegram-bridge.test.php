@@ -39,3 +39,13 @@ foreach (['127.0.0.1','192.168.1.1','10.0.0.1','::1','crm.example.test'] as $ip)
 check(str_contains(tg_webhook_error('Read timeout expired'), 'ожидания ответа'),'Read timeout is distinct');
 check(str_contains(tg_webhook_error('Connection timed out'), 'соединения'),'Connection timeout is distinct');
 check(!str_contains(tg_webhook_error('Read timeout https://secret.example/token'), 'secret'), 'Diagnostics omit raw URL');
+
+check(tg_retry_safe('getUpdates'),'Polling reads may safely retry');
+check(tg_poll_offset([])===1,'Fresh polling never uses negative offset/drop');
+check(tg_poll_offset(['offset'=>-42])===1,'Negative offset prohibited');
+$before=['mode'=>'polling','offset'=>23,'processedCount'=>4];
+$after=tg_poll_advance($before,['update_id'=>23]);
+check($after['offset']===24 && $after['processedCount']===5,'Offset advances to successful update plus one');
+check($before['offset']===23,'Computing next state leaves durable baseline untouched');
+check(tg_poll_advance($before,['update_id'=>2])['offset']===23,'Offset never moves backward');
+try {tg_poll_advance($before,['update_id'=>'bad']);throw new LogicException('Missing rejection');} catch (RuntimeException $e) {check($e->getMessage()==='Invalid update identity','Malformed update rejected');}
