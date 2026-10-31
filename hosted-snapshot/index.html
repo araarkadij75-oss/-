@@ -811,10 +811,10 @@ function payrollAccountingReport(r){return !!r&&!r.closureOnly&&!r.draft&&!r.voi
 function payrollAccountedIds(r){return payrollAccountingReport(r)?(Array.isArray(r.paidOrderIds)?r.paidOrderIds:Array.isArray(r.orderIds)?r.orderIds:[]).map(String):[]}
 function payrollSchedule(){const anchor=(typeof $==='function'?$('#payrollCycleAnchor')?.value:'')||state.settings?.payrollCycleAnchor||'2026-09-15',first=(typeof $==='function'?$('#payrollCycleStart')?.value:'')||state.settings?.payrollCycleStart||'artem';return{anchor,first}}
 function payrollSettlementLedger(anchor=payrollSchedule().anchor,first=payrollSchedule().first){
- const reports=uniqueShiftReports(state.shiftReports||[]).filter(payrollAccountingReport).sort((a,b)=>String(a.date).localeCompare(String(b.date))),paid=new Map(),seen=new Set(),result=[];
+ const reports=uniqueShiftReports(state.shiftReports||[]).filter(payrollAccountingReport).sort((a,b)=>String(a.date).localeCompare(String(b.date))),paid=new Map(),closedDays=new Set(reports.map(r=>payrollShiftKey(r)+'|'+r.date)),seen=new Set(),result=[];
  for(const report of reports){const who=payrollShiftKey(report);for(const id of payrollAccountedIds(report)){const key=who+'|'+id;if(!paid.has(key))paid.set(key,report.date)}}
  for(const r of state.orders||[]){const id=String(r.orderId||''),who=orderPayrollShift(r),cashDate=shiftCashRecordedDate(r);const used=paid.get(who+'|'+id)||'';if(!id||!who||seen.has(id)||(!used&&(!cashDate||!payrollOrderCashRecorded(r))))continue;seen.add(id);let assignedDate=used||cashDate;
- if(!used){let day=parseDate(cashDate);if(!day)continue;let attempts=0;while(payrollScheduledShift(iso(day),anchor,first)!==who&&attempts<4){day.setUTCDate(day.getUTCDate()+1);attempts++}if(attempts===4)continue;assignedDate=iso(day)}
+ if(!used){let day=parseDate(cashDate);if(!day)continue;let attempts=0;const horizon=(reports.length+1)*4;while((payrollScheduledShift(iso(day),anchor,first)!==who||closedDays.has(who+'|'+iso(day)))&&attempts<horizon){day.setUTCDate(day.getUTCDate()+1);attempts++}if(attempts===horizon)continue;assignedDate=iso(day)}
  result.push({r,id,who,date:cashDate,assignedDate,cash:Math.round(num(r.companyShare)*100)/100,used})}
  return result.sort((a,b)=>a.assignedDate.localeCompare(b.assignedDate)||a.id.localeCompare(b.id))
 }
