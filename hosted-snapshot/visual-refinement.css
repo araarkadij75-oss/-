@@ -251,3 +251,7 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
 .app #colorAudit .color-audit-item b { white-space:normal; overflow:visible; text-overflow:clip; line-height:1.35; }
 .app .orders-table-wrap .table :is(th,td):nth-child(8) { width:88px; }
 .app .orders-table-wrap .table td:nth-child(8)>b { overflow-wrap:break-word; word-break:normal; }
+/* Dark schedule hero keeps its own contrast instead of the light section toolbar. */
+.app .master-shift-hero .section-head { background:transparent; border-color:#ffffff40; margin-bottom:0; }
+.app .master-shift-hero :is(.chart-title,.chart-sub) { color:#fff; }
+@media(min-width:1100px) { .app #schemeSummary { grid-template-columns:repeat(5,minmax(0,1fr)); } }

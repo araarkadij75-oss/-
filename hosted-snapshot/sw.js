@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.65-expressive-sections-v1';
+const CACHE='eliteservice-18.17.66-section-contrast-v1';
 const SHELL=[
   './',
   './index.html',
@@ -15,7 +15,7 @@ const SHELL=[
   './profit-accounting.js?v=20261031-profit2',
   './profit-bridge.js?v=20261101-source2',
   './profit-ui.js?v=20261101-source2',
-  './visual-refinement.css?v=20261101-expressive',
+  './visual-refinement.css?v=20261101-expressive2',
   './premium-v181721.css',
 ];
 
