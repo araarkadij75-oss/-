@@ -184,6 +184,12 @@ function fin_reconciliation_matches(array $order,array $patch): bool {
     }
     return true;
 }
+function fin_reconciliation_projection(array $projection,array $after,string $collection,string $stamp): array {
+    $allowed=$collection==='orderCloseData'?['companyShare','closeDate']:['closeDate','dispatcher','_status'];
+    foreach($after as $key=>$value)if(in_array($key,$allowed,true))$projection[$key]=$value;
+    $projection['_updatedAt']=$stamp;
+    return $projection;
+}
 function fin_reconcile(PDO $pdo,array $actor,array $body): array {
     fin_owner($actor);
     $patches=$body['patches']??null;
@@ -202,11 +208,10 @@ function fin_reconcile(PDO $pdo,array $actor,array $body): array {
             $order['_updatedAt']=$stamp;$order['_updatedBy']=(string)$actor['uid'];
             $order['_sourceReconciliation']=['auditId'=>$auditId,'sourceRow'=>$patch['sourceRow'],'sourceSpreadsheet'=>$patch['sourceSpreadsheet'],'appliedAt'=>$stamp,'actorUid'=>(string)$actor['uid']];
             $writes=[$path=>$order,tg_path('reconciliationAudit',$auditId)=>$audit];
-            foreach(['dispatcherOrders','masterAssignments'] as $collection){
+            foreach(['dispatcherOrders','masterAssignments','orderCloseData'] as $collection){
                 $projectionPath=tg_path($collection,$patch['orderId']);$projection=tg_read($pdo,$projectionPath,true);
                 if(!$projection)continue;
-                foreach($patch['after'] as $key=>$value)if($key!=='companyShare')$projection[$key]=$value;
-                $projection['_updatedAt']=$stamp;$writes[$projectionPath]=$projection;
+                $writes[$projectionPath]=fin_reconciliation_projection($projection,$patch['after'],$collection,$stamp);
             }
             tg_write_many($pdo,$writes,(string)$actor['uid'],'owner','source_reconciliation');$pdo->commit();$applied[]=$patch['orderId'];
         }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>'save_failed'];}

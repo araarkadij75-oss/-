@@ -56,3 +56,9 @@ $bad=$patch;unset($bad['before']['dispatcher']);fin_reject(fn()=>fin_reconciliat
 $missing=$patch;$missing['before']=['closeDate'=>null];$missing['after']=['closeDate'=>'2026-10-31'];$missing=fin_reconciliation_patch($missing);
 fin_check(fin_reconciliation_matches(['orderId'=>'261031-001','_id'=>'internal-1'],$missing),'Explicit absent field matches absence');
 fin_check(!fin_reconciliation_matches(['orderId'=>'261031-001','_id'=>'internal-1','closeDate'=>null],$missing),'Absent is not persisted null');
+
+$after=['companyShare'=>'1250.50','closeDate'=>'2026-10-31','dispatcher'=>'Сергей','_status'=>'Выполнен'];
+$closeProjection=fin_reconciliation_projection(['orderId'=>'261031-001','total'=>'2501','companyShare'=>'1200','closeDate'=>'2026-10-30'],$after,'orderCloseData','stamp');
+fin_check($closeProjection['companyShare']==='1250.50'&&$closeProjection['closeDate']==='2026-10-31','Close data no longer overlays stale cash/date');
+fin_check($closeProjection['total']==='2501'&&!isset($closeProjection['dispatcher'])&&!isset($closeProjection['_status']),'Close data projection scope preserved');
+foreach(['dispatcherOrders','masterAssignments'] as $collection){$projection=fin_reconciliation_projection(['orderId'=>'261031-001'],$after,$collection,'stamp');fin_check(!array_key_exists('companyShare',$projection),'No new financial disclosure in role projections');fin_check($projection['closeDate']==='2026-10-31'&&$projection['_status']==='Выполнен','Role operational fields updated');}
