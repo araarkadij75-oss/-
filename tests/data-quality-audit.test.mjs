@@ -9,6 +9,13 @@ for (const page of ['index.html','master.html','dispatcher-logistic.html']) {
   const end=html.indexOf('function quality()',start);
   const ctx=vm.createContext({clean:v=>String(v??'').trim(),norm:v=>String(v??'').trim().toLowerCase(),cleanPhoneForCompare:v=>String(v??'').replace(/\D/g,''),iso:d=>d?.toISOString().slice(0,10)||'',parseDate:v=>v?new Date(v):null,state:{orders:[]}});
   vm.runInContext(html.slice(start,end),ctx);
+  test(page+': imported settlement serials display as dates and notes remain readable',()=>{
+    const source=html.slice(html.indexOf('const fmtDate=')).split('\n')[0];
+    const format=new Function('parseDate','clean',source+';return fmtDate')(v=>typeof v==='number'?new Date(Date.UTC(1899,11,30)+v*86400000):null,v=>String(v??''));
+    assert.equal(format(46326),'31.10.2026');
+    assert.equal(format('есть в основе'),'есть в основе');
+    assert.ok(html.includes('r.closeDate=normalizeExcelDate(r.closeDate)'));
+  });
   test(page+': money display preserves earned kopecks',()=>{
     const source=html.slice(html.indexOf('function money(')).split('\n')[0];
     const money=new Function('state',source+';return money')({settings:{currency:'RUB'}});
