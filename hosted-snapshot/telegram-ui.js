@@ -9,12 +9,39 @@
   // All master assignment projections share this sanitizer. The canonical order keeps its full address.
   window.MasterAITelegramPublicAddress = noApartment;
 
-  function notify(message) {
+  function telegramErrorMessage(error) {
+    const message = String(error?.message || error || '');
+    const known = {
+      telegram_network_dns_failed: 'Сервер CRM не смог определить адрес Telegram. Подключение не подтверждено.',
+      telegram_network_connect_failed: 'Сервер CRM не смог установить соединение с Telegram. Подключение не подтверждено.',
+      telegram_network_timeout: 'Telegram не ответил вовремя. Результат операции неизвестен.',
+      telegram_network_tls_failed: 'Не удалось установить защищённое соединение с Telegram. Операция не подтверждена.',
+      telegram_network_unreachable: 'Сервер CRM не смог связаться с Telegram. Подключение не подтверждено. Попробуйте позже.',
+      telegram_service_unavailable: 'Сервис Telegram временно недоступен. Операция не подтверждена.',
+      telegram_token_unavailable: 'Ключ Telegram-бота не настроен на сервере. Обратитесь к владельцу CRM.',
+      telegram_timeout: 'Telegram не ответил вовремя. Результат операции неизвестен.',
+      'Failed to fetch': 'Нет связи с сервером CRM. Проверьте подключение и повторите попытку.',
+      'NetworkError when attempting to fetch resource.': 'Нет связи с сервером CRM. Проверьте подключение и повторите попытку.',
+    };
+    if (known[message]) return known[message];
+    if (/^[a-z][a-z0-9_]+$/i.test(message) || !/[а-яё]/i.test(message)) return 'Не удалось выполнить операцию Telegram. Проверьте соединение и настройки бота.';
+    return message;
+  }
+
+  function notify(message, kind = 'info') {
     if (typeof window.toast === 'function') window.toast(message);
     else {
       const toast = $('#toast');
       if (toast) { toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3600); }
       else console.info(message);
+    }
+    const element = $('#toast');
+    if (element) {
+      element.dataset.telegramKind = kind;
+      element.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+      element.style.background = kind === 'error' ? '#991b1b' : '';
+      element.style.color = kind === 'error' ? '#fff' : '';
+      element.style.borderColor = kind === 'error' ? '#7f1d1d' : '';
     }
   }
 
@@ -70,7 +97,7 @@
     try {
       const result = await call('setup_webhook');
       notify(`Telegram-бот подключён${result.botUsername ? `: @${result.botUsername}` : ''}`);
-    } catch (error) { notify(error.message); }
+    } catch (error) { notify(telegramErrorMessage(error), 'error'); }
     finally { button.disabled = false; button.textContent = old; }
   }
 
@@ -80,7 +107,7 @@
       const result = await call('pair_code');
       styleDialog();
       showDialog('Подключение Telegram', `<p>Откройте бота и нажмите «Запустить». Ссылка действует 10 минут и привяжет этот Telegram-аккаунт к профилю мастера.</p><a class="btn primary tg-link" href="${escapeHtml(result.startLink)}" target="_blank" rel="noopener noreferrer">Открыть @${escapeHtml(result.botUsername)}</a><p class="tg-note">Телефон клиента бот не получает. Квартира появится мастеру только после принятия заявки.</p>`);
-    } catch (error) { notify(error.message); }
+    } catch (error) { notify(telegramErrorMessage(error), 'error'); }
     finally { button.disabled = false; button.textContent = old; }
   }
 
@@ -110,13 +137,13 @@
           };
           create.textContent = 'Ссылка создана';
         } catch (error) {
-          notify(error.message);
+          notify(telegramErrorMessage(error), 'error');
           create.disabled = false; create.textContent = 'Создать ссылку';
         }
       };
       const select = $('#telegramDialog #tgMasterSelect');
       if (select && create) select.onchange = () => { create.disabled = !select.value; };
-    } catch (error) { notify(error.message); }
+    } catch (error) { notify(telegramErrorMessage(error), 'error'); }
     finally { button.disabled = false; button.textContent = old; }
   }
 
@@ -131,9 +158,9 @@
       lastOrderId = orderId;
       const status = $('#telegramOrderStatus');
       if (status && String($('#f_orderId')?.value || '').trim() === orderId) status.textContent = result.state === 'pending' ? 'Заявка отправлена в Telegram' : result.state === 'accepted' ? 'Мастер уже принял эту заявку' : 'Заявка уже отправляется';
-      notify(result.state === 'unknown' ? 'Доставка не подтверждена — проверьте Telegram мастера' : result.state === 'sending' ? 'Отправка уже начата, подтверждение ещё не получено' : result.alreadySent ? 'Заявка уже отправлена мастеру' : 'Заявка отправлена мастеру в Telegram');
+      notify(result.state === 'unknown' ? 'Доставка не подтверждена — проверьте Telegram мастера' : result.state === 'sending' ? 'Отправка уже начата, подтверждение ещё не получено' : ['pending', 'accepted'].includes(result.state) ? (result.alreadySent ? 'Заявка уже отправлена мастеру' : 'Заявка отправлена мастеру в Telegram') : 'Доставка не подтверждена — проверьте состояние заказа');
       await refreshStatus(orderId);
-    } catch (error) { notify(error.message); }
+    } catch (error) { notify(telegramErrorMessage(error), 'error'); }
     finally { button.disabled = false; button.textContent = old; }
   }
 

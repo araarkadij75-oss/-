@@ -9,7 +9,7 @@ function uiHarness(call) {
   const notices = [];
   const start = ui.indexOf("  let lastOrderId = '';");
   const end = ui.indexOf('  function mount()', start);
-  const context = { $: key => elements[key], call, notify: message => notices.push(message), window: { MasterAICloud: { profile: {} } } };
+  const context = { $: key => elements[key], call, notify: message => notices.push(message), telegramErrorMessage: error => error.message, window: { MasterAICloud: { profile: {} } } };
   const methods = vm.runInNewContext(ui.slice(start, end) + ';({sendOrder,refreshStatus})', context);
   return { elements, notices, ...methods };
 }
