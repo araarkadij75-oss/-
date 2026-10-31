@@ -12,6 +12,10 @@
   function telegramErrorMessage(error) {
     const message = String(error?.message || error || '');
     const known = {
+      telegram_token_rejected: 'Telegram отклонил ключ бота. Владельцу нужно проверить настройки подключения.',
+      telegram_invalid_api_response: 'Telegram вернул некорректный ответ. Операция не подтверждена.',
+      telegram_api_rejected_request: 'Telegram отклонил запрос. Операция не выполнена.',
+      telegram_webhook_registration_failed: 'Не удалось зарегистрировать подключение бота. Подключение не подтверждено.',
       telegram_network_dns_failed: 'Сервер CRM не смог определить адрес Telegram. Подключение не подтверждено.',
       telegram_network_connect_failed: 'Сервер CRM не смог установить соединение с Telegram. Подключение не подтверждено.',
       telegram_network_timeout: 'Telegram не ответил вовремя. Результат операции неизвестен.',
@@ -29,20 +33,27 @@
   }
 
   function notify(message, kind = 'info') {
+    if (kind === 'error') {
+      let element = $('#telegramErrorToast');
+      if (!element) {
+        element = document.createElement('div'); element.id = 'telegramErrorToast';
+        element.setAttribute('role', 'alert');
+        element.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10001;max-width:min(560px,90vw);padding:14px 18px;border-radius:10px;background:#991b1b;color:#fff;box-shadow:0 8px 24px #0003';
+        document.body.append(element);
+      }
+      element.textContent = message;
+      clearTimeout(element.telegramTimer);
+      element.telegramTimer = setTimeout(() => element.remove(), 3600);
+      return;
+    }
+    $('#telegramErrorToast')?.remove();
     if (typeof window.toast === 'function') window.toast(message);
     else {
       const toast = $('#toast');
       if (toast) { toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3600); }
       else console.info(message);
     }
-    const element = $('#toast');
-    if (element) {
-      element.dataset.telegramKind = kind;
-      element.setAttribute('role', kind === 'error' ? 'alert' : 'status');
-      element.style.background = kind === 'error' ? '#991b1b' : '';
-      element.style.color = kind === 'error' ? '#fff' : '';
-      element.style.borderColor = kind === 'error' ? '#7f1d1d' : '';
-    }
+
   }
 
   async function call(op, details = {}) {
