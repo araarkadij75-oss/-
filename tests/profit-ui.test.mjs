@@ -31,3 +31,11 @@ test('Monthly statistics payload preserves explicit period instead of publicatio
  const row=methods.expensePayload({date:'2026-10-31',periodFrom:'2026-10-01',periodTo:'2026-10-31',amount:1250.5,bonus:75.25,statisticId:'ad123',operationId:'avito-stat:account:ad:oct'});
  assert.equal(row.date,'2026-10-31');assert.equal(row.periodFrom,'2026-10-01');assert.equal(row.periodTo,'2026-10-31');assert.equal(row.amountCents,125050);assert.equal(row.statisticId,'ad123');assert.match(row.note,/75.25 ₽.*сумму расхода не меняют/);
 });
+
+test('Mount transfers an already active legacy finance view after handlers are ready',()=>{
+ const transfer="if(anchor.classList.contains('active'))tab.onclick();";
+ assert.ok(source.indexOf(transfer)>source.indexOf("$('#profitImportConfirm').onclick="));
+ let opened=0;
+ for(const active of [false,true])vm.runInNewContext(transfer,{anchor:{classList:{contains:()=>active}},tab:{onclick:()=>opened++}});
+ assert.equal(opened,1);
+});

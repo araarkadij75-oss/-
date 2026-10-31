@@ -140,6 +140,7 @@
       const rows=[...state.selected].map(i=>state.parsed.rows[i]).map(r=>expensePayload(r,$('#profitAccount').value));
       const result=await api('import',{rows});state.expenses=result.expenses||[];bridge().setExpenses?.(state.expenses);state.selected.clear();$('#avitoPreview').hidden=true;render();notice(`Добавлено: ${result.inserted||0}. Уже были учтены: ${result.duplicates||0}.`);
     });
+    if(anchor.classList.contains('active'))tab.onclick();
   }
   function sessionCheck() {
     if(!owner()) {const p=$('#profitPanel'),t=$('[data-tab="profit"]');if(p)p.remove();if(t)t.remove();state.expenses=[];state.parsed=null;state.selected.clear();return;}
