@@ -235,7 +235,7 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
 .app .orders-table-wrap .table thead th:nth-child(n+13):nth-child(-n+16) { background:#d4eedf!important; color:#20543b!important; }
 .app .orders-table-wrap .order-value-chip { padding:6px 5px; border:1px solid #a7bfe0; background:#f7faff; border-radius:10px; font-weight:650; }
 .app .orders-table-wrap .order-dispatcher-chip { background:#eee3ff; border-color:#bba1df; color:#563383; }
-.app .orders-table-wrap .order-master-select { background:#e3efff!important; border:1px solid #97b9e6!important; color:#234f83; border-radius:10px; min-height:32px; }
+.app .orders-table-wrap .inline-master-input { background:#e3efff!important; border:1px solid #97b9e6!important; color:#234f83; border-radius:10px; min-height:32px; }
 .app .orders-table-wrap .order-money-chip { background:#f2faf5; border-color:#a1cbb3; color:#225e3e; }
 .app .orders-table-wrap .order-cash-chip { background:#ccefdc; border-color:#74b793; color:#135633; font-weight:800; }
 .app .orders-table-wrap .order-close-date-chip { background:#f4f8fc; color:#405671; border-color:#bdcbdc; }
