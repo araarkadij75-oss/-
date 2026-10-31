@@ -93,7 +93,7 @@ function tg_network_code(int $errno): string {
 
 function tg_retry_safe(string $method): bool {
     // Never repeat sendMessage after an ambiguous timeout: it may have arrived.
-    return in_array($method, ['getMe', 'getWebhookInfo', 'setWebhook', 'getUpdates', 'deleteWebhook'], true);
+    return in_array($method, ['getMe', 'getWebhookInfo', 'setWebhook', 'getUpdates', 'deleteWebhook', 'getChatMember', 'getChatAdministrators'], true);
 }
 
 function tg_retry_transport(string $method, int $errno): bool {
@@ -385,23 +385,50 @@ function tg_group_pair_code(PDO $pdo, array $actor, string $uid): array {
     return ['ok'=>true, 'botUsername'=>$username, 'groupLink'=>'https://t.me/'.rawurlencode($username).'?startgroup='.$code, 'expiresInSeconds'=>600];
 }
 
-function tg_group_actor_matches(array $pair, array $link, array $msg): bool {
+function tg_group_identified_sender(array $msg): bool {
+    return empty($msg['sender_chat']) && empty($msg['from']['is_bot'])
+        && preg_match('/^[1-9][0-9]*$/', (string)($msg['from']['id'] ?? '')) === 1;
+}
+function tg_group_admin_verified(array $member, array $msg): bool {
+    return tg_group_identified_sender($msg)
+        && (string)($member['user']['id'] ?? '') === (string)$msg['from']['id']
+        && empty($member['user']['is_bot']) && empty($member['is_anonymous'])
+        && in_array($member['status'] ?? '', ['administrator', 'creator'], true);
+}
+function tg_group_admin_from_list(array $members, array $msg): bool {
+    foreach ($members as $member) {
+        if (is_array($member) && tg_group_admin_verified($member, $msg)) return true;
+    }
+    return false;
+}
+function tg_group_actor_matches(array $pair, array $link, array $msg, bool $verifiedAdmin = false): bool {
     return in_array($msg['chat']['type'] ?? '', ['group','supergroup'], true)
-        && !empty($link['telegramUserId']) && (string)($msg['from']['id'] ?? '') === (string)$link['telegramUserId']
-        && (string)($pair['telegramUserId'] ?? '') === (string)$link['telegramUserId'];
+        && tg_group_identified_sender($msg) && !empty($link['telegramUserId'])
+        && (string)($pair['telegramUserId'] ?? '') === (string)$link['telegramUserId']
+        && ((string)$msg['from']['id'] === (string)$link['telegramUserId'] || $verifiedAdmin);
 }
 
 function tg_update_group_link(PDO $pdo, array $msg): void {
     if (!in_array($msg['chat']['type'] ?? '', ['group','supergroup'], true)) return;
     if (!preg_match('/^\/(?:start|startgroup|bind)(?:@[A-Za-z0-9_]+)?\s+([a-f0-9]{64})$/i', trim((string)($msg['text'] ?? '')), $m)) return;
     $path = tg_path('telegramGroupPairings', hash('sha256', strtolower($m[1])));
-    $pdo->beginTransaction();
     try {
+        // Verify administrator rights with Telegram before acquiring database locks.
+        $preview = tg_read($pdo, $path);
+        if (!$preview || !empty($preview['usedAt']) || (int)($preview['expiresAt'] ?? 0) < time()) throw new DomainException('Ссылка группы истекла или использована');
+        if (!tg_group_identified_sender($msg)) throw new DomainException('Отправьте команду от личного аккаунта, не от имени группы');
+        $previewLink = tg_read($pdo, tg_path('telegramUsers', (string)$preview['uid']));
+        $verifiedAdmin = false;
+        if (!$previewLink || !tg_group_actor_matches($preview, $previewLink, $msg)) {
+            $administrators = tg_call('getChatAdministrators', ['chat_id'=>(string)$msg['chat']['id']]);
+            $verifiedAdmin = tg_group_admin_from_list($administrators, $msg);
+        }
+        $pdo->beginTransaction();
         $pair = tg_read($pdo, $path, true);
         if (!$pair || !empty($pair['usedAt']) || (int)($pair['expiresAt'] ?? 0) < time()) throw new DomainException('Ссылка группы истекла или использована');
         $uid = (string)$pair['uid']; $linkPath = tg_path('telegramUsers', $uid);
         $link = tg_read($pdo, $linkPath, true);
-        if (!$link || !tg_group_actor_matches($pair, $link, $msg) || !tg_active_master($pdo, $uid)) throw new DomainException('Подключить группу должен сам мастер с подтверждённого Telegram');
+        if (!$link || !tg_group_actor_matches($pair, $link, $msg, $verifiedAdmin) || !tg_active_master($pdo, $uid)) throw new DomainException('Подключить группу может мастер или подтверждённый администратор группы');
         $chatId = (string)$msg['chat']['id'];
         if (!empty($link['groupChatId'])) throw new DomainException('Рабочая группа уже подключена');
         $q = $pdo->prepare('SELECT document_id,data_json FROM crm_documents WHERE workspace_id=? AND collection_path=? FOR UPDATE');
@@ -410,7 +437,7 @@ function tg_update_group_link(PDO $pdo, array $msg): void {
             $other = json_decode((string)$row['data_json'], true);
             if (is_array($other) && (string)($other['groupChatId'] ?? '') === $chatId && (string)$row['document_id'] !== $uid) throw new DomainException('Группа уже связана с другим мастером');
         }
-        $link['groupChatId']=$chatId; $link['groupTitle']=(string)($msg['chat']['title'] ?? 'Рабочая группа'); $link['groupLinkedAt']=time();
+        $link['groupChatId']=$chatId; $link['groupTitle']=(string)($msg['chat']['title'] ?? 'Рабочая группа'); $link['groupLinkedAt']=time(); $link['groupLinkedByTelegramUserId']=(string)$msg['from']['id'];
         $pair['usedAt']=time();
         tg_write_many($pdo, [$path=>$pair,$linkPath=>$link], $uid, 'master', 'telegram_group_pair');
         $pdo->commit();
