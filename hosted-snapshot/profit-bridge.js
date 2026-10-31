@@ -1,4 +1,5 @@
-(() => {
+window.installMasterAIProfitBridge = (dependencies) => {
+ const {state,currentRole,ownerPreviewActive,ensureXLSX,switchTab,parseDate,iso,today,uniqueShiftReports,payrollAccountingReport,payrollShiftKey,payrollSchedule,payrollSettlementLedger,payrollScheduledShift,shiftPayroll,shiftCashRecordedDate,derivedStage,numMaybe,num,orderPayrollShift}=dependencies;
  'use strict';
  let completeReports=null,reportsTruncated=false;
  const owner=()=>currentRole()==='owner'&&!ownerPreviewActive()&&!!window.MasterAICloud?.connected;
@@ -27,4 +28,4 @@
    return window.ProfitAccounting.calculate({from,to:limit,orders,salaries,expenses,warnings});
   }
  };
-})();
+};

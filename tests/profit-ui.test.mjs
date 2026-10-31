@@ -39,3 +39,5 @@ test('Mount transfers an already active legacy finance view after handlers are r
  for(const active of [false,true])vm.runInNewContext(transfer,{anchor:{classList:{contains:()=>active}},tab:{onclick:()=>opened++}});
  assert.equal(opened,1);
 });
+
+test('Finance UI is removed when owner connection is lost',()=>{const line=source.split('\n').find(x=>x.includes('const owner ='));let data={connected:true,role:'owner'};const check=vm.runInNewContext(line+';owner',{snapshot:()=>data});assert.equal(check(),true);data.connected=false;assert.equal(check(),false);data={connected:true,role:'master'};assert.equal(check(),false)});
