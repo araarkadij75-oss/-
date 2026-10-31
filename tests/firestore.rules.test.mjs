@@ -624,8 +624,12 @@ test('shift reports are private per staff member and use one deterministic daily
 });
 
 test('weekly shift reports are owner-only', async () => {
-  const report={id:'2026-09-21',start:'2026-09-21',end:'2026-09-27',closedBy:'owner-uid',closedByName:'Владелец',closedAt:new Date().toISOString(),closedShifts:1,expectedShifts:14,missingShifts:13,partial:true,orders:2,turnover:5000,cash:3000,salary:5000,avgCheck:2500,financialOrders:2,completed:2,reviews:1,reviewRate:50,sourceHash:'test-hash',dailyReports:[{id:'r1'}],duplicateOrders:0,serverClosedAt:serverTimestamp()};
+  const report={id:'2026-09-21',start:'2026-09-21',end:'2026-09-27',closedBy:'owner-uid',closedByName:'Владелец',closedAt:new Date().toISOString(),closedShifts:1,expectedShifts:7,missingShifts:6,partial:true,orders:2,turnover:5000,cash:3000,salary:5000,avgCheck:2500,financialOrders:2,completed:2,reviews:1,reviewRate:50,sourceHash:'test-hash',dailyReports:[{id:'r1'}],duplicateOrders:0,serverClosedAt:serverTimestamp()};
   await assertSucceeds(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21'),report));
+  await assertFails(setDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-10-05'),{...report,id:'2026-10-05',start:'2026-10-05',end:'2026-10-11',expectedShifts:14,missingShifts:13}));
+  await env.withSecurityRulesDisabled(async ctx=>{await setDoc(doc(ctx.firestore(),'workspaces',ws,'weeklyShiftReports','2026-09-14'),{...report,id:'2026-09-14',start:'2026-09-14',end:'2026-09-20',expectedShifts:14,missingShifts:13})});
+  await assertSucceeds(getDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-14')));
+
   await assertFails(updateDoc(doc(dbFor('ops-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21'),{salary:0}));
   await assertSucceeds(updateDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21'),{closedAt:new Date().toISOString(),serverClosedAt:serverTimestamp()}));
   await assertFails(deleteDoc(doc(dbFor('owner-uid'),'workspaces',ws,'weeklyShiftReports','2026-09-21')));
