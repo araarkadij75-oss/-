@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.58-profit-preview-v1';
+const CACHE='eliteservice-18.17.59-source-reconciliation-v1';
 const SHELL=[
   './',
   './index.html',
@@ -13,8 +13,8 @@ const SHELL=[
   './telegram-ui.js?v=20261031-telegram9',
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261031-profit2',
-  './profit-bridge.js?v=20261031-profit2',
-  './profit-ui.js?v=20261031-profit3',
+  './profit-bridge.js?v=20261101-source1',
+  './profit-ui.js?v=20261101-source1',
   './visual-refinement.css?v=20261031-profit2',
   './premium-v181721.css',
 ];
