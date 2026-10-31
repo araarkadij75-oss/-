@@ -400,12 +400,12 @@ service cloud.firestore {
         && data.end.matches('^\\d{4}-\\d{2}-\\d{2}$')
         && data.closedBy == memberId
         && data.serverClosedAt == request.time
-        && data.expectedShifts == 14
+        && data.expectedShifts == 7
         && data.closedShifts is int
         && data.duplicateOrders is int
         && data.duplicateOrders == 0
         && data.closedShifts > 0
-        && data.closedShifts <= 14
+        && data.closedShifts <= 7
         && data.missingShifts is int
         && data.missingShifts >= 0
         && data.closedShifts + data.missingShifts == data.expectedShifts
