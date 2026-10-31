@@ -81,34 +81,61 @@ function tg_token(): string {
     return $token;
 }
 
+function tg_network_code(int $errno): string {
+    return match ($errno) {
+        5, 6 => 'telegram_network_dns_failed',
+        7 => 'telegram_network_connect_failed',
+        28 => 'telegram_network_timeout',
+        35, 51, 58, 60, 77, 83, 90, 91 => 'telegram_network_tls_failed',
+        default => 'telegram_network_unreachable',
+    };
+}
+
+function tg_retry_safe(string $method): bool {
+    // Never repeat sendMessage after an ambiguous timeout: it may have arrived.
+    return in_array($method, ['getMe', 'getWebhookInfo', 'setWebhook'], true);
+}
+
 function tg_call(string $method, array $payload): array {
     $url = TG_API_ROOT . tg_token() . '/' . $method;
-    $ctx = stream_context_create(['http' => [
-        'method' => 'POST', 'timeout' => 12, 'ignore_errors' => true,
-        'header' => "Content-Type: application/json\r\nAccept: application/json\r\n",
-        'content' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
-    ], 'ssl' => ['verify_peer' => true, 'verify_peer_name' => true]]);
-    $raw = @file_get_contents($url, false, $ctx);
-    if (!is_string($raw) && function_exists('curl_init')) {
-        $ch = curl_init($url);
-        if ($ch !== false) {
+    $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    $raw = false;
+    $errno = 0;
+    if (function_exists('curl_init')) {
+        // Prefer IPv4 on shared hosting; a broken IPv6 route must not stall every
+        // request. Safe read/config operations may fall back to system routing.
+        $routes = tg_retry_safe($method) ? [CURL_IPRESOLVE_V4, CURL_IPRESOLVE_WHATEVER] : [CURL_IPRESOLVE_V4];
+        foreach ($routes as $route) {
+            $ch = curl_init($url);
+            if ($ch === false) break;
             curl_setopt_array($ch, [
                 CURLOPT_POST => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_CONNECTTIMEOUT => 5,
                 CURLOPT_TIMEOUT => 12,
+                CURLOPT_IPRESOLVE => $route,
+                CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Accept: application/json'],
-                CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+                CURLOPT_POSTFIELDS => $body,
                 CURLOPT_SSL_VERIFYPEER => true,
                 CURLOPT_SSL_VERIFYHOST => 2,
             ]);
-            $curlRaw = curl_exec($ch);
+            $raw = curl_exec($ch);
+            $errno = curl_errno($ch);
             curl_close($ch);
-            if (is_string($curlRaw)) $raw = $curlRaw;
+            if (is_string($raw)) break;
         }
+    } else {
+        $ctx = stream_context_create(['http' => [
+        'method' => 'POST', 'timeout' => 12, 'ignore_errors' => true,
+        'header' => "Content-Type: application/json\r\nAccept: application/json\r\n",
+        'content' => $body,
+    ], 'ssl' => ['verify_peer' => true, 'verify_peer_name' => true]]);
+        $raw = @file_get_contents($url, false, $ctx);
     }
     $result = is_string($raw) ? json_decode($raw, true) : null;
-    if (!is_string($raw)) throw new RuntimeException('telegram_network_unreachable');
+    // Never expose curl_error(): it can include the credential-bearing URL.
+    if (!is_string($raw)) throw new RuntimeException(tg_network_code($errno));
     if (!is_array($result) || !array_key_exists('ok', $result)) throw new RuntimeException('telegram_invalid_api_response');
     if (($result['ok'] ?? false) !== true) throw new RuntimeException((int)($result['error_code'] ?? 0) === 401 ? 'telegram_token_rejected' : 'telegram_api_rejected_request');
     if (!array_key_exists('result', $result)) throw new RuntimeException('telegram_invalid_api_response');
@@ -233,17 +260,18 @@ function tg_setup_webhook(): array {
     try { $info = tg_bot_info(); }
     catch (Throwable $e) {
         $code = $e->getMessage();
-        $safe = ['telegram_network_unreachable', 'telegram_invalid_api_response', 'telegram_token_rejected', 'telegram_api_rejected_request'];
+        $safe = ['telegram_network_unreachable', 'telegram_network_dns_failed', 'telegram_network_connect_failed', 'telegram_network_timeout', 'telegram_network_tls_failed', 'telegram_invalid_api_response', 'telegram_token_rejected', 'telegram_api_rejected_request'];
         tg_reply(502, ['ok' => false, 'error' => in_array($code, $safe, true) ? $code : 'telegram_api_call_failed']);
     }
     $url = 'https://crm.remontpkspb.ru/candidate/crm-api/telegram.php?webhook=1';
     try { $result = tg_call('setWebhook', ['url' => $url, 'secret_token' => tg_webhook_secret(), 'allowed_updates' => ['message', 'callback_query'], 'drop_pending_updates' => false]); }
     catch (Throwable $e) {
         $code = $e->getMessage();
-        $safe = ['telegram_network_unreachable', 'telegram_invalid_api_response', 'telegram_token_rejected', 'telegram_api_rejected_request'];
+        $safe = ['telegram_network_unreachable', 'telegram_network_dns_failed', 'telegram_network_connect_failed', 'telegram_network_timeout', 'telegram_network_tls_failed', 'telegram_invalid_api_response', 'telegram_token_rejected', 'telegram_api_rejected_request'];
         tg_reply(502, ['ok' => false, 'error' => in_array($code, $safe, true) ? $code : 'telegram_webhook_registration_failed']);
     }
-    return ['ok' => (bool)$result, 'botUsername' => (string)($info['username'] ?? ''), 'webhookSet' => (bool)$result];
+    $set = ($result['value'] ?? false) === true;
+    return ['ok' => $set, 'botUsername' => (string)($info['username'] ?? ''), 'webhookSet' => $set];
 }
 
 function tg_active_master(PDO $pdo, string $uid): ?array {
