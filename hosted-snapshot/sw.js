@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.47-audit-precision-v1';
+const CACHE='eliteservice-18.17.48-filter-performance-v1';
 const SHELL=[
   './',
   './index.html',
