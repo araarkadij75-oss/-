@@ -108,3 +108,71 @@
 
 #profitPanel #avitoColumnMapping:not([hidden]) { display:contents; }
 #profitPanel #avitoStatisticsPeriod { margin:12px 0; }
+
+/* Visual audit 2026-11: shared readable typography and semantic surfaces. */
+:root { --font-family:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif; --font-display:var(--font-family); }
+body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radial-gradient(ellipse at 100% 10%,#eae3ff 0,transparent 42%),#f3f6fc; }
+.app, .modal { color:#20324b; font-family:var(--font-family); line-height:1.45; }
+.app :is(button,input,select,textarea), .modal :is(button,input,select,textarea) { font-family:inherit; }
+.app .card { border:1px solid #cddced; border-radius:16px; background:linear-gradient(135deg,#fff 55%,#f5f8ff); box-shadow:0 5px 18px #2547740a; }
+.app .section-head { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px 24px; }
+.app .section-head > div:first-child { flex:1 1 320px; min-width:0; }
+.app .section-head .toolbar { align-items:flex-end; }
+.app :is(.chart-title,.form-section) { font-size:max(16px,1rem); line-height:1.4; font-weight:700; letter-spacing:-.015em; color:#173f75; }
+.app :is(.chart-sub,.source-note,.notice,.muted,.help), .modal :is(.help,.source-note,.muted) { font-size:max(12px,.75rem); line-height:1.5; overflow-wrap:break-word; }
+.app .chart-sub { max-width:90ch; }
+.app :is(.field label,.field>span,.filters label), .modal .field label { font-size:max(12px,.75rem); line-height:1.4; font-weight:600; }
+.app :is(.input,.select,.textarea), .modal :is(.input,.select,.textarea) { font-size:max(13px,.8125rem); line-height:1.4; min-height:38px; border-radius:10px; background-color:#fff; }
+.app .btn, .modal .btn { font-size:max(13px,.8125rem); line-height:1.3; font-weight:650; white-space:normal; }
+.app .btn.small, .modal .btn.small { font-size:max(12px,.75rem); min-height:32px; }
+.app .btn.primary { background:linear-gradient(135deg,#2569e4,#2355c5); box-shadow:0 3px 8px #245fd326; }
+.app .tabs { padding:6px; gap:5px; border-radius:13px; background:linear-gradient(100deg,#e5efff,#f0ebfc); }
+.app .tab { font-size:max(13px,.8125rem); font-weight:650; min-height:38px; }
+.app .tab.active { background:linear-gradient(135deg,#2876ed,#3354c9); box-shadow:0 3px 8px #2959c833; }
+.app :is(.table th,.payroll-cycle-register-table th) { font-size:max(11px,.6875rem); line-height:1.4; letter-spacing:.025em; white-space:normal; overflow-wrap:break-word; color:#2c4d75; }
+.app :is(.table td,.payroll-cycle-register-table td) { font-size:max(12px,.75rem); line-height:1.45; vertical-align:middle; }
+.app .table td small { display:block; font-size:max(11px,.6875rem); line-height:1.4; margin-top:3px; }
+.app :is(.table .num,.kpi .v,.mini .v,.shift-report-kpis b) { font-variant-numeric:tabular-nums; }
+.app .kpis { grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:12px; }
+.app .kpi { min-width:0; text-align:left; padding:15px; white-space:normal; }
+.app .kpi .l { padding-right:22px; font-size:max(12px,.75rem); line-height:1.4; letter-spacing:.025em; }
+.app .kpi .v { font-size:clamp(21px,1.65vw,29px); line-height:1.25; overflow-wrap:anywhere; margin:9px 0 6px; }
+.app .kpi .s { font-size:max(11px,.6875rem); line-height:1.45; overflow-wrap:break-word; }
+.app .kpi.tone-blue { background:linear-gradient(125deg,#fff,#e3efff); border-color:#a8c8f3; }
+.app .kpi.tone-violet { background:linear-gradient(125deg,#fff,#eee5ff); border-color:#c8b6ed; }
+.app .kpi.tone-green { background:linear-gradient(125deg,#fff,#ddf4e9); border-color:#9fd2bd; }
+.app .kpi.tone-amber { background:linear-gradient(125deg,#fff,#fff0ce); border-color:#e7cb89; }
+.app :is(.mini,.quality,.scheme-card) { min-width:0; border-color:#bbd2ec; background:linear-gradient(135deg,#f8fbff,#eaf2ff); border-radius:12px; }
+.app :is(.mini .l,.mini .s,.scheme-card small,.payroll-cell-sub) { font-size:max(12px,.75rem); line-height:1.45; }
+.app :is(.mini .v,.quality .v) { font-size:max(18px,1.125rem); line-height:1.3; }
+.app :is(.shift-report-card,.payroll-history-card) { border:1px solid #b8d0eb; border-radius:14px; padding:15px; background:linear-gradient(120deg,#fff,#edf4ff); }
+.app .shift-report-title { align-items:flex-start; gap:12px; flex-wrap:wrap; }
+.app .shift-report-title b { font-size:max(15px,.9375rem); }
+.app .shift-report-kpis { gap:10px; align-items:stretch; }
+.app .shift-report-kpis>span { display:flex; flex-direction:column; gap:4px; padding:10px 12px; border:1px solid #d3e1f2; background:#fff; border-radius:10px; min-width:0; font-size:12px; }
+.app .shift-report-kpis>span.pay { background:#e4f4ed; border-color:#a3d5bd; color:#145b3c; }
+.app .shift-report-kpis small { display:block; line-height:1.4; color:#566a83; font-size:max(11px,.6875rem); }
+.app .integrity { white-space:normal; line-height:1.4; font-size:max(12px,.75rem); }
+.app .integrity.ok { background:#dcf4e5; color:#14613d; border-color:#92c9aa; }
+.app .integrity.warn { background:#fff0ce; color:#80500c; border-color:#ddbf75; }
+.app .payroll-cycle-register-table details summary { padding:8px 10px; border:1px solid #bfd3f0; background:#eaf2ff; border-radius:9px; cursor:pointer; font-weight:600; }
+.app .payroll-cycle-register-table details[open] summary { background:#dceaff; margin-bottom:7px; }
+.app .payroll-cycle-register-table .payroll-cell-sub { font-size:max(11px,.6875rem); }
+.app :is(.order-dispatcher-chip,.order-value-chip,.order-master-select) { font-size:max(12px,.75rem); line-height:1.35; }
+.app .orders-table-wrap .table th { font-size:max(11px,.6875rem)!important; line-height:1.35!important; white-space:normal!important; }
+.app .orders-table-wrap :is(.stage,.status-chip,.status-badge) { max-width:100%; white-space:normal; overflow-wrap:break-word; line-height:1.35; }
+.app .orders-table-wrap .order-source-badge { max-width:100%; white-space:normal; }
+.app :is(.notice,.shift-week-preview) { padding:12px 14px; border-radius:11px; line-height:1.5; }
+#profitPanel .profit-metric { border-width:1px; border-top-width:4px; }
+#profitPanel .profit-metric.blue { background:linear-gradient(135deg,#f5f9ff,#dfedff); border-color:#80ade7; }
+#profitPanel .profit-metric.green { background:linear-gradient(135deg,#f4fcf7,#d9f2e4); border-color:#70b796; }
+#profitPanel .profit-metric.violet { background:linear-gradient(135deg,#faf7ff,#ebe0ff); border-color:#ad8fe0; }
+#profitPanel .profit-metric.amber { background:linear-gradient(135deg,#fffaf0,#ffedc8); border-color:#ddb05d; }
+#profitPanel .profit-metric small, #profitPanel td small { font-size:max(12px,.75rem); }
+#profitPanel details>summary { cursor:pointer; font-weight:650; color:#204e88; }
+#profitPanel input[type=file]::file-selector-button { padding:9px 13px; border:1px solid #9cbce5; border-radius:9px; background:#e7f0ff; color:#214f8f; font:inherit; cursor:pointer; margin-right:10px; }
+.app .table-wrap, .app .payroll-daily-wrap { scrollbar-color:#9db9df #edf3fa; scrollbar-width:thin; }
+@media(min-width:1500px) { .app [data-panel="performance"] .grid4 { grid-template-columns:repeat(5,minmax(0,1fr)); } }
+@media(max-width:800px) { .app .section-head>div:first-child { flex-basis:100%; } .app .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .app .kpi { padding:12px; } .app .kpi .v { font-size:21px; } .app .section-head .toolbar { width:100%; } .app .shift-report-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:480px) { .app .kpis { grid-template-columns:1fr; } .app .toolbar>.field { flex:1 1 140px; min-width:0; } }
+@media(min-width:1100px) { .app .executive-kpis { grid-template-columns:repeat(5,minmax(0,1fr)); } .app .report-kpis { grid-template-columns:repeat(4,minmax(0,1fr)); } }
