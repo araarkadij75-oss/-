@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 // Run with php -n: deterministic fake cURL, no network and no real credentials.
-if (function_exists('curl_init')) throw new RuntimeException('Run this test with php -n');
+if (extension_loaded('curl')) throw new RuntimeException('Run this test with php -n');
 foreach (['CURL_IPRESOLVE_V4','CURL_IPRESOLVE_WHATEVER','CURLOPT_POST','CURLOPT_RETURNTRANSFER','CURLOPT_CONNECTTIMEOUT','CURLOPT_TIMEOUT','CURLOPT_IPRESOLVE','CURLOPT_FOLLOWLOCATION','CURLOPT_HTTPHEADER','CURLOPT_POSTFIELDS','CURLOPT_SSL_VERIFYPEER','CURLOPT_SSL_VERIFYHOST'] as $i => $name) define($name, $i + 1);
 $responses = []; $requests = []; $lastErrno = 0;
 function curl_init(string $url): object { return (object)['options' => []]; }
