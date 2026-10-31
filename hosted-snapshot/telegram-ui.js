@@ -3,7 +3,8 @@
   const endpoint = './crm-api/telegram.php';
   const $ = (selector) => document.querySelector(selector);
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  const noApartment = (value) => String(value ?? '').replace(/[,;]?\s*(?:кв(?:артира)?\.?|квартира|подъезд|этаж|эт\.?|домофон(?:ный\s+код)?|код\s+домофона)\b.*$/iu, '').trim().replace(/[,;\s-]+$/u, '');
+  const noPhone = (value) => String(value ?? '').replace(/(?<!\d)\+?(?:\d[\s().-]*){10,15}(?!\d)/gu, '[номер скрыт]');
+  const noApartment = (value) => noPhone(value).replace(/[,;]\s*\d+[\p{L}]?(?:\s*[-/]\s*\d+)?(?:\s*(?:кв\.?|квартира|эт\.?|этаж))?(?=\s*(?:[,;]|$)).*$/iu,'').replace(/[,;]?\s*(?<![\p{L}])(?:квартира|кв\.?|подъезд|этаж|эт\.?|домофон(?:ный\s+код)?|код\s+домофона)(?![\p{L}]).*$/iu, '').trim().replace(/[,;\s-]+$/u, '');
 
   // All master assignment projections share this sanitizer. The canonical order keeps its full address.
   window.MasterAITelegramPublicAddress = noApartment;
@@ -121,28 +122,29 @@
 
   let lastOrderId = '';
   async function sendOrder(button) {
-    const orderId = String($('#f_id')?.value || '').trim();
+    const orderId = String($('#f_orderId')?.value || '').trim();
+    if ($('#orderForm')?.dataset.telegramDirty === '1') { notify('Сохраните изменения заказа перед отправкой мастеру'); return; }
     if (!orderId) { notify('Сначала сохраните заказ, затем отправьте его мастеру'); return; }
     const old = button.textContent; button.disabled = true; button.textContent = 'Отправляем…';
     try {
       const result = await call('send_order', { orderId });
       lastOrderId = orderId;
       const status = $('#telegramOrderStatus');
-      if (status) status.textContent = result.state === 'pending' ? 'Заявка отправлена в Telegram' : result.state === 'accepted' ? 'Мастер уже принял эту заявку' : 'Заявка уже отправляется';
-      notify(result.alreadySent ? 'Заявка уже отправлена мастеру' : 'Заявка отправлена мастеру в Telegram');
+      if (status && String($('#f_orderId')?.value || '').trim() === orderId) status.textContent = result.state === 'pending' ? 'Заявка отправлена в Telegram' : result.state === 'accepted' ? 'Мастер уже принял эту заявку' : 'Заявка уже отправляется';
+      notify(result.state === 'unknown' ? 'Доставка не подтверждена — проверьте Telegram мастера' : result.state === 'sending' ? 'Отправка уже начата, подтверждение ещё не получено' : result.alreadySent ? 'Заявка уже отправлена мастеру' : 'Заявка отправлена мастеру в Telegram');
       await refreshStatus(orderId);
     } catch (error) { notify(error.message); }
     finally { button.disabled = false; button.textContent = old; }
   }
 
   async function refreshStatus(orderId = '') {
-    const id = String(orderId || $('#f_id')?.value || '').trim();
+    const id = String(orderId || $('#f_orderId')?.value || '').trim();
     const label = $('#telegramOrderStatus');
     if (!id || !label || !window.MasterAICloud?.profile) return;
     try {
       const result = await call('order_status', { orderId: id });
-      const text = ({ not_sent: 'Ещё не отправлено в Telegram', sending: 'Отправляется в Telegram…', pending: 'Ожидает ответа мастера в Telegram', accepted: 'Мастер принял заказ', declined: 'Мастер отказался от заказа', failed: 'Отправка не прошла — можно повторить' })[result.state] || '';
-      label.textContent = text;
+      const text = ({ not_sent: 'Ещё не отправлено в Telegram', sending: 'Отправляется в Telegram…', pending: 'Ожидает ответа мастера в Telegram', accepted: 'Мастер принял заказ', declined: 'Мастер отказался от заказа', unknown: 'Доставка не подтверждена — проверьте Telegram мастера', failed: 'Отправка не прошла — обратитесь к владельцу' })[result.state] || '';
+      if (String($('#f_orderId')?.value || '').trim() === id && label.isConnected) label.textContent = text;
     } catch { /* The status line is informational; preserve the CRM form. */ }
   }
 
@@ -175,9 +177,9 @@
       let status = row.querySelector('#telegramOrderStatus');
       if (!status) { status = document.createElement('span'); status.id = 'telegramOrderStatus'; status.className = 'tg-order-status'; row.append(status); }
       if (!row.parentElement) masterField.append(row);
-      const id = String($('#f_id')?.value || '').trim();
+      const id = String($('#f_orderId')?.value || '').trim();
       if (id && id !== lastOrderId) { lastOrderId = id; refreshStatus(id); }
-      const idInput = $('#f_id');
+      const idInput = $('#f_orderId');
       if (idInput && !idInput.dataset.telegramBound) {
         idInput.dataset.telegramBound = '1';
         new MutationObserver(() => refreshStatus()).observe(idInput, { attributes: true, attributeFilter: ['value'] });
@@ -187,6 +189,7 @@
   }
 
   function boot() {
+    for (const eventName of ['input', 'change']) document.addEventListener(eventName, (event) => { if (event.target.closest?.('#orderForm')) $('#orderForm').dataset.telegramDirty = '1'; });
     mount();
     window.addEventListener('masterai:session', mount);
     const observer = new MutationObserver(() => mount());
@@ -194,7 +197,7 @@
     setTimeout(() => observer.disconnect(), 20000);
     setInterval(() => {
       if ($('#orderModal')?.classList.contains('open')) {
-        const orderId = String($('#f_id')?.value || '').trim();
+        const orderId = String($('#f_orderId')?.value || '').trim();
         if (orderId) refreshStatus(orderId);
       }
     }, 30000);

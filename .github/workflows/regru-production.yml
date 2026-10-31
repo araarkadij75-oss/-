@@ -46,6 +46,10 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci --ignore-scripts
+      - name: Validate Telegram PHP bridge
+        run: |
+          php -l hosted-snapshot/crm-api/telegram.php
+          php tests/telegram-bridge.test.php
       - run: npm run gate:static
       - run: npm run test:unit
       - name: Test FTPS deployer path handling
