@@ -159,6 +159,52 @@
   }
 
   let lastOrderId = '';
+  async function groupFromOwner(button) {
+    button.disabled = true;
+    try {
+      const result = await call('list_masters');
+      styleDialog();
+      const masters = result.masters || [];
+      showDialog('Рабочие группы мастеров', `<p>Заказы отправляются в рабочую группу мастера. Принять или отклонить заказ может только сам назначенный мастер.</p><div id="tgGroupList"></div><p class="tg-note">Сначала мастер подтверждает свой Telegram персональной ссылкой. Затем он открывает ссылку группы и выбирает свою рабочую группу. Телефон клиента не отправляется; квартира появляется в группе после принятия.</p>`);
+      const list = $('#tgGroupList');
+      for (const master of masters) {
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:10px 0;border-bottom:1px solid #e2e8f0';
+        row.innerHTML = `<strong>${escapeHtml(master.name)}</strong><div class="tg-note">${master.groupConnected ? `Группа подключена: ${escapeHtml(master.groupTitle || 'рабочая группа')}` : master.connected ? 'Telegram мастера подтверждён · группа не подключена' : 'Сначала пригласите мастера в Telegram'}</div>`;
+        if (master.connected && !master.groupConnected) {
+          const create = document.createElement('button');
+          create.type = 'button'; create.className = 'btn small'; create.textContent = 'Создать ссылку группы';
+          create.onclick = async () => {
+            create.disabled = true;
+            try {
+              const invite = await call('group_pair_code', { masterUid: master.uid });
+              const input = document.createElement('input'); input.readOnly = true; input.value = invite.groupLink;
+              input.style.cssText = 'width:100%;box-sizing:border-box;margin-top:8px';
+              const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn small'; copy.textContent = 'Копировать ссылку';
+              copy.onclick = async () => { try { await navigator.clipboard.writeText(invite.groupLink); copy.textContent = 'Скопировано'; } catch { input.focus(); input.select(); } };
+              const note = document.createElement('div'); note.className = 'tg-note'; note.textContent = 'Действует 10 минут. Передайте мастеру: открыть ссылку и выбрать рабочую группу. Ссылка не меняет личность мастера.';
+              row.append(input, copy, note); create.textContent = 'Ссылка создана';
+            } catch (error) { notify(telegramErrorMessage(error), 'error'); create.disabled = false; }
+          };
+          row.append(create);
+        }
+        list.append(row);
+      }
+      if (!masters.length) list.textContent = 'Активные профили мастеров не найдены.';
+    } catch (error) { notify(telegramErrorMessage(error), 'error'); }
+    finally { button.disabled = false; }
+  }
+
+  async function botStatus(button) {
+    button.disabled = true;
+    try {
+      const result = await call('bot_status');
+      styleDialog();
+      showDialog('Проверка Telegram', `<p>Бот: @${escapeHtml(result.botUsername || '—')}</p><p>Ожидают обработки: ${escapeHtml(result.pendingUpdateCount ?? '—')}</p><p>${escapeHtml(result.lastError || 'Telegram не сообщил об ошибках доставки обновлений.')}</p><p class="tg-note">Регистрация подключения сама по себе не подтверждает доставку заказов. Проверка кнопок выполняется отдельно в подключённой рабочей группе.</p>`);
+    } catch (error) { notify(telegramErrorMessage(error), 'error'); }
+    finally { button.disabled = false; }
+  }
+
   async function sendOrder(button) {
     const orderId = String($('#f_orderId')?.value || '').trim();
     if ($('#orderForm')?.dataset.telegramDirty === '1') { notify('Сохраните изменения заказа перед отправкой мастеру'); return; }
@@ -205,6 +251,10 @@
       setupButton.onclick = () => setupWebhook(setupButton);
       const inviteButton = addButton(top, 'telegramOwnerPairButton', 'Пригласить мастера в Telegram', 'btn small');
       inviteButton.onclick = () => pairMasterFromOwner(inviteButton);
+      const groupButton = addButton(top, 'telegramOwnerGroupButton', 'Рабочие группы Telegram', 'btn small');
+      groupButton.onclick = () => groupFromOwner(groupButton);
+      const statusButton = addButton(top, 'telegramBotStatusButton', 'Проверить Telegram', 'btn small');
+      statusButton.onclick = () => botStatus(statusButton);
     }
     const masterField = $('#f_master')?.closest('.field');
     if (canDispatch && masterField) {

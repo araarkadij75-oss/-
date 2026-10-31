@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.51-telegram-network-v1';
+const CACHE='eliteservice-18.17.52-telegram-groups-v1';
 const SHELL=[
   './',
   './index.html',
@@ -10,7 +10,7 @@ const SHELL=[
   './icon.svg',
   './cloud-config.js',
   './firestore-regru.js',
-  './telegram-ui.js?v=20261031-telegram5',
+  './telegram-ui.js?v=20261031-telegram6',
   './premium-v181721.css',
 ];
 

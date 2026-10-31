@@ -19,3 +19,14 @@ check(!tg_same_assignment($delivery, ['masterUid' => 'm1', '_assignedAt' => '202
 foreach (['sending', 'pending', 'accepted', 'unknown'] as $state) check(tg_blocks_resend($state), 'Must not duplicate ambiguous/active delivery');
 check(!tg_blocks_resend('declined'), 'Declined delivery may be replaced');
 echo "Telegram bridge regressions passed\n";
+
+foreach (['Выполнен', 'Отказ', 'Отмена', 'Закрыт', 'Закрыто'] as $status) check(tg_order_terminal(['_status'=>$status]), 'Terminal order must not be offered or accepted');
+foreach (['approved','done'] as $stage) check(tg_order_terminal(['_masterStage'=>$stage]), 'Completed stage must not regress');
+foreach (['В работе','Будущая дата','Забор / техника у мастера'] as $status) check(!tg_order_terminal(['_status'=>$status]), 'Active order can be offered');
+
+$groupPair=['telegramUserId'=>'123']; $groupLink=['telegramUserId'=>'123','chatId'=>'123'];
+check(tg_group_actor_matches($groupPair,$groupLink,['chat'=>['type'=>'supergroup','id'=>'-1001'],'from'=>['id'=>123]]), 'Verified master may bind work group');
+check(!tg_group_actor_matches($groupPair,$groupLink,['chat'=>['type'=>'supergroup'],'from'=>['id'=>456]]), 'Bearer link cannot let another group member claim master');
+check(!tg_group_actor_matches($groupPair,$groupLink,['chat'=>['type'=>'private'],'from'=>['id'=>123]]), 'Private chat cannot become work group');
+check(!tg_group_actor_matches($groupPair,['telegramUserId'=>'456'],['chat'=>['type'=>'group'],'from'=>['id'=>456]]), 'Identity changed after code issue');
+check(!tg_group_actor_matches([],[],['chat'=>['type'=>'group'],'from'=>['id'=>'']]), 'Missing identity denied');
