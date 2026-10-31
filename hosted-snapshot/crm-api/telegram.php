@@ -214,13 +214,14 @@ function tg_phone_free(string $text): string {
 
 function tg_public_address(string $address): string {
     $address = tg_phone_free(trim($address));
-    $address = preg_replace('/[,;]?\s*(?:кв(?:артира)?\.?|квартира|подъезд|этаж|эт\.?|домофон(?:ный\s+код)?|код\s+домофона)\b.*$/iu', '', $address) ?? $address;
+    $address = preg_replace('/[,;]\s*\d+[\p{L}]?(?:\s*[-\/]\s*\d+)?(?:\s*(?:кв\.?|квартира|эт\.?|этаж))?(?=\s*(?:[,;]|$)).*$/iu', '', $address) ?? $address;
+    $address = preg_replace('/[,;]?\s*(?<![\p{L}])(?:квартира|кв\.?|подъезд|этаж|эт\.?|домофон(?:ный\s+код)?|код\s+домофона)(?![\p{L}]).*$/iu', '', $address) ?? $address;
     return trim($address, " \t\n\r\0\x0B,;-");
 }
 
 function tg_safe_request(string $request): string {
     $request = tg_phone_free(trim($request));
-    $request = preg_replace('/\b(?:кв(?:артира)?\.?|квартира|номер\s+квартиры)\s*[:№#-]?\s*[\w\/-]+/iu', '[квартира после принятия]', $request) ?? $request;
+    $request = preg_replace('/(?<![\p{L}])(?:номер\s+квартиры|квартира|кв\.?)(?![\p{L}])\s*[:№#-]?\s*[\p{L}\d\/-]+/iu', '[квартира после принятия]', $request) ?? $request;
     return function_exists('mb_substr') ? mb_substr($request, 0, 2200) : substr($request, 0, 2200);
 }
 
@@ -350,15 +351,24 @@ function tg_update_member_link(PDO $pdo, array $update): void {
     tg_call('sendMessage', ['chat_id' => $chatId, 'text' => 'Аккаунт мастера связан с CRM. Новые заявки будут приходить сюда. Номер телефона через бота не передаётся.']);
 }
 
+function tg_same_assignment(array $delivery, array $assignment): bool {
+    return (string)($delivery['masterUid'] ?? '') === (string)($assignment['masterUid'] ?? '')
+        && (string)($delivery['assignedAt'] ?? '') === (string)($assignment['_assignedAt'] ?? '');
+}
+
+function tg_blocks_resend(string $state): bool {
+    return in_array($state, ['sending', 'pending', 'accepted', 'unknown'], true);
+}
+
 function tg_status_for_order(PDO $pdo, array $actor, string $orderId): array {
     if (!in_array($actor['role'], ['owner', 'dispatcher_logistic', 'logistic'], true)) throw new DomainException('Недостаточно прав');
-    $rows = $pdo->prepare('SELECT data_json FROM crm_documents WHERE workspace_id=? AND collection_path=? ORDER BY document_id DESC LIMIT 5000');
-    $rows->execute([tg_workspace(), 'workspaces/' . tg_workspace() . '/telegramDeliveries']);
-    $latest = null;
-    foreach ($rows->fetchAll() as $row) {
-        $x = json_decode((string)$row['data_json'], true);
-        if (is_array($x) && (string)($x['orderId'] ?? '') === $orderId && (!$latest || (int)($x['createdAt'] ?? 0) > (int)($latest['createdAt'] ?? 0))) $latest = $x;
-    }
+    $assignment = tg_read($pdo, tg_path('masterAssignments', $orderId));
+    $masterUid = (string)($assignment['masterUid'] ?? '');
+    $assignedAt = (string)($assignment['_assignedAt'] ?? '');
+    $rows = $pdo->prepare("SELECT data_json FROM crm_documents WHERE workspace_id=? AND collection_path=? AND JSON_UNQUOTE(JSON_EXTRACT(data_json, '$.orderId'))=? AND JSON_UNQUOTE(JSON_EXTRACT(data_json, '$.masterUid'))=? AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(data_json, '$.assignedAt')), '')=? ORDER BY CAST(JSON_UNQUOTE(JSON_EXTRACT(data_json, '$.createdAt')) AS UNSIGNED) DESC LIMIT 1");
+    $rows->execute([tg_workspace(), 'workspaces/' . tg_workspace() . '/telegramDeliveries', $orderId, $masterUid, $assignedAt]);
+    $row = $rows->fetch();
+    $latest = $row ? json_decode((string)$row['data_json'], true) : null;
     if (!$latest) return ['ok' => true, 'state' => 'not_sent'];
     return ['ok' => true, 'state' => (string)($latest['state'] ?? 'unknown'), 'updatedAt' => (int)($latest['updatedAt'] ?? 0)];
 }
@@ -373,23 +383,23 @@ function tg_send_order(PDO $pdo, array $actor, string $orderId): array {
     if (!$order || !$assignment || empty($order['master']) || empty($assignment['masterUid'])) throw new DomainException('Назначьте мастера в CRM перед отправкой');
     $uid = (string)$assignment['masterUid'];
     $member = tg_member($pdo, $uid);
-    if (!$member || ($member['role'] ?? '') !== 'master' || ($member['active'] ?? true) !== true) throw new DomainException('Профиль мастера не найден или отключён');
+    if (!$member || ($member['role'] ?? '') !== 'master' || !in_array($member['active'] ?? true, [true, 1, '1'], true)) throw new DomainException('Профиль мастера не найден или отключён');
     $orderMaster = tg_master_key((string)($order['master'] ?? ''));
     $memberMaster = tg_master_key((string)($member['master'] ?? $member['name'] ?? ''));
     if ($orderMaster === '' || $memberMaster === '' || $orderMaster !== $memberMaster) throw new DomainException('В CRM не совпадает назначенный мастер; обновите заказ перед отправкой');
     $link = tg_read($pdo, tg_path('telegramUsers', $uid));
     if (!$link || empty($link['chatId'])) throw new DomainException('Мастер ещё не подключил Telegram в CRM');
     if ((string)($assignment['masterUid'] ?? '') !== $uid) throw new DomainException('Назначение изменилось; обновите заказ');
-    $existing = tg_status_for_order($pdo, $actor, $orderId);
-    if (in_array($existing['state'], ['sending', 'pending', 'accepted'], true)) return ['ok' => true, 'state' => $existing['state'], 'alreadySent' => true];
     $id = bin2hex(random_bytes(16));
     $now = time();
     $ticketPath = tg_path('telegramDeliveries', $id);
-    $delivery = ['orderId' => $orderId, 'masterUid' => $uid, 'chatId' => (string)$link['chatId'], 'state' => 'sending', 'createdAt' => $now, 'updatedAt' => $now, 'expiresAt' => $now + 7 * 86400, 'dispatcherUid' => (string)$actor['uid']];
+    $delivery = ['orderId' => $orderId, 'masterUid' => $uid, 'assignedAt' => (string)($assignment['_assignedAt'] ?? ''), 'chatId' => (string)$link['chatId'], 'state' => 'sending', 'createdAt' => $now, 'updatedAt' => $now, 'expiresAt' => $now + 7 * 86400, 'dispatcherUid' => (string)$actor['uid']];
     $pdo->beginTransaction();
     try {
         $lockedAssignment = tg_read($pdo, $assignmentPath, true);
-        if (!$lockedAssignment || (string)($lockedAssignment['masterUid'] ?? '') !== $uid) throw new DomainException('Назначение изменилось; обновите заказ');
+        if (!$lockedAssignment || (string)($lockedAssignment['masterUid'] ?? '') !== $uid || (string)($lockedAssignment['_assignedAt'] ?? '') !== (string)$delivery['assignedAt']) throw new DomainException('Назначение изменилось; обновите заказ');
+        $existing = tg_status_for_order($pdo, $actor, $orderId);
+        if (tg_blocks_resend($existing['state'])) { $pdo->commit(); return ['ok' => true, 'state' => $existing['state'], 'alreadySent' => true]; }
         tg_write_many($pdo, [$ticketPath => $delivery], (string)$actor['uid'], (string)$actor['role'], 'telegram_send');
         $pdo->commit();
     } catch (Throwable $e) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $e; }
@@ -413,9 +423,9 @@ function tg_send_order(PDO $pdo, array $actor, string $orderId): array {
         $pdo->commit();
     } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
-        $delivery['state'] = 'failed'; $delivery['updatedAt'] = time();
+        $delivery['state'] = 'unknown'; $delivery['updatedAt'] = time();
         try { $pdo->beginTransaction(); tg_write_many($pdo, [$ticketPath => $delivery], (string)$actor['uid'], (string)$actor['role'], 'telegram_delivery_failed'); $pdo->commit(); } catch (Throwable) { if ($pdo->inTransaction()) $pdo->rollBack(); }
-        throw new RuntimeException('Не удалось отправить заказ в Telegram');
+        throw new RuntimeException('Доставка не подтверждена. Проверьте Telegram мастера перед повторной отправкой.');
     }
     return ['ok' => true, 'state' => 'pending'];
 }
@@ -445,13 +455,14 @@ function tg_decide(PDO $pdo, array $update): void {
         $lockedTicket = tg_read($pdo, $ticketPath, true);
         $assignment = tg_read($pdo, $assignmentPath, true);
         $order = tg_read($pdo, $orderPath, true);
-        if (!$lockedTicket || ($lockedTicket['state'] ?? '') !== 'pending' || !$assignment || !$order || (string)($assignment['masterUid'] ?? '') !== $uid) throw new DomainException('Assignment is no longer active');
+        if (!$lockedTicket || ($lockedTicket['state'] ?? '') !== 'pending' || !$assignment || !$order || (string)($assignment['masterUid'] ?? '') !== $uid || !tg_same_assignment($lockedTicket, $assignment)) throw new DomainException('Assignment is no longer active');
         $member = tg_member($pdo, $uid);
         if (!$member || ($member['role'] ?? '') !== 'master' || !in_array($member['active'] ?? true, [true, 1, '1'], true) || tg_master_key((string)($order['master'] ?? '')) !== tg_master_key((string)($member['master'] ?? $member['name'] ?? ''))) throw new DomainException('Master assignment changed');
         $state = $m[1] === 'accept' ? 'accepted' : 'declined';
         $now = time();
         $lockedTicket['state'] = $state; $lockedTicket['updatedAt'] = $now; $lockedTicket['decidedAt'] = $now;
-        $writes = [$ticketPath => $lockedTicket];
+        $order['_telegramDecision'] = $state; $assignment['_telegramDecision'] = $state;
+        $writes = [$ticketPath => $lockedTicket, $orderPath => $order, $assignmentPath => $assignment];
         $fullAddress = tg_address_apartment((string)($order['address'] ?? ''));
         if ($state === 'accepted') {
             $acceptedAt = gmdate('c', $now);

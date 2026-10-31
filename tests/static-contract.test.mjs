@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const read = p => fs.readFileSync(p, 'utf8');
+const settlementHelpers = source => source.slice(source.indexOf('function payrollAccountingReport('),source.indexOf('function payrollOrdersFor(')) + ['parseDate','uniqueShiftReports','payrollScheduledShift','shiftCashRecordedDate','payrollOrderCashRecorded'].map(name=>source.slice(source.indexOf('function '+name+'(')).split('\n')[0]).join('\n') + "\nfunction clean(v){return String(v??'').trim()} function iso(d){return d?d.toISOString().slice(0,10):''} function derivedStage(r){return r._status||''}";
 
 test('release state pins safe environment', () => {
   const s = JSON.parse(read('release-state.json'));
@@ -37,8 +38,8 @@ test('owner can create a one-time Telegram invite for an active unlinked master 
   const api = read('hosted-snapshot/crm-api/telegram.php');
   for (const file of ['hosted-snapshot/index.html', 'hosted-snapshot/master.html', 'hosted-snapshot/dispatcher-logistic.html']) {
     const html = read(file);
-    assert.match(html, /telegram-ui\.js\?v=20261024-telegram3/);
-    assert.match(html, /if\(o\._masterStage!==['"]accepted['"]&&typeof o\.address==='string'\)/, file + ': hide apartment until accepted');
+    assert.match(html, /telegram-ui\.js\?v=20261031-telegram4/);
+    assert.match(html, /if\(!o\._acceptedAt&&o\._masterStage!=='accepted'\)\{o\.address=hidePrivate\(o\.address\);o\.request=hidePrivate\(o\.request\)\}/, file + ': hide private details until accepted');
   }
   assert.match(ui, /profile\.role === 'owner'[\s\S]{0,400}Пригласить мастера в Telegram/);
   assert.match(ui, /call\('list_masters'\)/);
@@ -424,7 +425,7 @@ test('cash payroll stays with the order shift and deferred orders are claimed on
   assert.equal(calculate(20000, { shiftBasePay: 2000, shiftCashThreshold: 20000, shiftCashRate: 10 }), 2000);
   assert.match(source, /function shiftSettlementOrders\(/);
   assert.match(source, /function shiftSettlementDate\(/);
-  assert.match(source, /r\.paidOrderIds\)\?r\.paidOrderIds:\[\]/);
+  assert.match(source, /for\(const id of payrollAccountedIds\(report\)\)/);
   assert.match(source, /!r\._cashClosedAt/);
   assert.match(source, /deferredOrderIds/);
   assert.match(source, /id="payrollAccrualTable"/);
@@ -432,7 +433,7 @@ test('cash payroll stays with the order shift and deferred orders are claimed on
   const settlementSource = source.match(/function shiftSettlementOrders\([^\n]+/);
   const orderShiftSource=source.match(/function orderPayrollShift\([^\n]+/);
   assert.ok(orderShiftSource,'payroll owner resolver exists');
-  const settlementState = { settings:{staff:[{id:'sergey',name:'Сергей',shift:'sergey'},{id:'artem',name:'Артём',shift:'artem'}]},shiftReports: [{ approvedFor: 'sergey', date: '2026-10-09', paidOrderIds: ['already-paid'] }], orders: [
+  const settlementState = { settings:{staff:[{id:'sergey',name:'Сергей',shift:'sergey'},{id:'artem',name:'Артём',shift:'artem'}]},shiftReports: [{ approvedFor: 'sergey', ownerConfirmed: true, subjectMemberId: 'sergey', date: '2026-10-09', paidOrderIds: ['already-paid'] }], orders: [
       { orderId: 'sergey-order-closed-by-artem', _createdByShift: 'sergey', callDate: '2026-10-05', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T10:00:00Z', _cashClosedBy:'artem', _cashClosedByName:'Артём', companyShare: 3000 },
       { orderId: 'sergey-same-day-closed-by-artem', _createdByShift: 'artem', dispatcher:'Сергей', callDate: '2026-10-11', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T11:00:00Z', _cashClosedBy:'artem', _cashClosedByName:'Артём', companyShare: 32000 },
       { orderId: 'already-paid', _createdByShift: 'sergey', callDate: '2026-10-08', _cashClosedOn: '2026-10-11', _cashClosedAt: '2026-10-11T12:00:00Z', _cashClosedBy:'sergey', _cashClosedByName:'Сергей', companyShare: 9000 },
@@ -441,21 +442,21 @@ test('cash payroll stays with the order shift and deferred orders are claimed on
     ] };
   const payrollShiftKey=report=>{const raw=String(report.shift||report.id||report.approvedFor||'').toLowerCase(),label=String(report.approvedForName||report.shiftName||report.closedByName||'').toLowerCase().replace(/ё/g,'е');if(raw.includes('artem')||raw==='2'||label.includes('арт'))return'artem';if(raw.includes('sergey')||raw==='1'||label.includes('серг'))return'sergey';return''};
   const orderPayrollShift=new Function('state','norm','payrollShiftKey',`return (${orderShiftSource[0]})`)(settlementState,value=>String(value||'').toLowerCase().replace(/ё/g,'е').trim(),payrollShiftKey);
-  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'shiftSettlementDate', 'payrollShiftKey', 'orderPayrollShift', `return (${settlementSource[0]})`)(
+  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'shiftSettlementDate', 'payrollShiftKey', 'orderPayrollShift', `${settlementHelpers(source)}; return (${settlementSource[0]})`)(
     settlementState, value => Number(value) || 0, String, value => String(value || '').toLowerCase(),
     value => typeof value === 'string' ? value.slice(0, 10) : '', value => value,
     row => row._cashClosedOn || (row._cashClosedAt ? row._cashClosedAt.slice(0,10) : '') || row.closeDate || row.callDate,
     payrollShiftKey,orderPayrollShift
   );
   const sergey = { id: 'sergey', name: 'Сергей', shift: 'sergey' }, artem={id:'artem',name:'Артём',shift:'artem'};
-  assert.deepEqual(settlement('2026-10-11', artem).map(r=>r.orderId), ['artem-owner-sergey-metadata'], 'dispatcher ownership wins over mismatched legacy shift metadata and actual closer');
-  const sergeyIds=['sergey-order-closed-by-artem','sergey-same-day-closed-by-artem','sergey-order-closed-by-sergey'];
+  assert.deepEqual(settlement('2026-10-13', artem).map(r=>r.orderId), ['artem-owner-sergey-metadata'], 'dispatcher ownership wins over mismatched legacy shift metadata and actual closer');
+  const sergeyIds=['sergey-order-closed-by-artem','sergey-order-closed-by-sergey','sergey-same-day-closed-by-artem'];
   assert.deepEqual(settlement('2026-10-11', sergey).map(r => r.orderId), sergeyIds);
   assert.deepEqual(settlement('2026-10-10', sergey), [], 'a future surrender cannot affect an earlier shift');
   assert.deepEqual(settlement('2026-10-12', sergey,new Set(sergeyIds)), [], 'unconfirmed chronological drafts reserve earlier cash');
-  settlementState.shiftReports.push({ approvedFor: 'sergey', date: '2026-10-11', paidOrderIds: sergeyIds });
+  settlementState.shiftReports.push({ approvedFor: 'sergey', ownerConfirmed: true, subjectMemberId: 'sergey', date: '2026-10-11', paidOrderIds: sergeyIds });
   assert.deepEqual(settlement('2026-10-12', sergey), [], 'saved order IDs stay claimed for their responsible employee');
-  assert.deepEqual(settlement('2026-10-12', artem).map(r=>r.orderId), ['artem-owner-sergey-metadata'], 'a stale claim under Sergey cannot block the correct Artem owner');
+  assert.deepEqual(settlement('2026-10-13', artem).map(r=>r.orderId), ['artem-owner-sergey-metadata'], 'a stale claim under Sergey cannot block the correct Artem owner');
 });
 
 test('master clients cannot open or submit the generic order editor', () => {
@@ -678,7 +679,7 @@ test('dispatcher header exposes only the saved order total in desktop and mobile
 
 test('CRM calendar serialization preserves Moscow local shift dates across UTC midnight',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const html=read(file),match=html.match(/const iso=d=>[^\n]+/);assert.ok(match);assert.match(match[0],/d\.getFullYear\(\).*d\.getMonth\(\).*d\.getDate\(\)/);assert.doesNotMatch(match[0],/toISOString/)}const FakeDate=class{valueOf(){return 1}getFullYear(){return 2026}getMonth(){return 9}getDate(){return 19}toISOString(){return '2026-10-18T21:00:00.000Z'}};const iso=new Function('Date','clean',`return (${read('hosted-snapshot/index.html').match(/const iso=d=>([^\n]+)/)[0].replace(/^const iso=/,'').replace(/;\r?$/,'')})`)(FakeDate,String);assert.equal(iso(new FakeDate()),'2026-10-19')});
 
-test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.45-owner-invite-v1/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
+test('REG.RU service-worker shell refreshes after owner import and order-intake updates',()=>{assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.46-full-audit-v1/);assert.match(read('hosted-snapshot/sw.js'),/dispatcher-logistic\.html/);assert.match(read('hosted-snapshot/sw.js'),/master\.html/)});
 
 test('REG.RU owner import normalizes Google Sheets headers and RGB styles and awaits shared writes',()=>{
   const owner=read('hosted-snapshot/index.html');
@@ -730,7 +731,7 @@ test('REG.RU order create waits for one server-confirmed write on owner and disp
 });
 
 
-test('confirmed payroll remains saved while mismatches show a live preliminary reconciliation',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes('.filter(r=>!r.closureOnly&&(shiftIntegrity(r)||(r.ownerConfirmed&&r.subjectMemberId)))'));assert.ok(html.includes('frozen=!!(report&&verified)'));assert.ok(html.includes('reported:report?num(report.salary):null'));assert.ok(html.includes("x.reportStatus==='check'?' · сохранено '+money(x.reported)"));assert.ok(html.includes('if(existing&&(shiftIntegrity(existing)||(existing.ownerConfirmed&&existing.subjectMemberId))){skipped++;continue}'));assert.ok(html.includes('savedReports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&!r.closureOnly)'));});
+test('confirmed payroll remains saved while mismatches show a live preliminary reconciliation',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes('.filter(r=>!r.closureOnly&&(shiftIntegrity(r)||(r.ownerConfirmed&&r.subjectMemberId)))'));assert.ok(html.includes('frozen=payrollAccountingReport(report)'));assert.ok(html.includes('reported:report?num(report.salary):null'));assert.ok(html.includes("x.reportStatus==='check'?' · сохранено '+money(x.reported)"));assert.ok(html.includes('if(existing&&(shiftIntegrity(existing)||(existing.ownerConfirmed&&existing.subjectMemberId))){skipped++;continue}'));assert.ok(html.includes('savedReports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&!r.closureOnly)'));});
 
 test('owner shift history shows recalculated cash for changed reports without overwriting the saved snapshot',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes("recalc=role==='owner'&&!r.closureOnly&&!verified?((window.__ownerShiftDrafts||{})[r.id]||Object.values(window.__ownerShiftDrafts||{}).find(d=>d.date===r.date&&payrollShiftKey(d)===payrollShiftKey(r))):null"));assert.ok(html.includes('shownCash=recalc?.shiftCash??r.shiftCash??r.cash'));assert.ok(html.includes('shownDeferred=recalc?.deferredCash??r.deferredCash??0'));assert.ok(html.includes('shownSalary=recalc?.salary??r.salary'));assert.ok(html.includes('Предварительная сверка по текущим заказам; сохранённый отчёт не изменён.'));});
 test('shift report history sorts by shift date so a newer closed shift is visible',()=>{const html=read('hosted-snapshot/index.html');assert.ok(html.includes("String(b.date||b.closedAt||'').localeCompare(String(a.date||a.closedAt||''))"));assert.ok(html.includes("String(b.closedAt||'').localeCompare(String(a.closedAt||''))"));});
@@ -751,7 +752,7 @@ test('REG.RU green completed orders count as surrendered cash exactly once', () 
   const settlementSource = source.match(/function shiftSettlementOrders\([^\n]+/);
   assert.ok(settlementSource, 'cash settlement source exists');
   const state = { shiftReports: [], orders: [
-    { orderId: 'green-complete', _createdByShift: 'sergey', _status: 'Выполнен', callDate: '2026-10-11', companyShare: 5500 },
+    { orderId: 'green-complete', _createdByShift: 'sergey', _status: 'Выполнен', callDate: '2026-10-01', closeDate: '2026-10-11', companyShare: 5500 },
     { orderId: 'still-open', _createdByShift: 'sergey', _status: 'В работе', callDate: '2026-10-11', companyShare: 7000 },
     { orderId: 'no-company-cash', _createdByShift: 'sergey', _status: 'Выполнен', callDate: '2026-10-11', companyShare: 0 }
   ] };
@@ -762,15 +763,15 @@ test('REG.RU green completed orders count as surrendered cash exactly once', () 
   const resolveShift = new Function('state', 'norm', 'String', `${ownerShiftSource[0]}; ${orderOwnerSource[0]}; return { payrollShiftKey: payrollShiftKey, orderPayrollShift: orderPayrollShift }`)(
     state, value => String(value || '').trim().toLowerCase(), String
   );
-  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'derivedStage', 'shiftOrderDate', 'shiftSettlementDate', 'payrollShiftKey', 'orderPayrollShift', `return (${settlementSource[0]})`)(
+  const settlement = new Function('state', 'num', 'String', 'norm', 'iso', 'parseDate', 'derivedStage', 'shiftOrderDate', 'shiftSettlementDate', 'payrollShiftKey', 'orderPayrollShift', `${settlementHelpers(source)}; return (${settlementSource[0]})`)(
     state, value => Number(value) || 0, String, value => String(value || '').toLowerCase(),
     value => value ? String(value).slice(0, 10) : '', value => value || null,
-    row => row._status || '', row => row.callDate, row => row._cashClosedOn || row._cashClosedAt?.slice(0,10) || row.closeDate || row.callDate,
+    row => row._status || '', row => row.callDate, row => row._cashClosedOn || row._cashClosedAt?.slice(0,10) || row.closeDate || '',
     resolveShift.payrollShiftKey, resolveShift.orderPayrollShift
   );
   const profile = { id: 'sergey', name: 'Сергей', shift: 'sergey' };
   assert.deepEqual(settlement('2026-10-11', profile).map(row => row.orderId), ['green-complete']);
-  state.shiftReports.push({ approvedFor: 'sergey', date: '2026-10-11', paidOrderIds: ['green-complete'] });
+  state.shiftReports.push({ approvedFor: 'sergey', ownerConfirmed: true, subjectMemberId: 'sergey', date: '2026-10-11', paidOrderIds: ['green-complete'] });
   assert.deepEqual(settlement('2026-10-12', profile), [], 'paid order IDs cannot be counted twice');
 });
 
@@ -801,12 +802,12 @@ test('payroll follows visit date and accepts a table surrender date without a ye
   assert.equal(recordedDate({ closeDate: '19.10.2026', _cashClosedOn: '2026-10-20', _cashClosedAt: '2026-10-20T00:55:00+03:00' }), '2026-10-19', 'explicit surrender date takes precedence over a post-midnight technical close timestamp');
   assert.ok(source.includes('cashDate=shiftCashRecordedDate(r)'), 'shift cards display the source surrender date');
 });
-test('owner closed-shift register groups surrendered orders by responsible dispatcher and 2-day cycle',()=>{const h=read('hosted-snapshot/index.html'),d=read('hosted-snapshot/dispatcher-logistic.html');assert.match(h,/data-tab=\"payrollcycles\">Закрытые смены/);assert.match(h,/data-panel=\"payrollcycles\"/);assert.match(h,/tabs:\['orders','dashboard','performance','mastershifts','shiftclose','payrollcycles'/);assert.doesNotMatch(d,/data-panel=\"payrollcycles\"/);const start=h.indexOf('function renderPayrollCycleRegister(){'),end=h.indexOf('function renderWeeklyReports(){',start),fn=h.slice(start,end);assert.ok(start>=0&&end>start);assert.match(fn,/orderPayrollShift\(r\)===who/);assert.match(fn,/shiftCashRecordedDate\(r\)/);assert.match(fn,/accounted\.get\(who\+/);assert.match(fn,/String\(r\.orderId\)/);assert.match(fn,/shiftPayroll\(cash\)/);assert.match(fn,/currentReport\(report\)\?num\(report\.salary\):shiftPayroll\(cash\)/);assert.match(fn,/saved=historic\.every\(currentReport\)/);assert.match(fn,/settlementStartDate\.getDate\(\)-2/);assert.match(fn,/cycleReportIds/);assert.match(fn,/Без даты сдачи · /);assert.match(fn,/Уже учтён/);assert.match(fn,/без даты сдачи/);assert.match(fn,/data-owner-shift-order/);assert.match(h,/document\.addEventListener\('click',e=>\{const b=e\.target\.closest\('\[data-owner-shift-order\]'\)/);assert.match(h,/if\(r\)openOrder\(r\)\}/);assert.match(h,/document\.body\.appendChild\(modal\)/)});
+test('owner closed-shift register groups surrendered orders by responsible dispatcher and 2-day cycle',()=>{const h=read('hosted-snapshot/index.html'),d=read('hosted-snapshot/dispatcher-logistic.html');assert.match(h,/data-tab=\"payrollcycles\">Закрытые смены/);assert.match(h,/data-panel=\"payrollcycles\"/);assert.match(h,/tabs:\['orders','dashboard','performance','mastershifts','shiftclose','payrollcycles'/);assert.doesNotMatch(d,/data-panel=\"payrollcycles\"/);const start=h.indexOf('function renderPayrollCycleRegister(){'),end=h.indexOf('function renderWeeklyReports(){',start),fn=h.slice(start,end);assert.ok(start>=0&&end>start);assert.match(fn,/ledger=payrollSettlementLedger\(anchor,first\)/);assert.match(fn,/shiftCashRecordedDate\(r\)/);assert.match(fn,/orders=ledger\.filter/);assert.match(fn,/String\(r\.orderId\|\|''\)/);assert.match(fn,/shiftPayroll\(cash\)/);assert.match(fn,/currentReport\(report\)\?num\(report\.salary\):shiftPayroll\(cash\)/);assert.match(fn,/saved=historic\.every\(currentReport\)/);assert.match(fn,/x\.assignedDate>=d1&&x\.assignedDate<=end/);assert.match(fn,/Без даты сдачи · /);assert.match(fn,/Уже учтён/);assert.match(fn,/без даты сдачи/);assert.match(fn,/data-owner-shift-order/);assert.match(h,/document\.addEventListener\('click',e=>\{const b=e\.target\.closest\('\[data-owner-shift-order\]'\)/);assert.match(h,/if\(r\)openOrder\(r\)\}/);assert.match(h,/document\.body\.appendChild\(modal\)/)});
 test('payroll finance includes owner-confirmed reports and excludes closure-only records',()=>{const h=read('hosted-snapshot/index.html');assert.match(h,/state\.shiftReports\.filter\(r=>!r\.closureOnly/);assert.match(h,/r=>shiftIntegrity\(r\)\|\|\(r\.ownerConfirmed&&r\.subjectMemberId\)/)});
 
-test('closed-shift register uses compact single-line order chips, more viewport height, and no footer on all live roles',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file),css=h.split('<style id="closed-shift-density-v1">')[1]?.split('</style>')[0]||'';assert.ok(css);assert.ok(css.includes('nth-child(7),.payroll-daily-wrap .payroll-cycle-register-table td:nth-child(7){width:29%}'));assert.ok(css.includes('max-height:calc(100vh - 300px)'));assert.ok(css.includes('max-height:min(40vh,340px)'));assert.ok(css.includes('white-space:nowrap'));assert.ok(!h.includes('<div class="footer">EliteService · Онлайн CRM</div>'));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.45-REG-RU-OWNER-TELEGRAM-INVITE'"))}});
+test('closed-shift register uses compact single-line order chips, more viewport height, and no footer on all live roles',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file),css=h.split('<style id="closed-shift-density-v1">')[1]?.split('</style>')[0]||'';assert.ok(css);assert.ok(css.includes('nth-child(7),.payroll-daily-wrap .payroll-cycle-register-table td:nth-child(7){width:29%}'));assert.ok(css.includes('max-height:calc(100vh - 300px)'));assert.ok(css.includes('max-height:min(40vh,340px)'));assert.ok(css.includes('white-space:nowrap'));assert.ok(!h.includes('<div class="footer">EliteService · Онлайн CRM</div>'));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.46-REG-RU-FULL-AUDIT'"))}});
 test('closed-shift register keeps order details in compact readable fields without horizontal scrolling',()=>{const h=read('hosted-snapshot/index.html');assert.match(h,/payroll-cycle-register-table\{width:100%;min-width:0;table-layout:fixed/);assert.match(h,/payroll-cycle-order\{display:grid/);assert.match(h,/payroll-cycle-register-table td:nth-child\(7\):before/);assert.match(h,/cycles\.reverse\(\)/)});
-test('all role pages share the high-contrast palette, readable typography, and truthful database badge colors',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.ok(h.includes('id="crm-clarity-audit-refresh"'));assert.ok(h.includes('.tab.active{background:linear-gradient(135deg,#1769e0,#0d4fb7)'));assert.ok(h.includes('.table td{font-size:13px'));assert.ok(h.includes('db-status-error'));assert.ok(h.includes('db-status-online'));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.45-REG-RU-OWNER-TELEGRAM-INVITE'"))}});
+test('all role pages share the high-contrast palette, readable typography, and truthful database badge colors',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.ok(h.includes('id="crm-clarity-audit-refresh"'));assert.ok(h.includes('.tab.active{background:linear-gradient(135deg,#1769e0,#0d4fb7)'));assert.ok(h.includes('.table td{font-size:13px'));assert.ok(h.includes('db-status-error'));assert.ok(h.includes('db-status-online'));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.46-REG-RU-FULL-AUDIT'"))}});
 test('order cards show dispatcher separately and include the complete finance group on every role page',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.match(h,/class="team-master-field"/);assert.match(h,/class="team-dispatcher-field"><span>Диспетчер<\/span><b>\$\{esc\(r\.dispatcher\|\|'—'\)\}<\/b>/);assert.match(h,/<span>Мастеру<\/span><b>\$\{numMaybe\(r\.masterAmount\)/);assert.match(h,/<span>Сдача заявки<\/span><b>\$\{esc\(r\.closeDate/);assert.match(h,/id="order-role-column-clarity"/);assert.match(h,/thead th:nth-child\(11\).*thead th:nth-child\(12\)/s);assert.match(h,/mobile-order-meta \.team-master-field\{background:#eaf2ff/);assert.match(h,/mobile-order-meta \.team-dispatcher-field\{background:#f1eaff/)}});
 test('late payroll queue separates pending closure, late cash awaiting reconciliation, and already accounted orders',()=>{
   const html=read('hosted-snapshot/index.html'),start=html.indexOf('function renderLatePayrollQueue('),end=html.indexOf('\nfunction renderDailyPayrollReconciliation(',start);assert.ok(start>=0&&end>start);
@@ -832,9 +833,9 @@ test('late payroll queue separates pending closure, late cash awaiting reconcili
 
 test('order role and finance fields use aligned low-contrast rounded surfaces on every published role page',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.match(h,/id="order-field-polish"/);assert.match(h,/table tbody tr td:nth-child\(11\).*box-shadow:none!important/s);assert.match(h,/mobile-order-meta>div\{box-sizing:border-box;min-width:0;min-height:58px;display:flex;flex-direction:column;justify-content:center/);assert.match(h,/mobile-order-meta \.finance-col\{background:linear-gradient/);assert.match(h,/mobile-order-meta \.team-dispatcher-field\{background:linear-gradient/)} });
 test('desktop order role, cash, amount, and surrender date use consistent rounded value chips on every role page',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.match(h,/id="order-field-polish"/);assert.match(h,/class="order-value-chip order-dispatcher-chip">\$\{esc\(canonicalDispatcherSelection\(r\.dispatcher\)\|\|'—'\)\}/);assert.match(h,/class="order-value-chip order-money-chip">\$\{numMaybe\(r\.total\)/);assert.match(h,/class="order-value-chip order-money-chip order-cash-chip">\$\{numMaybe\(r\.companyShare\)/);assert.match(h,/class="order-value-chip order-close-date-chip">\$\{esc\(r\.closeDate/);assert.match(h,/table tbody tr td:nth-child\(11\).*box-shadow:none!important/s);assert.match(h,/\.order-value-chip\{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:34px/);assert.match(h,/\.order-dispatcher-chip\{justify-content:flex-start;text-align:left/);assert.match(h,/\.order-cash-chip\{background:#edf6ef/);assert.match(h,/inline-master-input\{box-sizing:border-box;width:100%;min-width:0;min-height:34px/);assert.match(h,/mobile-order-meta \.team-dispatcher-field\{background:linear-gradient/)}});
-test('desktop owner and finance columns have no full-height divider strips and use individual rounded surfaces',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const polished=h.split('<style id="order-field-polish">')[1]?.split('</style>')[0]||'';assert.match(polished,/nth-child\(11\),\.orders-table-wrap \.table thead th:nth-child\(12\).*border:0!important;border-radius:9px/s);assert.match(polished,/tbody tr td:nth-child\(11\).*border-left:0!important;border-right:0!important/s);assert.doesNotMatch(polished,/box-shadow:inset 0 0 0 999px/);assert.match(polished,/table tbody tr td:nth-child\(11\).*box-shadow:none!important;border-left:0!important/s);assert.doesNotMatch(polished,/tbody tr td:nth-child\(11\).*background:transparent!important/);assert.match(h,/\.table tbody tr\.status-green td\{background:#dcf2e4!important/);assert.match(polished,/\.order-value-chip\{[^}]*border:1px solid[^}]*border-radius:9px/);assert.match(h,/window\.MASTER_AI_BUILD='18.17.45-REG-RU-OWNER-TELEGRAM-INVITE'/)}});
+test('desktop owner and finance columns have no full-height divider strips and use individual rounded surfaces',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const polished=h.split('<style id="order-field-polish">')[1]?.split('</style>')[0]||'';assert.match(polished,/nth-child\(11\),\.orders-table-wrap \.table thead th:nth-child\(12\).*border:0!important;border-radius:9px/s);assert.match(polished,/tbody tr td:nth-child\(11\).*border-left:0!important;border-right:0!important/s);assert.doesNotMatch(polished,/box-shadow:inset 0 0 0 999px/);assert.match(polished,/table tbody tr td:nth-child\(11\).*box-shadow:none!important;border-left:0!important/s);assert.doesNotMatch(polished,/tbody tr td:nth-child\(11\).*background:transparent!important/);assert.match(h,/\.table tbody tr\.status-green td\{background:#dcf2e4!important/);assert.match(polished,/\.order-value-chip\{[^}]*border:1px solid[^}]*border-radius:9px/);assert.match(h,/window\.MASTER_AI_BUILD='18.17.46-REG-RU-FULL-AUDIT'/)}});
 
-test('order list uses one palette for ID and roles, coordinated finance styling, and wider compact desktop layout',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const css=h.split('<style id="order-table-compact-palette">')[1]?.split('</style>')[0]||'';assert.ok(css);assert.match(css,/\.app\{width:100%;max-width:1920px/);assert.match(css,/nth-child\(2\).*nth-child\(11\).*nth-child\(12\).*background:#eaf0f8/);assert.match(css,/nth-child\(13\).*nth-child\(14\).*nth-child\(15\).*nth-child\(16\).*background:#eaf3ec/);assert.match(css,/min-height:28px/);assert.match(css,/@media\(min-width:1300px\).*mobile-order-list\{display:none/s);assert.match(css,/@media\(max-width:1299px\)/);assert.doesNotMatch(css,/border-left:[2-9]px solid/)}assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.45-owner-invite-v1/) });
+test('order list uses one palette for ID and roles, coordinated finance styling, and wider compact desktop layout',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);const css=h.split('<style id="order-table-compact-palette">')[1]?.split('</style>')[0]||'';assert.ok(css);assert.match(css,/\.app\{width:100%;max-width:1920px/);assert.match(css,/nth-child\(2\).*nth-child\(11\).*nth-child\(12\).*background:#eaf0f8/);assert.match(css,/nth-child\(13\).*nth-child\(14\).*nth-child\(15\).*nth-child\(16\).*background:#eaf3ec/);assert.match(css,/min-height:28px/);assert.match(css,/@media\(min-width:1300px\).*mobile-order-list\{display:none/s);assert.match(css,/@media\(max-width:1299px\)/);assert.doesNotMatch(css,/border-left:[2-9]px solid/)}assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.46-full-audit-v1/) });
 
 test('today cash separates orders received today from all recorded cash closed today on all roles',()=>{
   for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){
@@ -848,9 +849,9 @@ test('today cash separates orders received today from all recorded cash closed t
     assert.match(html,/Касса сегодня/);
     assert.match(html,/Общая касса сегодня/);
     assert.match(html,/<style id="today-cash-split-v1">#todayBox \.money-preview\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important\}<\/style>/);
-    assert.match(html,/window\.MASTER_AI_BUILD='18.17.45-REG-RU-OWNER-TELEGRAM-INVITE'/);
+    assert.match(html,/window\.MASTER_AI_BUILD='18.17.46-REG-RU-FULL-AUDIT'/);
   }
-  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.45-owner-invite-v1/);
+  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.46-full-audit-v1/);
 });
 
 test('order status and today dashboards stay compact, readable, and free of explanatory copy on all roles',()=>{
@@ -872,10 +873,10 @@ test('order status and today dashboards stay compact, readable, and free of expl
     assert.match(html,/if\(\$\('#newOrderInline'\)\)\$\('#newOrderInline'\)\.onclick=newOrder/);
     assert.match(html,/if\(\$\('#newOrderInline'\)\)\$\('#newOrderInline'\)\.hidden=!/);
   }
-  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.45-owner-invite-v1/);
+  assert.match(read('hosted-snapshot/sw.js'),/eliteservice-18\.17\.46-full-audit-v1/);
 });
 
-test('hosted dashboard and payroll rendering regression is fixed on all live roles',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.ok(h.includes("$$('[data-today]').forEach"));assert.ok(h.includes("$$('[data-today-status]').forEach"));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.45-REG-RU-OWNER-TELEGRAM-INVITE'"));if(file.endsWith('index.html')){assert.ok(h.includes('money(r.deferredCash??0)'));assert.ok(h.includes('money(r.salary??0)'))}}});
+test('hosted dashboard and payroll rendering regression is fixed on all live roles',()=>{for(const file of ['hosted-snapshot/index.html','hosted-snapshot/dispatcher-logistic.html','hosted-snapshot/master.html']){const h=read(file);assert.ok(h.includes("$$('[data-today]').forEach"));assert.ok(h.includes("$$('[data-today-status]').forEach"));assert.ok(h.includes("window.MASTER_AI_BUILD='18.17.46-REG-RU-FULL-AUDIT'"));if(file.endsWith('index.html')){assert.ok(h.includes('money(r.deferredCash??0)'));assert.ok(h.includes('money(r.salary??0)'))}}});
 
 
 test('owner may verify a spreadsheet close without impersonating a master report',()=>{
@@ -921,7 +922,10 @@ test('AI center uses current CRM rows and honest evidence across role pages',()=
     assert.match(html,/rows\.filter\(r=>iso\(parseDate\(r\.callDate\)\)===day\)/);
     assert.match(html,/data-ai-open/);
     assert.match(html,/data-ai-status/);
-    assert.match(html,/function aiIsCashClosed\(r\)\{return !!aiCashDay\(r\)\}/);
+    if(file==='hosted-snapshot/index.html'){
+      assert.match(html,/function aiIsCashClosed\(r\)\{return derivedStage\(r\)==='Выполнен'&&payrollOrderCashRecorded\(r\)&&!!aiCashDay\(r\)\}/);
+      assert.match(html,/function aiCashDay\(r\)\{return shiftCashRecordedDate\(r\)\}/);
+    }else{assert.match(html,/function aiIsCashClosed\(r\)\{return !!aiCashDay\(r\)\}/)}
     assert.match(html,/сходных заказов:/);
     assert.doesNotMatch(html,/Math\.max\(\.12,Math\.min\(\.96/);
     assert.doesNotMatch(html,/a\*\.65\+b\*\.35/);

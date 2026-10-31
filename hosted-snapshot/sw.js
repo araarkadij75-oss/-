@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.45-owner-invite-v1';
+const CACHE='eliteservice-18.17.46-full-audit-v1';
 const SHELL=[
   './',
   './index.html',
@@ -10,7 +10,7 @@ const SHELL=[
   './icon.svg',
   './cloud-config.js',
   './firestore-regru.js',
-  './telegram-ui.js?v=20261024-telegram3',
+  './telegram-ui.js?v=20261031-telegram4',
   './premium-v181721.css',
 ];
 
