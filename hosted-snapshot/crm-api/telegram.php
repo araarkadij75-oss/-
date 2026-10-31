@@ -96,15 +96,35 @@ function tg_retry_safe(string $method): bool {
     return in_array($method, ['getMe', 'getWebhookInfo', 'setWebhook'], true);
 }
 
+function tg_retry_transport(string $method, int $errno): bool {
+    return tg_retry_safe($method) || in_array($errno, [5, 6, 7], true);
+}
+
+function tg_public_ipv4(string $ip): string {
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false ? $ip : '';
+}
+
+function tg_webhook_error(string $rawError): string {
+    if ($rawError === '') return '';
+    $safe = 'Telegram не смог доставить обновление серверу CRM';
+    if (preg_match('/(?:response|HTTP)[^0-9]*([45][0-9]{2})/i', $rawError, $match)) return $safe.' · HTTP '.$match[1];
+    if (preg_match('/SSL|certificate/i', $rawError)) return $safe.' · ошибка TLS/сертификата';
+    if (preg_match('/(?:read|response)[^\r\n]*(?:timed out|timeout)/i', $rawError)) return $safe.' · тайм-аут ожидания ответа';
+    if (preg_match('/connect(?:ion)?[^\r\n]*(?:timed out|timeout)/i', $rawError)) return $safe.' · тайм-аут соединения';
+    if (preg_match('/timed out|timeout/i', $rawError)) return $safe.' · тайм-аут доставки';
+    if (stripos($rawError, 'resolve') !== false) return $safe.' · ошибка DNS';
+    return $safe;
+}
+
 function tg_call(string $method, array $payload): array {
     $url = TG_API_ROOT . tg_token() . '/' . $method;
     $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     $raw = false;
     $errno = 0;
     if (function_exists('curl_init')) {
-        // Prefer IPv4 on shared hosting; a broken IPv6 route must not stall every
-        // request. Safe read/config operations may fall back to system routing.
-        $routes = tg_retry_safe($method) ? [CURL_IPRESOLVE_V4, CURL_IPRESOLVE_WHATEVER] : [CURL_IPRESOLVE_V4];
+        // Let cURL select a working route first. Mutations may retry only before
+        // any connection was established, never after an ambiguous timeout.
+        $routes = [CURL_IPRESOLVE_WHATEVER, CURL_IPRESOLVE_V4];
         foreach ($routes as $route) {
             $ch = curl_init($url);
             if ($ch === false) break;
@@ -123,7 +143,7 @@ function tg_call(string $method, array $payload): array {
             $raw = curl_exec($ch);
             $errno = curl_errno($ch);
             curl_close($ch);
-            if (is_string($raw)) break;
+            if (is_string($raw) || !tg_retry_transport($method, $errno)) break;
         }
     } else {
         $ctx = stream_context_create(['http' => [
@@ -264,7 +284,10 @@ function tg_setup_webhook(): array {
         tg_reply(502, ['ok' => false, 'error' => in_array($code, $safe, true) ? $code : 'telegram_api_call_failed']);
     }
     $url = 'https://crm.remontpkspb.ru/candidate/crm-api/telegram.php?webhook=1';
-    try { $result = tg_call('setWebhook', ['url' => $url, 'secret_token' => tg_webhook_secret(), 'allowed_updates' => ['message', 'callback_query'], 'drop_pending_updates' => false]); }
+    $host = (string)parse_url($url, PHP_URL_HOST);
+    $webhookIp = tg_public_ipv4(gethostbyname($host));
+    $routing = $webhookIp !== '' ? ['ip_address' => $webhookIp] : [];
+    try { $result = tg_call('setWebhook', $routing + ['max_connections' => 5, 'url' => $url, 'secret_token' => tg_webhook_secret(), 'allowed_updates' => ['message', 'callback_query'], 'drop_pending_updates' => false]); }
     catch (Throwable $e) {
         $code = $e->getMessage();
         $safe = ['telegram_network_unreachable', 'telegram_network_dns_failed', 'telegram_network_connect_failed', 'telegram_network_timeout', 'telegram_network_tls_failed', 'telegram_invalid_api_response', 'telegram_token_rejected', 'telegram_api_rejected_request'];
@@ -387,13 +410,8 @@ function tg_update_group_link(PDO $pdo, array $msg): void {
 function tg_bot_status(array $actor): array {
     if (($actor['role'] ?? '') !== 'owner') throw new DomainException('Только владелец может проверить подключение');
     $bot=tg_bot_info(); $info=tg_call('getWebhookInfo',[]);
-    $rawError=(string)($info['last_error_message']??'');
-    $safeError=$rawError===''?'':'Telegram не смог доставить обновление серверу CRM';
-    if (preg_match('/(?:response|HTTP)[^0-9]*([45][0-9]{2})/i',$rawError,$match)) $safeError.=' · HTTP '.$match[1];
-    elseif (stripos($rawError,'SSL')!==false || stripos($rawError,'certificate')!==false) $safeError.=' · ошибка TLS/сертификата';
-    elseif (stripos($rawError,'timed out')!==false || stripos($rawError,'timeout')!==false) $safeError.=' · тайм-аут соединения';
-    elseif (stripos($rawError,'resolve')!==false) $safeError.=' · ошибка DNS';
-    return ['ok'=>true,'botUsername'=>(string)($bot['username']??''),'webhookConfigured'=>!empty($info['url']), 'pendingUpdateCount'=>(int)($info['pending_update_count']??0), 'lastErrorAt'=>(int)($info['last_error_date']??0), 'lastError'=>$safeError];
+    $safeError=tg_webhook_error((string)($info['last_error_message']??''));
+    return ['ok'=>true,'botUsername'=>(string)($bot['username']??''),'webhookConfigured'=>!empty($info['url']), 'pendingUpdateCount'=>(int)($info['pending_update_count']??0), 'lastErrorAt'=>(int)($info['last_error_date']??0), 'lastError'=>$safeError, 'webhookIp'=>tg_public_ipv4((string)($info['ip_address']??''))];
 }
 
 function tg_address_apartment(string $address): string { return tg_phone_free(trim($address)); }
