@@ -1,0 +1,8081 @@
+{
+  "owner": [
+    {
+      "id": "ImportDeclaration-0-8478b81bfdad",
+      "domain": "bootstrap",
+      "file": "bootstrap/shared.js",
+      "symbols": [
+        "loadOptionalFeature"
+      ]
+    },
+    {
+      "id": "PRESETS-5cd5988cc4c6",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "PRESETS"
+      ]
+    },
+    {
+      "id": "HEADERS-66318dec10a1",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "HEADERS"
+      ]
+    },
+    {
+      "id": "KEYS-e3ade43bac5e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "KEYS"
+      ]
+    },
+    {
+      "id": "APP_HEADERS-89dae34ea3f2",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "APP_HEADERS"
+      ]
+    },
+    {
+      "id": "APP_KEYS-47024d710bf9",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "APP_KEYS"
+      ]
+    },
+    {
+      "id": "LABELS-af51307ae05e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "LABELS"
+      ]
+    },
+    {
+      "id": "$-0d332a6d83e9",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "$",
+        "$$"
+      ]
+    },
+    {
+      "id": "STATUS_META-e51ce7bfad4d",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "STATUS_META"
+      ]
+    },
+    {
+      "id": "STATUS_ORDER-c5706335410c",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "STATUS_ORDER"
+      ]
+    },
+    {
+      "id": "REVIEW_WORKFLOW-0ea9f6f9c161",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "REVIEW_WORKFLOW"
+      ]
+    },
+    {
+      "id": "MASTER_STAGE_LABELS-fbb8454e6145",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "MASTER_STAGE_LABELS"
+      ]
+    },
+    {
+      "id": "isReviewWorkflow-95b461338238",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isReviewWorkflow"
+      ]
+    },
+    {
+      "id": "workflowStage-518137d122de",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStage"
+      ]
+    },
+    {
+      "id": "workflowStageLabel-fe94894a1075",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStageLabel"
+      ]
+    },
+    {
+      "id": "workflowStageChip-170ebd21721c",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStageChip"
+      ]
+    },
+    {
+      "id": "clearWorkflowExecution-bfd1093bc22e",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "clearWorkflowExecution"
+      ]
+    },
+    {
+      "id": "resetWorkflowForAssignment-3eb6e5b5547b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "resetWorkflowForAssignment"
+      ]
+    },
+    {
+      "id": "markNewReviewWorkflow-7fe7d5d6fdb9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "markNewReviewWorkflow"
+      ]
+    },
+    {
+      "id": "workflowReviewerAllowed-dbf49d65f176",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowReviewerAllowed"
+      ]
+    },
+    {
+      "id": "FORCED_APP_ROLE-4359a072c745",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "FORCED_APP_ROLE",
+        "FORCED_APP_ROLES",
+        "SECURE_CLOUD_REQUIRED"
+      ]
+    },
+    {
+      "id": "canonicalRole-bfadaaac0548",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "canonicalRole"
+      ]
+    },
+    {
+      "id": "ownerPreviewActive-acb127e2eb65",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "ownerPreviewActive"
+      ]
+    },
+    {
+      "id": "forcedRoleOk-d92c02b0deea",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "forcedRoleOk"
+      ]
+    },
+    {
+      "id": "roleEntryUrl-bf4ce1aeeac0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleEntryUrl"
+      ]
+    },
+    {
+      "id": "redirectRoleMismatch-800d5c8e8792",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "redirectRoleMismatch"
+      ]
+    },
+    {
+      "id": "ROLE_META-905cb9bfb32b",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "ROLE_META"
+      ]
+    },
+    {
+      "id": "masterWeekDirty-aae79739fe5f",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "masterWeekDirty",
+        "masterWeekLoading",
+        "masterWeekSaving",
+        "masterWeekReady",
+        "masterWeekAnchor",
+        "masterWeekRequest"
+      ]
+    },
+    {
+      "id": "state-b8a02bb34fad",
+      "domain": "core",
+      "file": "core/owner.js",
+      "symbols": [
+        "state"
+      ]
+    },
+    {
+      "id": "clean-261b7b93dc6f",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "clean"
+      ]
+    },
+    {
+      "id": "norm-6d60250fb036",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "norm"
+      ]
+    },
+    {
+      "id": "esc-9b205d5c660f",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "esc"
+      ]
+    },
+    {
+      "id": "numMaybe-8ffc3d64b266",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "numMaybe"
+      ]
+    },
+    {
+      "id": "num-889072de6386",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "num"
+      ]
+    },
+    {
+      "id": "uid-7b425bb2dd8e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "uid"
+      ]
+    },
+    {
+      "id": "pinHash-bb0b5c795f64",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "pinHash"
+      ]
+    },
+    {
+      "id": "orderIdDate-89c6e635e3a8",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderIdDate"
+      ]
+    },
+    {
+      "id": "makeOrderId-69110d3b7b6f",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "makeOrderId"
+      ]
+    },
+    {
+      "id": "ensureOrderIds-d8995ad3ab56",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "ensureOrderIds"
+      ]
+    },
+    {
+      "id": "previewStaffProfile-03732088eea6",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "previewStaffProfile"
+      ]
+    },
+    {
+      "id": "ownerRolePreview-3275c2f10a5f",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "ownerRolePreview"
+      ]
+    },
+    {
+      "id": "currentUser-bb8fc54704ca",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "currentUser"
+      ]
+    },
+    {
+      "id": "lockedDispatcher-de9b2c5d76d0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "lockedDispatcher"
+      ]
+    },
+    {
+      "id": "shiftName-0298716bb354",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "shiftName"
+      ]
+    },
+    {
+      "id": "currentRole-f062f8586d49",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "currentRole"
+      ]
+    },
+    {
+      "id": "roleMeta-5a8af9f31c83",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleMeta"
+      ]
+    },
+    {
+      "id": "can-d37c7ee56dfc",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "can"
+      ]
+    },
+    {
+      "id": "masterNamesEquivalent-6d9db39204b0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "masterNamesEquivalent"
+      ]
+    },
+    {
+      "id": "canonicalMasterSelection-f1fb4e3178e4",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "canonicalMasterSelection"
+      ]
+    },
+    {
+      "id": "canonicalDispatcherSelection-aa071ccf9cec",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "canonicalDispatcherSelection"
+      ]
+    },
+    {
+      "id": "canonicalNameChoices-33c9c0a12cba",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "canonicalNameChoices"
+      ]
+    },
+    {
+      "id": "masterRoleOrderMatch-7c678c146e87",
+      "domain": "staff",
+      "file": "staff/owner-master.js",
+      "symbols": [
+        "masterRoleOrderMatch"
+      ]
+    },
+    {
+      "id": "roleVisibleOrders-0758e6178c78",
+      "domain": "staff",
+      "file": "staff/owner-master.js",
+      "symbols": [
+        "roleVisibleOrders"
+      ]
+    },
+    {
+      "id": "isPickupOrder-732fc3fcfc77",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "isPickupOrder"
+      ]
+    },
+    {
+      "id": "isStaffOrderLocked-9c834c4f0bef",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "isStaffOrderLocked"
+      ]
+    },
+    {
+      "id": "roleLabel-9e8182a0b3cd",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleLabel"
+      ]
+    },
+    {
+      "id": "employeeLaunchMode-2008ac89159a",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "employeeLaunchMode"
+      ]
+    },
+    {
+      "id": "parseDate-ee08a73dee34",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "parseDate"
+      ]
+    },
+    {
+      "id": "iso-1f3770793236",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "iso"
+      ]
+    },
+    {
+      "id": "fmtDate-9c852657c996",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "fmtDate"
+      ]
+    },
+    {
+      "id": "today-fc88c9aae119",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "today"
+      ]
+    },
+    {
+      "id": "ddmm-7e44aad38ab5",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "ddmm"
+      ]
+    },
+    {
+      "id": "money-f0cbc3bddf82",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "money"
+      ]
+    },
+    {
+      "id": "integer-45638ccae914",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "integer"
+      ]
+    },
+    {
+      "id": "pct-73a437a9dcf1",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "pct"
+      ]
+    },
+    {
+      "id": "truthReview-46d365034e98",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "truthReview"
+      ]
+    },
+    {
+      "id": "masterAccountFor-8f573cbf6734",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "masterAccountFor"
+      ]
+    },
+    {
+      "id": "masterFixedMode-16e066a94e88",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "masterFixedMode"
+      ]
+    },
+    {
+      "id": "calcAuto-181a9473b16d",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "calcAuto"
+      ]
+    },
+    {
+      "id": "recalcOpenReviewBonusOrders-05db837eebc2",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "recalcOpenReviewBonusOrders"
+      ]
+    },
+    {
+      "id": "orderDate-adaab4c6e88d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderDate"
+      ]
+    },
+    {
+      "id": "timeHour-933365304aab",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "timeHour"
+      ]
+    },
+    {
+      "id": "unique-fe008ed5febb",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "unique"
+      ]
+    },
+    {
+      "id": "median-1a3598681d96",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "median"
+      ]
+    },
+    {
+      "id": "sum-a6808df06ac0",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "sum"
+      ]
+    },
+    {
+      "id": "normalizeOrder-537f42548194",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeOrder"
+      ]
+    },
+    {
+      "id": "semanticValue-0eadcbfc3884",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "semanticValue"
+      ]
+    },
+    {
+      "id": "isMeaningful-f4022b5a4dae",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isMeaningful"
+      ]
+    },
+    {
+      "id": "isSeparatorLike-76f6825a8663",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isSeparatorLike"
+      ]
+    },
+    {
+      "id": "isServiceMaster-38dfd651b10e",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "isServiceMaster"
+      ]
+    },
+    {
+      "id": "derivedStage-56b52419be93",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "derivedStage"
+      ]
+    },
+    {
+      "id": "stageClass-c1dd8103e974",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "stageClass"
+      ]
+    },
+    {
+      "id": "statusPill-9d4e17bb4b66",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "statusPill"
+      ]
+    },
+    {
+      "id": "parseGridRates-d975af59a0d4",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "parseGridRates"
+      ]
+    },
+    {
+      "id": "financeMetric-8eb47db63944",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "financeMetric"
+      ]
+    },
+    {
+      "id": "inferredStatusFromStyle-4545c5d7db0c",
+      "domain": "imports",
+      "file": "imports/owner.js",
+      "symbols": [
+        "inferredStatusFromStyle"
+      ]
+    },
+    {
+      "id": "statusFromWorksheetRow-af1cbc1a49eb",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "statusFromWorksheetRow"
+      ]
+    },
+    {
+      "id": "canonicalKey-cbef10fde4cc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "canonicalKey"
+      ]
+    },
+    {
+      "id": "normalizeKnown-ccd45603e385",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeKnown"
+      ]
+    },
+    {
+      "id": "cleanPhoneForCompare-17f460f3f524",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "cleanPhoneForCompare"
+      ]
+    },
+    {
+      "id": "invalidMoney-d40cd6117233",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "invalidMoney"
+      ]
+    },
+    {
+      "id": "fingerprint-cd4068d48aaf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "fingerprint"
+      ]
+    },
+    {
+      "id": "log-87f9014907a4",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "log"
+      ]
+    },
+    {
+      "id": "toast-bd39ae2e7c29",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "toast"
+      ]
+    },
+    {
+      "id": "DB-07afe27772bb",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "DB",
+        "STORE",
+        "KEY"
+      ]
+    },
+    {
+      "id": "importCloudPendingIds-255122f87113",
+      "domain": "imports",
+      "file": "imports/owner.js",
+      "symbols": [
+        "importCloudPendingIds"
+      ]
+    },
+    {
+      "id": "idbOpen-74cf566368f9",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "idbOpen"
+      ]
+    },
+    {
+      "id": "legacyIdbRead-28fa1f1c4aa5",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "legacyIdbRead"
+      ]
+    },
+    {
+      "id": "BETA_STATE_API-5a95484d63eb",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "BETA_STATE_API",
+        "BETA_RESET_API"
+      ]
+    },
+    {
+      "id": "betaLastAppliedSavedAt-cc3a494a1c3d",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaLastAppliedSavedAt",
+        "betaBroadcast",
+        "betaSyncBusy",
+        "betaLiveTimer",
+        "betaReminderTimer",
+        "betaCloudSnapshotReady"
+      ]
+    },
+    {
+      "id": "betaSafeSettings-799ed7603a7b",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaSafeSettings"
+      ]
+    },
+    {
+      "id": "betaApplyTombstones-f274cd0fe608",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaApplyTombstones"
+      ]
+    },
+    {
+      "id": "betaServerRead-05b53348b00f",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaServerRead"
+      ]
+    },
+    {
+      "id": "betaServerWrite-1a56935d0a08",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaServerWrite"
+      ]
+    },
+    {
+      "id": "dbRead-8746923ed5d0",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "dbRead"
+      ]
+    },
+    {
+      "id": "dbWrite-6f8a515f66f8",
+      "domain": "integrations",
+      "file": "integrations/owner.js",
+      "symbols": [
+        "dbWrite"
+      ]
+    },
+    {
+      "id": "betaOrderKey-7f90fc0e2f2a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "betaOrderKey"
+      ]
+    },
+    {
+      "id": "betaNotificationAllowedFor-2cb2d674107e",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaNotificationAllowedFor"
+      ]
+    },
+    {
+      "id": "betaNotify-848fe6ec2f46",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaNotify"
+      ]
+    },
+    {
+      "id": "betaUpdateNotificationButtons-7948d1635939",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaUpdateNotificationButtons"
+      ]
+    },
+    {
+      "id": "betaEnableNotifications-d0ca1b082b9d",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaEnableNotifications"
+      ]
+    },
+    {
+      "id": "betaApplyIncoming-4c1e27d002d7",
+      "domain": "integrations",
+      "file": "integrations/owner-dispatcher.js",
+      "symbols": [
+        "betaApplyIncoming"
+      ]
+    },
+    {
+      "id": "betaPullServerState-65e7de049695",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaPullServerState"
+      ]
+    },
+    {
+      "id": "betaUpcomingReminders-dd613d60e2c1",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaUpcomingReminders"
+      ]
+    },
+    {
+      "id": "betaStartLiveSync-34e7675e0732",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaStartLiveSync"
+      ]
+    },
+    {
+      "id": "fillDatalists-913eec741a00",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "fillDatalists"
+      ]
+    },
+    {
+      "id": "switchTab-0a5fbc31ee87",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "switchTab"
+      ]
+    },
+    {
+      "id": "formRecord-8571039a158b",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "formRecord"
+      ]
+    },
+    {
+      "id": "setForm-5883854858fe",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "setForm"
+      ]
+    },
+    {
+      "id": "syncStatusPalette-92bc6790daa0",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncStatusPalette"
+      ]
+    },
+    {
+      "id": "syncFinanceMode-25edc8187ab0",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "syncFinanceMode"
+      ]
+    },
+    {
+      "id": "recalculateFinance-b07b9f4393b6",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "recalculateFinance"
+      ]
+    },
+    {
+      "id": "renderFormPreview-9741d38ae83b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderFormPreview"
+      ]
+    },
+    {
+      "id": "applyFinanceHint-45058b1cab01",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "applyFinanceHint"
+      ]
+    },
+    {
+      "id": "saveOrder-bbeb655dc006",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "saveOrder"
+      ]
+    },
+    {
+      "id": "editOrder-2f196f017148",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "editOrder"
+      ]
+    },
+    {
+      "id": "openOrderDetails-b88d7ebc2db5",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "openOrderDetails"
+      ]
+    },
+    {
+      "id": "deleteOrder-adf12642f08a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "deleteOrder"
+      ]
+    },
+    {
+      "id": "addressWithoutApartment-afc06e4d1fa0",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "addressWithoutApartment"
+      ]
+    },
+    {
+      "id": "callTimestamp-d89ec1ceb417",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "callTimestamp"
+      ]
+    },
+    {
+      "id": "responsibilityMoment-15b8ca5fefc9",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "responsibilityMoment"
+      ]
+    },
+    {
+      "id": "orderResponsibility-587e7a530fdc",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "orderResponsibility"
+      ]
+    },
+    {
+      "id": "problemDisclosure-3ce100108875",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "problemDisclosure"
+      ]
+    },
+    {
+      "id": "copyOrderForMaster-003ed92f86a2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "copyOrderForMaster"
+      ]
+    },
+    {
+      "id": "duplicateOrder-285e73846c6a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrder"
+      ]
+    },
+    {
+      "id": "openModal-6fbb992c5929",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openModal"
+      ]
+    },
+    {
+      "id": "closeModal-f6d68ca21f4f",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "closeModal"
+      ]
+    },
+    {
+      "id": "openOrder-3ed847322aab",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "openOrder"
+      ]
+    },
+    {
+      "id": "masterQuickInput-82e46a97a6fc",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "masterQuickInput"
+      ]
+    },
+    {
+      "id": "quickSetMaster-258c12e87798",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "quickSetMaster"
+      ]
+    },
+    {
+      "id": "setOrderColorFilter-b00128c350d9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setOrderColorFilter"
+      ]
+    },
+    {
+      "id": "cloudMode-e9383c487759",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "cloudMode"
+      ]
+    },
+    {
+      "id": "dispatcherCloseRows-b54d52d0ab14",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "dispatcherCloseRows"
+      ]
+    },
+    {
+      "id": "ORDER_CLOSE_KEYS-26096ce9640a",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "ORDER_CLOSE_KEYS"
+      ]
+    },
+    {
+      "id": "connectCloudWithPin-700dd9f7528d",
+      "domain": "integrations",
+      "file": "integrations/owner-dispatcher.js",
+      "symbols": [
+        "connectCloudWithPin"
+      ]
+    },
+    {
+      "id": "setDashboardColorFilter-9c95a5e17d0c",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setDashboardColorFilter"
+      ]
+    },
+    {
+      "id": "currentOrderRows-50d81cc04c81",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "currentOrderRows"
+      ]
+    },
+    {
+      "id": "syncSelectionUI-38d9e7bd8e92",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncSelectionUI"
+      ]
+    },
+    {
+      "id": "toggleOrderSelection-5950cd509e6d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "toggleOrderSelection"
+      ]
+    },
+    {
+      "id": "clearSelection-5e1a9c591e5d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "clearSelection"
+      ]
+    },
+    {
+      "id": "selectAllFound-244de9878ed9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "selectAllFound"
+      ]
+    },
+    {
+      "id": "renderRecentMasters-295bed3506df",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderRecentMasters"
+      ]
+    },
+    {
+      "id": "renderColorAudit-e0569be1b9cc",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderColorAudit"
+      ]
+    },
+    {
+      "id": "openBulkModal-d876cc4005bb",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openBulkModal"
+      ]
+    },
+    {
+      "id": "applyBulkChanges-4d9e7027575a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "applyBulkChanges"
+      ]
+    },
+    {
+      "id": "exportSelectedCSV-ee032baf8618",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportSelectedCSV"
+      ]
+    },
+    {
+      "id": "deleteSelectedOrders-961d7d3b08cf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "deleteSelectedOrders"
+      ]
+    },
+    {
+      "id": "maskedPhone-1e6b44df05fb",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "maskedPhone"
+      ]
+    },
+    {
+      "id": "localDateParts-15523fa0f90a",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "localDateParts"
+      ]
+    },
+    {
+      "id": "clockParts-c54ac801b360",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "clockParts"
+      ]
+    },
+    {
+      "id": "moscowTodayISO-a8b4639cbaa2",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "moscowTodayISO"
+      ]
+    },
+    {
+      "id": "moscowAppointmentDate-ef2508bba56b",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "moscowAppointmentDate"
+      ]
+    },
+    {
+      "id": "visitUnlockAt-10166122800b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitUnlockAt"
+      ]
+    },
+    {
+      "id": "visitDayClass-5d672647fd0f",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitDayClass"
+      ]
+    },
+    {
+      "id": "visitDayChip-52eb933b40f4",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitDayChip"
+      ]
+    },
+    {
+      "id": "phoneUnlockLabel-9143bc7452cf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "phoneUnlockLabel"
+      ]
+    },
+    {
+      "id": "masterCanSeePhone-334dcacc1e51",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "masterCanSeePhone"
+      ]
+    },
+    {
+      "id": "phoneCell-fb4c90b4d1d2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "phoneCell"
+      ]
+    },
+    {
+      "id": "revealMasterPhone-675065afbf78",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "revealMasterPhone"
+      ]
+    },
+    {
+      "id": "setMasterStage-b4829c7592fd",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setMasterStage"
+      ]
+    },
+    {
+      "id": "openMasterReport-21967407407d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openMasterReport"
+      ]
+    },
+    {
+      "id": "saveMasterReport-29c9d4505a44",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "saveMasterReport"
+      ]
+    },
+    {
+      "id": "masterActionButtons-9cc227f589e3",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "masterActionButtons"
+      ]
+    },
+    {
+      "id": "closeReviewActions-6ec82a50a908",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "closeReviewActions"
+      ]
+    },
+    {
+      "id": "approveMasterClose-7f16c882cea5",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "approveMasterClose"
+      ]
+    },
+    {
+      "id": "ownerConfirmCloseFromTable-b7b0b3451d43",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "ownerConfirmCloseFromTable"
+      ]
+    },
+    {
+      "id": "returnMasterClose-ee8b4e415d5b",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "returnMasterClose"
+      ]
+    },
+    {
+      "id": "ORDER_PAGE_SIZE-7a35ec7867dd",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "ORDER_PAGE_SIZE"
+      ]
+    },
+    {
+      "id": "orderPage-a83482235701",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderPage",
+        "orderPageFilterKey"
+      ]
+    },
+    {
+      "id": "currentOrderPage-58495227d868",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "currentOrderPage"
+      ]
+    },
+    {
+      "id": "renderOrderPagination-cd604dc059e7",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderOrderPagination"
+      ]
+    },
+    {
+      "id": "renderOrders-e4044ce1a8b6",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "renderOrders"
+      ]
+    },
+    {
+      "id": "hasRecordedCashSurrenderOn-437f4036f0a7",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "hasRecordedCashSurrenderOn"
+      ]
+    },
+    {
+      "id": "renderToday-f276d10a7135",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderToday"
+      ]
+    },
+    {
+      "id": "matchesDrill-d5b8a7801f0d",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "matchesDrill"
+      ]
+    },
+    {
+      "id": "spbArea-a4bbc7d86fbb",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "spbArea"
+      ]
+    },
+    {
+      "id": "filterRows-260239d24127",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "filterRows"
+      ]
+    },
+    {
+      "id": "renderDrillBanner-0052c56715cd",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderDrillBanner"
+      ]
+    },
+    {
+      "id": "clearDrill-f11513f9f3b6",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "clearDrill"
+      ]
+    },
+    {
+      "id": "setDrill-caaea8c044dd",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setDrill"
+      ]
+    },
+    {
+      "id": "applySimpleDrill-0603eecf4699",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "applySimpleDrill"
+      ]
+    },
+    {
+      "id": "setSelectCanonical-0bb71564f875",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setSelectCanonical"
+      ]
+    },
+    {
+      "id": "setCanonicalFilter-1ac6ea233522",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setCanonicalFilter"
+      ]
+    },
+    {
+      "id": "bindBarsToFilter-74c77861f5a8",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "bindBarsToFilter"
+      ]
+    },
+    {
+      "id": "handleKpiDrill-57b4d54e0de8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "handleKpiDrill"
+      ]
+    },
+    {
+      "id": "currentExpenses-c1b1b8a1c565",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "currentExpenses"
+      ]
+    },
+    {
+      "id": "kpiData-81c4ff44c4a8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "kpiData"
+      ]
+    },
+    {
+      "id": "kpiCard-8938b3ef664c",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "kpiCard"
+      ]
+    },
+    {
+      "id": "renderExecutiveSummary-a35e007e8a21",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderExecutiveSummary"
+      ]
+    },
+    {
+      "id": "group-6b61418b25b1",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "group"
+      ]
+    },
+    {
+      "id": "barsHTML-3543fccdbb46",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "barsHTML"
+      ]
+    },
+    {
+      "id": "lineSVG-2893e25a807d",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "lineSVG"
+      ]
+    },
+    {
+      "id": "periodKey-60e2d767ced8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "periodKey"
+      ]
+    },
+    {
+      "id": "minutesBetween-ae5481e2531c",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "minutesBetween"
+      ]
+    },
+    {
+      "id": "staffProfileById-079ab6c22371",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "staffProfileById"
+      ]
+    },
+    {
+      "id": "onDutyMasters-81f6d43639a3",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "onDutyMasters"
+      ]
+    },
+    {
+      "id": "masterNames-257354127b23",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "masterNames"
+      ]
+    },
+    {
+      "id": "mergeMasterShiftCache-852178977ec7",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "mergeMasterShiftCache"
+      ]
+    },
+    {
+      "id": "weekDates-cb5f15db9132",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "weekDates"
+      ]
+    },
+    {
+      "id": "shiftWeekLabel-b9210364f09b",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftWeekLabel"
+      ]
+    },
+    {
+      "id": "loadMasterWeek-b7101efa4120",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "loadMasterWeek"
+      ]
+    },
+    {
+      "id": "requestMasterWeekLoad-284aa9a224e0",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "requestMasterWeekLoad"
+      ]
+    },
+    {
+      "id": "updateMasterWeekSummary-1bd0af8c6d38",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "updateMasterWeekSummary"
+      ]
+    },
+    {
+      "id": "renderMasterShifts-d2957c00853e",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "renderMasterShifts"
+      ]
+    },
+    {
+      "id": "saveMasterShift-b87eeacec732",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "saveMasterShift"
+      ]
+    },
+    {
+      "id": "weekRange-a071a18ef59e",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "weekRange"
+      ]
+    },
+    {
+      "id": "uniqueShiftReports-80829dbf4114",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "uniqueShiftReports"
+      ]
+    },
+    {
+      "id": "weeklySnapshot-3c59599390df",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "weeklySnapshot"
+      ]
+    },
+    {
+      "id": "loadOwnerWeekReports-70511cebd786",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "loadOwnerWeekReports"
+      ]
+    },
+    {
+      "id": "payrollShiftKey-de191be9bb0c",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "payrollShiftKey"
+      ]
+    },
+    {
+      "id": "orderPayrollShift-c649370ab426",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "orderPayrollShift"
+      ]
+    },
+    {
+      "id": "orderDispatcherName-e1b2a3589c14",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderDispatcherName"
+      ]
+    },
+    {
+      "id": "syncDispatcherShiftFilter-22d5d4dd1ed2",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncDispatcherShiftFilter"
+      ]
+    },
+    {
+      "id": "orderMatchesDispatcher-05c985aa8903",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderMatchesDispatcher"
+      ]
+    },
+    {
+      "id": "payrollAccountingReport-8262249d3fbf",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollAccountingReport"
+      ]
+    },
+    {
+      "id": "payrollAccountedIds-dec75e968adb",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollAccountedIds"
+      ]
+    },
+    {
+      "id": "payrollSchedule-1efca8b4814c",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollSchedule"
+      ]
+    },
+    {
+      "id": "payrollSettlementLedger-14262713128c",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollSettlementLedger"
+      ]
+    },
+    {
+      "id": "payrollOrdersFor-09376c14f586",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "payrollOrdersFor"
+      ]
+    },
+    {
+      "id": "payrollOrderCountLabel-8ca66ef3d582",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "payrollOrderCountLabel"
+      ]
+    },
+    {
+      "id": "payrollOrderCashRecorded-b82d4711ff17",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "payrollOrderCashRecorded"
+      ]
+    },
+    {
+      "id": "payrollScheduledShift-c1afebecd70e",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollScheduledShift"
+      ]
+    },
+    {
+      "id": "historicalPayrollOrderAudit-0a2d62b5a38a",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "historicalPayrollOrderAudit"
+      ]
+    },
+    {
+      "id": "historicalPayrollScopeLabel-3a812f0a9531",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "historicalPayrollScopeLabel"
+      ]
+    },
+    {
+      "id": "renderHistoricalPayroll-d4b66f01929a",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderHistoricalPayroll"
+      ]
+    },
+    {
+      "id": "backfillClosedHistoricalShifts-25b9ad1fd867",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "backfillClosedHistoricalShifts"
+      ]
+    },
+    {
+      "id": "bindBackfill-06a48d6840b8",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "bindBackfill"
+      ]
+    },
+    {
+      "id": "renderTwoDayPayrollPayouts-4220e297a7ad",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderTwoDayPayrollPayouts"
+      ]
+    },
+    {
+      "id": "renderLatePayrollQueue-239fd1732e61",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderLatePayrollQueue"
+      ]
+    },
+    {
+      "id": "renderDailyPayrollReconciliation-4d6a5baa9ddd",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderDailyPayrollReconciliation"
+      ]
+    },
+    {
+      "id": "payrollCycleUiStatus-ee8dc199619d",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "payrollCycleUiStatus"
+      ]
+    },
+    {
+      "id": "renderPayrollCycleRegister-5260983879c4",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderPayrollCycleRegister"
+      ]
+    },
+    {
+      "id": "renderWeeklyReports-c5fbfc82e66a",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderWeeklyReports"
+      ]
+    },
+    {
+      "id": "closeWeek-21ed3e4d901d",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "closeWeek"
+      ]
+    },
+    {
+      "id": "shiftPayroll-47e7e3ed3cc7",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftPayroll"
+      ]
+    },
+    {
+      "id": "shiftOrderDate-452385374378",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftOrderDate"
+      ]
+    },
+    {
+      "id": "shiftOrders-c3172a1a8ab9",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftOrders"
+      ]
+    },
+    {
+      "id": "shiftCashRecordedDate-c84eda69bbe0",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "shiftCashRecordedDate"
+      ]
+    },
+    {
+      "id": "shiftSettlementDate-86078c009dca",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftSettlementDate"
+      ]
+    },
+    {
+      "id": "shiftSettlementOrders-6ae28aa841d7",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftSettlementOrders"
+      ]
+    },
+    {
+      "id": "legacyShiftSnapshot-24816aa9569e",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "legacyShiftSnapshot"
+      ]
+    },
+    {
+      "id": "shiftSnapshot-8356621c5670",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftSnapshot"
+      ]
+    },
+    {
+      "id": "shiftReportText-018ca82c90ef",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "shiftReportText"
+      ]
+    },
+    {
+      "id": "historicalPayrollDigest-5cbc8bc7ef0b",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "historicalPayrollDigest"
+      ]
+    },
+    {
+      "id": "historicalPayrollShiftSnapshot-411d2e3b38de",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "historicalPayrollShiftSnapshot"
+      ]
+    },
+    {
+      "id": "shiftIntegrity-c1b12ee49adf",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "shiftIntegrity"
+      ]
+    },
+    {
+      "id": "shiftReportComparison-4901c292557e",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "shiftReportComparison"
+      ]
+    },
+    {
+      "id": "renderOwnerShiftApprovals-c715451eca6a",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderOwnerShiftApprovals"
+      ]
+    },
+    {
+      "id": "renderShiftClose-0c2972d31b20",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderShiftClose"
+      ]
+    },
+    {
+      "id": "subscribeShiftCenter-65cb1a7c09e6",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "subscribeShiftCenter"
+      ]
+    },
+    {
+      "id": "hydrateShiftCenter-19f69f0dfb9d",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "hydrateShiftCenter"
+      ]
+    },
+    {
+      "id": "closeCurrentShift-732d417b56f5",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "closeCurrentShift"
+      ]
+    },
+    {
+      "id": "shareShiftReport-ea312222b8dd",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shareShiftReport"
+      ]
+    },
+    {
+      "id": "renderShiftReports-f6c11424f0a2",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "renderShiftReports"
+      ]
+    },
+    {
+      "id": "performanceStaffGroups-feedaf3d420d",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "performanceStaffGroups"
+      ]
+    },
+    {
+      "id": "renderTeamPerformance-5dfba5728a27",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderTeamPerformance"
+      ]
+    },
+    {
+      "id": "aiEligibleMasters-c2995f6f567d",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiEligibleMasters"
+      ]
+    },
+    {
+      "id": "aiFeaturesForMaster-81075ebfbf77",
+      "domain": "quality",
+      "file": "quality/owner.js",
+      "symbols": [
+        "aiFeaturesForMaster"
+      ]
+    },
+    {
+      "id": "aiCashDay-73bef13077f1",
+      "domain": "finance",
+      "file": "finance/owner.js",
+      "symbols": [
+        "aiCashDay"
+      ]
+    },
+    {
+      "id": "aiIsCashClosed-35465e8b83f1",
+      "domain": "finance",
+      "file": "finance/owner.js",
+      "symbols": [
+        "aiIsCashClosed"
+      ]
+    },
+    {
+      "id": "aiOrderRecency-0c2675db88b5",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiOrderRecency"
+      ]
+    },
+    {
+      "id": "renderAI-daf2a699a278",
+      "domain": "quality",
+      "file": "quality/owner.js",
+      "symbols": [
+        "renderAI"
+      ]
+    },
+    {
+      "id": "parseOrderIdFromText-097dbb7aee8f",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "parseOrderIdFromText"
+      ]
+    },
+    {
+      "id": "findKnownMasterInText-f93771babe43",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "findKnownMasterInText"
+      ]
+    },
+    {
+      "id": "renderAICommand-043221f0096d",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderAICommand"
+      ]
+    },
+    {
+      "id": "runAICommand-287d9f27c0a2",
+      "domain": "quality",
+      "file": "quality/owner.js",
+      "symbols": [
+        "runAICommand"
+      ]
+    },
+    {
+      "id": "applyAICommand-ef1d402a4caf",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "applyAICommand"
+      ]
+    },
+    {
+      "id": "buildAudit100-45e223a02ee1",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "buildAudit100"
+      ]
+    },
+    {
+      "id": "runAudit100-fb7a501ce829",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "runAudit100"
+      ]
+    },
+    {
+      "id": "autoHeal100-a4e4bd2efe17",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "autoHeal100"
+      ]
+    },
+    {
+      "id": "renderDailyCash-a349dd44a257",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "renderDailyCash"
+      ]
+    },
+    {
+      "id": "renderDashboard-40a515c112f2",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderDashboard"
+      ]
+    },
+    {
+      "id": "renderPerformance-dc373758dc06",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderPerformance"
+      ]
+    },
+    {
+      "id": "collectionsLag-66288b43b81e",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "collectionsLag"
+      ]
+    },
+    {
+      "id": "payrollDailyEstimate-50f83c29ef78",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "payrollDailyEstimate"
+      ]
+    },
+    {
+      "id": "renderPendingPayroll-f2027e1b0761",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderPendingPayroll"
+      ]
+    },
+    {
+      "id": "renderPayrollFinance-b7274f246ed3",
+      "domain": "payroll",
+      "file": "payroll/owner.js",
+      "symbols": [
+        "renderPayrollFinance"
+      ]
+    },
+    {
+      "id": "renderFinance-e8ed6c7d091b",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "renderFinance"
+      ]
+    },
+    {
+      "id": "isExcelSerialTime-01db0335f5d8",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "isExcelSerialTime"
+      ]
+    },
+    {
+      "id": "duplicateOrderKey-69bd3bb684bc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrderKey"
+      ]
+    },
+    {
+      "id": "duplicateOrderIds-314ec516517a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrderIds"
+      ]
+    },
+    {
+      "id": "quality-1219182597bf",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "quality"
+      ]
+    },
+    {
+      "id": "renderQuality-47f0262a9ca4",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderQuality"
+      ]
+    },
+    {
+      "id": "refillFilters-173622a1ecf2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "refillFilters"
+      ]
+    },
+    {
+      "id": "setRange-7d4c663b6060",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setRange"
+      ]
+    },
+    {
+      "id": "addExpense-c74724e4c843",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "addExpense"
+      ]
+    },
+    {
+      "id": "download-5bb00b801e89",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "download"
+      ]
+    },
+    {
+      "id": "orderToRow-b155218a8279",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderToRow"
+      ]
+    },
+    {
+      "id": "legacyOrderToRow-c7a01d9d66dc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "legacyOrderToRow"
+      ]
+    },
+    {
+      "id": "csvCell-8200d9d73766",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "csvCell"
+      ]
+    },
+    {
+      "id": "exportCSV-aa3552f1c253",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportCSV"
+      ]
+    },
+    {
+      "id": "ensureXLSX-07a8c28507e4",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "ensureXLSX"
+      ]
+    },
+    {
+      "id": "normalizeImportHeaders-2acda9c05ca2",
+      "domain": "imports",
+      "file": "imports/owner-dispatcher.js",
+      "symbols": [
+        "normalizeImportHeaders"
+      ]
+    },
+    {
+      "id": "sheetRowToOrder-d6a2f6cdbc81",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "sheetRowToOrder"
+      ]
+    },
+    {
+      "id": "normalizeExcelDate-0ab09495411a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeExcelDate"
+      ]
+    },
+    {
+      "id": "normalizeExcelTime-244f86b59d0d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeExcelTime"
+      ]
+    },
+    {
+      "id": "loadFile-c5cc618cdd8b",
+      "domain": "imports",
+      "file": "imports/owner.js",
+      "symbols": [
+        "loadFile"
+      ]
+    },
+    {
+      "id": "renderImportPreview-a2b5498c0c3e",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "renderImportPreview"
+      ]
+    },
+    {
+      "id": "mergeImport-bcdda54ffa78",
+      "domain": "imports",
+      "file": "imports/owner.js",
+      "symbols": [
+        "mergeImport"
+      ]
+    },
+    {
+      "id": "exportExcel-fadafc6ec0c9",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportExcel"
+      ]
+    },
+    {
+      "id": "backupPayload-82ac3d98450a",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "backupPayload"
+      ]
+    },
+    {
+      "id": "backup-52ebbec9b47b",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "backup"
+      ]
+    },
+    {
+      "id": "restore-4a5cf24f52ad",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "restore"
+      ]
+    },
+    {
+      "id": "renderSchema-36437645be4c",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "renderSchema"
+      ]
+    },
+    {
+      "id": "applySettings-53a28fa277d1",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "applySettings"
+      ]
+    },
+    {
+      "id": "saveSettings-abf2a9273ae6",
+      "domain": "settings",
+      "file": "settings/owner-dispatcher.js",
+      "symbols": [
+        "saveSettings"
+      ]
+    },
+    {
+      "id": "applyOrderFormPermissions-341227c15906",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "applyOrderFormPermissions"
+      ]
+    },
+    {
+      "id": "AI_UI_DEFAULT-e1d713e60152",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "AI_UI_DEFAULT"
+      ]
+    },
+    {
+      "id": "mergeDeep-2023fa420bd4",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "mergeDeep"
+      ]
+    },
+    {
+      "id": "hexSafe-ff7b7bb1637a",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "hexSafe"
+      ]
+    },
+    {
+      "id": "aiUiModuleAllowed-22c6779527be",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiUiModuleAllowed"
+      ]
+    },
+    {
+      "id": "renderRoleWorkGuide-dba80b0c2528",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "renderRoleWorkGuide"
+      ]
+    },
+    {
+      "id": "applyRoleUI-ce5d50ae73d8",
+      "domain": "ui",
+      "file": "ui/owner.js",
+      "symbols": [
+        "applyRoleUI"
+      ]
+    },
+    {
+      "id": "loginProfiles-0c708dd61a4f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "loginProfiles"
+      ]
+    },
+    {
+      "id": "renderLoginUsers-d423accc23e0",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "renderLoginUsers"
+      ]
+    },
+    {
+      "id": "BETA_SESSION_KEY-75cea82d61b8",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "BETA_SESSION_KEY",
+        "BETA_LAST_USER_KEY"
+      ]
+    },
+    {
+      "id": "betaSessionSignature-7ab73ef8ef9b",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaSessionSignature"
+      ]
+    },
+    {
+      "id": "betaClearRememberedLogin-fed1542cf90f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaClearRememberedLogin"
+      ]
+    },
+    {
+      "id": "betaRememberProfile-921e53e3701d",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaRememberProfile"
+      ]
+    },
+    {
+      "id": "betaRestoreRememberedLogin-35caf2a7f67f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaRestoreRememberedLogin"
+      ]
+    },
+    {
+      "id": "beginLogin-a0a8fae7f376",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "beginLogin"
+      ]
+    },
+    {
+      "id": "loginNow-31f59ac1571c",
+      "domain": "staff",
+      "file": "staff/owner.js",
+      "symbols": [
+        "loginNow"
+      ]
+    },
+    {
+      "id": "logout-2987d08e7b36",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "logout"
+      ]
+    },
+    {
+      "id": "toggleNewStaffPin-7ba1ecc80f77",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "toggleNewStaffPin"
+      ]
+    },
+    {
+      "id": "renderStaff-13b233a85851",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "renderStaff"
+      ]
+    },
+    {
+      "id": "toggleStaff-9293ecb3836f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "toggleStaff"
+      ]
+    },
+    {
+      "id": "renderMasterRoster-ef6400f03ce1",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "renderMasterRoster"
+      ]
+    },
+    {
+      "id": "setMasterFixedMode-b5b8dae3f489",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "setMasterFixedMode"
+      ]
+    },
+    {
+      "id": "prepareMasterAccount-72d26133092a",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "prepareMasterAccount"
+      ]
+    },
+    {
+      "id": "persistMasterRoster-7a607f3b6e93",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "persistMasterRoster"
+      ]
+    },
+    {
+      "id": "addRosterMaster-944d61da0ded",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "addRosterMaster"
+      ]
+    },
+    {
+      "id": "removeRosterMaster-ccd3061bbefa",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "removeRosterMaster"
+      ]
+    },
+    {
+      "id": "saveAccessSettings-9aede80542ca",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "saveAccessSettings"
+      ]
+    },
+    {
+      "id": "addStaff-093e291d99a2",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "addStaff"
+      ]
+    },
+    {
+      "id": "randomSecret-5eef36a6c9a4",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "randomSecret"
+      ]
+    },
+    {
+      "id": "saveOpsSettings-0b157414e061",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "saveOpsSettings"
+      ]
+    },
+    {
+      "id": "renderSettings-8d3540859f1a",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "renderSettings"
+      ]
+    },
+    {
+      "id": "selfTests-12e66b81ffb4",
+      "domain": "quality",
+      "file": "quality/owner.js",
+      "symbols": [
+        "selfTests"
+      ]
+    },
+    {
+      "id": "liveQualityMonitor-9be3a7b7b66b",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "liveQualityMonitor"
+      ]
+    },
+    {
+      "id": "refreshLiveQuality-e2fb0d2da0de",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "refreshLiveQuality"
+      ]
+    },
+    {
+      "id": "refresh-48a223ceb4d4",
+      "domain": "ui",
+      "file": "ui/owner.js",
+      "symbols": [
+        "refresh"
+      ]
+    },
+    {
+      "id": "autoStatusFromVisit-95d7d21ee03b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "autoStatusFromVisit"
+      ]
+    },
+    {
+      "id": "wireLabels-d1d86fd5a7f8",
+      "domain": "bootstrap",
+      "file": "bootstrap/shared.js",
+      "symbols": [
+        "wireLabels"
+      ]
+    },
+    {
+      "id": "bind-dde3d28f3c78",
+      "domain": "bootstrap",
+      "file": "bootstrap/owner.js",
+      "symbols": [
+        "bind"
+      ]
+    },
+    {
+      "id": "init-cd3e0f18cc26",
+      "domain": "bootstrap",
+      "file": "bootstrap/owner.js",
+      "symbols": [
+        "init"
+      ]
+    },
+    {
+      "id": "betaSeedLocal-0bb2d3f1e43d",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaSeedLocal"
+      ]
+    },
+    {
+      "id": "betaResetLocal-b34dc2e4f9fd",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaResetLocal"
+      ]
+    }
+  ],
+  "dispatcher": [
+    {
+      "id": "ImportDeclaration-0-8478b81bfdad",
+      "domain": "bootstrap",
+      "file": "bootstrap/shared.js",
+      "symbols": [
+        "loadOptionalFeature"
+      ]
+    },
+    {
+      "id": "PRESETS-5cd5988cc4c6",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "PRESETS"
+      ]
+    },
+    {
+      "id": "HEADERS-66318dec10a1",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "HEADERS"
+      ]
+    },
+    {
+      "id": "KEYS-e3ade43bac5e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "KEYS"
+      ]
+    },
+    {
+      "id": "APP_HEADERS-89dae34ea3f2",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "APP_HEADERS"
+      ]
+    },
+    {
+      "id": "APP_KEYS-47024d710bf9",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "APP_KEYS"
+      ]
+    },
+    {
+      "id": "LABELS-af51307ae05e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "LABELS"
+      ]
+    },
+    {
+      "id": "$-0d332a6d83e9",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "$",
+        "$$"
+      ]
+    },
+    {
+      "id": "STATUS_META-e51ce7bfad4d",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "STATUS_META"
+      ]
+    },
+    {
+      "id": "STATUS_ORDER-c5706335410c",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "STATUS_ORDER"
+      ]
+    },
+    {
+      "id": "REVIEW_WORKFLOW-0ea9f6f9c161",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "REVIEW_WORKFLOW"
+      ]
+    },
+    {
+      "id": "MASTER_STAGE_LABELS-fbb8454e6145",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "MASTER_STAGE_LABELS"
+      ]
+    },
+    {
+      "id": "isReviewWorkflow-95b461338238",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isReviewWorkflow"
+      ]
+    },
+    {
+      "id": "workflowStage-518137d122de",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStage"
+      ]
+    },
+    {
+      "id": "workflowStageLabel-fe94894a1075",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStageLabel"
+      ]
+    },
+    {
+      "id": "workflowStageChip-170ebd21721c",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStageChip"
+      ]
+    },
+    {
+      "id": "clearWorkflowExecution-bfd1093bc22e",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "clearWorkflowExecution"
+      ]
+    },
+    {
+      "id": "resetWorkflowForAssignment-3eb6e5b5547b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "resetWorkflowForAssignment"
+      ]
+    },
+    {
+      "id": "markNewReviewWorkflow-7fe7d5d6fdb9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "markNewReviewWorkflow"
+      ]
+    },
+    {
+      "id": "workflowReviewerAllowed-dbf49d65f176",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowReviewerAllowed"
+      ]
+    },
+    {
+      "id": "FORCED_APP_ROLE-b33481c1cb61",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "FORCED_APP_ROLE",
+        "FORCED_APP_ROLES",
+        "SECURE_CLOUD_REQUIRED"
+      ]
+    },
+    {
+      "id": "canonicalRole-bfadaaac0548",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "canonicalRole"
+      ]
+    },
+    {
+      "id": "ownerPreviewActive-acb127e2eb65",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "ownerPreviewActive"
+      ]
+    },
+    {
+      "id": "forcedRoleOk-d92c02b0deea",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "forcedRoleOk"
+      ]
+    },
+    {
+      "id": "roleEntryUrl-bf4ce1aeeac0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleEntryUrl"
+      ]
+    },
+    {
+      "id": "redirectRoleMismatch-800d5c8e8792",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "redirectRoleMismatch"
+      ]
+    },
+    {
+      "id": "ROLE_META-f36539688fb5",
+      "domain": "staff",
+      "file": "staff/dispatcher.js",
+      "symbols": [
+        "ROLE_META"
+      ]
+    },
+    {
+      "id": "masterWeekDirty-aae79739fe5f",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "masterWeekDirty",
+        "masterWeekLoading",
+        "masterWeekSaving",
+        "masterWeekReady",
+        "masterWeekAnchor",
+        "masterWeekRequest"
+      ]
+    },
+    {
+      "id": "state-ab1159ba4148",
+      "domain": "core",
+      "file": "core/dispatcher.js",
+      "symbols": [
+        "state"
+      ]
+    },
+    {
+      "id": "clean-261b7b93dc6f",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "clean"
+      ]
+    },
+    {
+      "id": "norm-6d60250fb036",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "norm"
+      ]
+    },
+    {
+      "id": "esc-9b205d5c660f",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "esc"
+      ]
+    },
+    {
+      "id": "numMaybe-8ffc3d64b266",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "numMaybe"
+      ]
+    },
+    {
+      "id": "num-889072de6386",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "num"
+      ]
+    },
+    {
+      "id": "uid-7b425bb2dd8e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "uid"
+      ]
+    },
+    {
+      "id": "pinHash-bb0b5c795f64",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "pinHash"
+      ]
+    },
+    {
+      "id": "orderIdDate-89c6e635e3a8",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderIdDate"
+      ]
+    },
+    {
+      "id": "makeOrderId-88f46a51bc2d",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "makeOrderId"
+      ]
+    },
+    {
+      "id": "ensureOrderIds-d8995ad3ab56",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "ensureOrderIds"
+      ]
+    },
+    {
+      "id": "currentUser-906eb37d9e7b",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "currentUser"
+      ]
+    },
+    {
+      "id": "lockedDispatcher-de9b2c5d76d0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "lockedDispatcher"
+      ]
+    },
+    {
+      "id": "shiftName-0298716bb354",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "shiftName"
+      ]
+    },
+    {
+      "id": "currentRole-f062f8586d49",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "currentRole"
+      ]
+    },
+    {
+      "id": "roleMeta-5a8af9f31c83",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleMeta"
+      ]
+    },
+    {
+      "id": "can-e610ddd0f514",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "can"
+      ]
+    },
+    {
+      "id": "masterNamesEquivalent-6d9db39204b0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "masterNamesEquivalent"
+      ]
+    },
+    {
+      "id": "canonicalMasterSelection-af9f448256ce",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "canonicalMasterSelection"
+      ]
+    },
+    {
+      "id": "canonicalDispatcherSelection-aa071ccf9cec",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "canonicalDispatcherSelection"
+      ]
+    },
+    {
+      "id": "canonicalNameChoices-51d572165626",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "canonicalNameChoices"
+      ]
+    },
+    {
+      "id": "roleVisibleOrders-c3ca249e8658",
+      "domain": "staff",
+      "file": "staff/dispatcher.js",
+      "symbols": [
+        "roleVisibleOrders"
+      ]
+    },
+    {
+      "id": "isPickupOrder-95999f071c21",
+      "domain": "orders",
+      "file": "orders/dispatcher.js",
+      "symbols": [
+        "isPickupOrder"
+      ]
+    },
+    {
+      "id": "isStaffOrderLocked-9c834c4f0bef",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "isStaffOrderLocked"
+      ]
+    },
+    {
+      "id": "roleLabel-9e8182a0b3cd",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleLabel"
+      ]
+    },
+    {
+      "id": "employeeLaunchMode-2008ac89159a",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "employeeLaunchMode"
+      ]
+    },
+    {
+      "id": "parseDate-ee08a73dee34",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "parseDate"
+      ]
+    },
+    {
+      "id": "iso-1f3770793236",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "iso"
+      ]
+    },
+    {
+      "id": "fmtDate-9c852657c996",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "fmtDate"
+      ]
+    },
+    {
+      "id": "today-fc88c9aae119",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "today"
+      ]
+    },
+    {
+      "id": "ddmm-7e44aad38ab5",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "ddmm"
+      ]
+    },
+    {
+      "id": "money-f0cbc3bddf82",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "money"
+      ]
+    },
+    {
+      "id": "integer-45638ccae914",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "integer"
+      ]
+    },
+    {
+      "id": "pct-73a437a9dcf1",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "pct"
+      ]
+    },
+    {
+      "id": "truthReview-46d365034e98",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "truthReview"
+      ]
+    },
+    {
+      "id": "masterAccountFor-8f573cbf6734",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "masterAccountFor"
+      ]
+    },
+    {
+      "id": "masterFixedMode-16e066a94e88",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "masterFixedMode"
+      ]
+    },
+    {
+      "id": "calcAuto-181a9473b16d",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "calcAuto"
+      ]
+    },
+    {
+      "id": "recalcOpenReviewBonusOrders-05db837eebc2",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "recalcOpenReviewBonusOrders"
+      ]
+    },
+    {
+      "id": "orderDate-adaab4c6e88d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderDate"
+      ]
+    },
+    {
+      "id": "timeHour-933365304aab",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "timeHour"
+      ]
+    },
+    {
+      "id": "unique-fe008ed5febb",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "unique"
+      ]
+    },
+    {
+      "id": "median-1a3598681d96",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "median"
+      ]
+    },
+    {
+      "id": "sum-a6808df06ac0",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "sum"
+      ]
+    },
+    {
+      "id": "normalizeOrder-537f42548194",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeOrder"
+      ]
+    },
+    {
+      "id": "semanticValue-0eadcbfc3884",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "semanticValue"
+      ]
+    },
+    {
+      "id": "isMeaningful-f4022b5a4dae",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isMeaningful"
+      ]
+    },
+    {
+      "id": "isSeparatorLike-76f6825a8663",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isSeparatorLike"
+      ]
+    },
+    {
+      "id": "isServiceMaster-38dfd651b10e",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "isServiceMaster"
+      ]
+    },
+    {
+      "id": "derivedStage-56b52419be93",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "derivedStage"
+      ]
+    },
+    {
+      "id": "stageClass-c1dd8103e974",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "stageClass"
+      ]
+    },
+    {
+      "id": "statusPill-9d4e17bb4b66",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "statusPill"
+      ]
+    },
+    {
+      "id": "parseGridRates-d975af59a0d4",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "parseGridRates"
+      ]
+    },
+    {
+      "id": "financeMetric-8eb47db63944",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "financeMetric"
+      ]
+    },
+    {
+      "id": "inferredStatusFromStyle-214e037d7630",
+      "domain": "imports",
+      "file": "imports/dispatcher.js",
+      "symbols": [
+        "inferredStatusFromStyle"
+      ]
+    },
+    {
+      "id": "statusFromWorksheetRow-af1cbc1a49eb",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "statusFromWorksheetRow"
+      ]
+    },
+    {
+      "id": "canonicalKey-cbef10fde4cc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "canonicalKey"
+      ]
+    },
+    {
+      "id": "normalizeKnown-ccd45603e385",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeKnown"
+      ]
+    },
+    {
+      "id": "cleanPhoneForCompare-17f460f3f524",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "cleanPhoneForCompare"
+      ]
+    },
+    {
+      "id": "invalidMoney-d40cd6117233",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "invalidMoney"
+      ]
+    },
+    {
+      "id": "fingerprint-cd4068d48aaf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "fingerprint"
+      ]
+    },
+    {
+      "id": "log-87f9014907a4",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "log"
+      ]
+    },
+    {
+      "id": "toast-bd39ae2e7c29",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "toast"
+      ]
+    },
+    {
+      "id": "DB-07afe27772bb",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "DB",
+        "STORE",
+        "KEY"
+      ]
+    },
+    {
+      "id": "idbOpen-74cf566368f9",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "idbOpen"
+      ]
+    },
+    {
+      "id": "legacyIdbRead-28fa1f1c4aa5",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "legacyIdbRead"
+      ]
+    },
+    {
+      "id": "BETA_STATE_API-5a95484d63eb",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "BETA_STATE_API",
+        "BETA_RESET_API"
+      ]
+    },
+    {
+      "id": "betaLastAppliedSavedAt-cc3a494a1c3d",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaLastAppliedSavedAt",
+        "betaBroadcast",
+        "betaSyncBusy",
+        "betaLiveTimer",
+        "betaReminderTimer",
+        "betaCloudSnapshotReady"
+      ]
+    },
+    {
+      "id": "betaSafeSettings-799ed7603a7b",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaSafeSettings"
+      ]
+    },
+    {
+      "id": "betaApplyTombstones-f274cd0fe608",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaApplyTombstones"
+      ]
+    },
+    {
+      "id": "betaServerRead-05b53348b00f",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaServerRead"
+      ]
+    },
+    {
+      "id": "betaServerWrite-1a56935d0a08",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaServerWrite"
+      ]
+    },
+    {
+      "id": "dbRead-8746923ed5d0",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "dbRead"
+      ]
+    },
+    {
+      "id": "dbWrite-21fa20a04eed",
+      "domain": "integrations",
+      "file": "integrations/dispatcher.js",
+      "symbols": [
+        "dbWrite"
+      ]
+    },
+    {
+      "id": "betaOrderKey-7f90fc0e2f2a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "betaOrderKey"
+      ]
+    },
+    {
+      "id": "betaNotificationAllowedFor-2cb2d674107e",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaNotificationAllowedFor"
+      ]
+    },
+    {
+      "id": "betaNotify-848fe6ec2f46",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaNotify"
+      ]
+    },
+    {
+      "id": "betaUpdateNotificationButtons-7948d1635939",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaUpdateNotificationButtons"
+      ]
+    },
+    {
+      "id": "betaEnableNotifications-d0ca1b082b9d",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaEnableNotifications"
+      ]
+    },
+    {
+      "id": "betaApplyIncoming-4c1e27d002d7",
+      "domain": "integrations",
+      "file": "integrations/owner-dispatcher.js",
+      "symbols": [
+        "betaApplyIncoming"
+      ]
+    },
+    {
+      "id": "betaPullServerState-65e7de049695",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaPullServerState"
+      ]
+    },
+    {
+      "id": "betaUpcomingReminders-dd613d60e2c1",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaUpcomingReminders"
+      ]
+    },
+    {
+      "id": "betaStartLiveSync-34e7675e0732",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaStartLiveSync"
+      ]
+    },
+    {
+      "id": "fillDatalists-913eec741a00",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "fillDatalists"
+      ]
+    },
+    {
+      "id": "switchTab-0a5fbc31ee87",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "switchTab"
+      ]
+    },
+    {
+      "id": "formRecord-a30f01552ee8",
+      "domain": "orders",
+      "file": "orders/dispatcher.js",
+      "symbols": [
+        "formRecord"
+      ]
+    },
+    {
+      "id": "setForm-46a7de53d184",
+      "domain": "orders",
+      "file": "orders/dispatcher.js",
+      "symbols": [
+        "setForm"
+      ]
+    },
+    {
+      "id": "syncStatusPalette-92bc6790daa0",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncStatusPalette"
+      ]
+    },
+    {
+      "id": "syncFinanceMode-25edc8187ab0",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "syncFinanceMode"
+      ]
+    },
+    {
+      "id": "recalculateFinance-b07b9f4393b6",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "recalculateFinance"
+      ]
+    },
+    {
+      "id": "renderFormPreview-9741d38ae83b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderFormPreview"
+      ]
+    },
+    {
+      "id": "applyFinanceHint-45058b1cab01",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "applyFinanceHint"
+      ]
+    },
+    {
+      "id": "saveOrder-50dd35b2e695",
+      "domain": "orders",
+      "file": "orders/dispatcher.js",
+      "symbols": [
+        "saveOrder"
+      ]
+    },
+    {
+      "id": "editOrder-2f196f017148",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "editOrder"
+      ]
+    },
+    {
+      "id": "openOrderDetails-b88d7ebc2db5",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "openOrderDetails"
+      ]
+    },
+    {
+      "id": "deleteOrder-adf12642f08a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "deleteOrder"
+      ]
+    },
+    {
+      "id": "addressWithoutApartment-afc06e4d1fa0",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "addressWithoutApartment"
+      ]
+    },
+    {
+      "id": "callTimestamp-d89ec1ceb417",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "callTimestamp"
+      ]
+    },
+    {
+      "id": "responsibilityMoment-15b8ca5fefc9",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "responsibilityMoment"
+      ]
+    },
+    {
+      "id": "orderResponsibility-587e7a530fdc",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "orderResponsibility"
+      ]
+    },
+    {
+      "id": "problemDisclosure-3ce100108875",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "problemDisclosure"
+      ]
+    },
+    {
+      "id": "copyOrderForMaster-003ed92f86a2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "copyOrderForMaster"
+      ]
+    },
+    {
+      "id": "duplicateOrder-285e73846c6a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrder"
+      ]
+    },
+    {
+      "id": "openModal-6fbb992c5929",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openModal"
+      ]
+    },
+    {
+      "id": "closeModal-f6d68ca21f4f",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "closeModal"
+      ]
+    },
+    {
+      "id": "openOrder-2bb06a9f1d59",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "openOrder"
+      ]
+    },
+    {
+      "id": "masterQuickInput-671a1a62515a",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "masterQuickInput"
+      ]
+    },
+    {
+      "id": "quickSetMaster-f8a1ce3780c5",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "quickSetMaster"
+      ]
+    },
+    {
+      "id": "setOrderColorFilter-b00128c350d9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setOrderColorFilter"
+      ]
+    },
+    {
+      "id": "cloudMode-e9383c487759",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "cloudMode"
+      ]
+    },
+    {
+      "id": "dispatcherCloseRows-b54d52d0ab14",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "dispatcherCloseRows"
+      ]
+    },
+    {
+      "id": "ORDER_CLOSE_KEYS-3493b65f2a46",
+      "domain": "orders",
+      "file": "orders/dispatcher.js",
+      "symbols": [
+        "ORDER_CLOSE_KEYS"
+      ]
+    },
+    {
+      "id": "connectCloudWithPin-700dd9f7528d",
+      "domain": "integrations",
+      "file": "integrations/owner-dispatcher.js",
+      "symbols": [
+        "connectCloudWithPin"
+      ]
+    },
+    {
+      "id": "setDashboardColorFilter-9c95a5e17d0c",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setDashboardColorFilter"
+      ]
+    },
+    {
+      "id": "currentOrderRows-50d81cc04c81",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "currentOrderRows"
+      ]
+    },
+    {
+      "id": "syncSelectionUI-38d9e7bd8e92",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncSelectionUI"
+      ]
+    },
+    {
+      "id": "toggleOrderSelection-5950cd509e6d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "toggleOrderSelection"
+      ]
+    },
+    {
+      "id": "clearSelection-5e1a9c591e5d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "clearSelection"
+      ]
+    },
+    {
+      "id": "selectAllFound-244de9878ed9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "selectAllFound"
+      ]
+    },
+    {
+      "id": "renderRecentMasters-295bed3506df",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderRecentMasters"
+      ]
+    },
+    {
+      "id": "renderColorAudit-e0569be1b9cc",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderColorAudit"
+      ]
+    },
+    {
+      "id": "openBulkModal-d876cc4005bb",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openBulkModal"
+      ]
+    },
+    {
+      "id": "applyBulkChanges-4d9e7027575a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "applyBulkChanges"
+      ]
+    },
+    {
+      "id": "exportSelectedCSV-ee032baf8618",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportSelectedCSV"
+      ]
+    },
+    {
+      "id": "deleteSelectedOrders-961d7d3b08cf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "deleteSelectedOrders"
+      ]
+    },
+    {
+      "id": "maskedPhone-1e6b44df05fb",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "maskedPhone"
+      ]
+    },
+    {
+      "id": "localDateParts-15523fa0f90a",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "localDateParts"
+      ]
+    },
+    {
+      "id": "clockParts-c54ac801b360",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "clockParts"
+      ]
+    },
+    {
+      "id": "moscowTodayISO-a8b4639cbaa2",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "moscowTodayISO"
+      ]
+    },
+    {
+      "id": "moscowAppointmentDate-ef2508bba56b",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "moscowAppointmentDate"
+      ]
+    },
+    {
+      "id": "visitUnlockAt-10166122800b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitUnlockAt"
+      ]
+    },
+    {
+      "id": "visitDayClass-5d672647fd0f",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitDayClass"
+      ]
+    },
+    {
+      "id": "visitDayChip-52eb933b40f4",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitDayChip"
+      ]
+    },
+    {
+      "id": "phoneUnlockLabel-9143bc7452cf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "phoneUnlockLabel"
+      ]
+    },
+    {
+      "id": "masterCanSeePhone-334dcacc1e51",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "masterCanSeePhone"
+      ]
+    },
+    {
+      "id": "phoneCell-fb4c90b4d1d2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "phoneCell"
+      ]
+    },
+    {
+      "id": "revealMasterPhone-675065afbf78",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "revealMasterPhone"
+      ]
+    },
+    {
+      "id": "setMasterStage-b4829c7592fd",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setMasterStage"
+      ]
+    },
+    {
+      "id": "openMasterReport-21967407407d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openMasterReport"
+      ]
+    },
+    {
+      "id": "saveMasterReport-29c9d4505a44",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "saveMasterReport"
+      ]
+    },
+    {
+      "id": "masterActionButtons-2e9466316917",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "masterActionButtons"
+      ]
+    },
+    {
+      "id": "closeReviewActions-54a557b67258",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "closeReviewActions"
+      ]
+    },
+    {
+      "id": "approveMasterClose-7f16c882cea5",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "approveMasterClose"
+      ]
+    },
+    {
+      "id": "returnMasterClose-b661ae3398db",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "returnMasterClose"
+      ]
+    },
+    {
+      "id": "ORDER_PAGE_SIZE-7a35ec7867dd",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "ORDER_PAGE_SIZE"
+      ]
+    },
+    {
+      "id": "orderPage-a83482235701",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderPage",
+        "orderPageFilterKey"
+      ]
+    },
+    {
+      "id": "currentOrderPage-58495227d868",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "currentOrderPage"
+      ]
+    },
+    {
+      "id": "renderOrderPagination-cd604dc059e7",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderOrderPagination"
+      ]
+    },
+    {
+      "id": "dispatcherTotalChip-3ebceb3ebc15",
+      "domain": "ui",
+      "file": "ui/dispatcher.js",
+      "symbols": [
+        "dispatcherTotalChip"
+      ]
+    },
+    {
+      "id": "renderOrders-4a614bc9b2fb",
+      "domain": "orders",
+      "file": "orders/dispatcher.js",
+      "symbols": [
+        "renderOrders"
+      ]
+    },
+    {
+      "id": "hasRecordedCashSurrenderOn-437f4036f0a7",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "hasRecordedCashSurrenderOn"
+      ]
+    },
+    {
+      "id": "renderToday-f276d10a7135",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderToday"
+      ]
+    },
+    {
+      "id": "matchesDrill-d5b8a7801f0d",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "matchesDrill"
+      ]
+    },
+    {
+      "id": "spbArea-a4bbc7d86fbb",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "spbArea"
+      ]
+    },
+    {
+      "id": "filterRows-260239d24127",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "filterRows"
+      ]
+    },
+    {
+      "id": "renderDrillBanner-0052c56715cd",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderDrillBanner"
+      ]
+    },
+    {
+      "id": "clearDrill-f11513f9f3b6",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "clearDrill"
+      ]
+    },
+    {
+      "id": "setDrill-caaea8c044dd",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setDrill"
+      ]
+    },
+    {
+      "id": "applySimpleDrill-0603eecf4699",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "applySimpleDrill"
+      ]
+    },
+    {
+      "id": "setSelectCanonical-0bb71564f875",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setSelectCanonical"
+      ]
+    },
+    {
+      "id": "setCanonicalFilter-1ac6ea233522",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setCanonicalFilter"
+      ]
+    },
+    {
+      "id": "bindBarsToFilter-74c77861f5a8",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "bindBarsToFilter"
+      ]
+    },
+    {
+      "id": "handleKpiDrill-57b4d54e0de8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "handleKpiDrill"
+      ]
+    },
+    {
+      "id": "currentExpenses-c1b1b8a1c565",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "currentExpenses"
+      ]
+    },
+    {
+      "id": "kpiData-81c4ff44c4a8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "kpiData"
+      ]
+    },
+    {
+      "id": "kpiCard-8938b3ef664c",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "kpiCard"
+      ]
+    },
+    {
+      "id": "renderExecutiveSummary-a35e007e8a21",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderExecutiveSummary"
+      ]
+    },
+    {
+      "id": "group-6b61418b25b1",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "group"
+      ]
+    },
+    {
+      "id": "barsHTML-3543fccdbb46",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "barsHTML"
+      ]
+    },
+    {
+      "id": "lineSVG-2893e25a807d",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "lineSVG"
+      ]
+    },
+    {
+      "id": "periodKey-60e2d767ced8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "periodKey"
+      ]
+    },
+    {
+      "id": "minutesBetween-ae5481e2531c",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "minutesBetween"
+      ]
+    },
+    {
+      "id": "staffProfileById-079ab6c22371",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "staffProfileById"
+      ]
+    },
+    {
+      "id": "onDutyMasters-81f6d43639a3",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "onDutyMasters"
+      ]
+    },
+    {
+      "id": "masterNames-257354127b23",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "masterNames"
+      ]
+    },
+    {
+      "id": "mergeMasterShiftCache-852178977ec7",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "mergeMasterShiftCache"
+      ]
+    },
+    {
+      "id": "weekDates-cb5f15db9132",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "weekDates"
+      ]
+    },
+    {
+      "id": "shiftWeekLabel-b9210364f09b",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftWeekLabel"
+      ]
+    },
+    {
+      "id": "loadMasterWeek-b7101efa4120",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "loadMasterWeek"
+      ]
+    },
+    {
+      "id": "requestMasterWeekLoad-284aa9a224e0",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "requestMasterWeekLoad"
+      ]
+    },
+    {
+      "id": "updateMasterWeekSummary-1bd0af8c6d38",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "updateMasterWeekSummary"
+      ]
+    },
+    {
+      "id": "renderMasterShifts-d2957c00853e",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "renderMasterShifts"
+      ]
+    },
+    {
+      "id": "saveMasterShift-b87eeacec732",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "saveMasterShift"
+      ]
+    },
+    {
+      "id": "weekRange-a071a18ef59e",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "weekRange"
+      ]
+    },
+    {
+      "id": "uniqueShiftReports-80829dbf4114",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "uniqueShiftReports"
+      ]
+    },
+    {
+      "id": "weeklySnapshot-1cb532ad60ba",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "weeklySnapshot"
+      ]
+    },
+    {
+      "id": "loadOwnerWeekReports-70511cebd786",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "loadOwnerWeekReports"
+      ]
+    },
+    {
+      "id": "renderWeeklyReports-af5b29e8544f",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "renderWeeklyReports"
+      ]
+    },
+    {
+      "id": "closeWeek-21ed3e4d901d",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "closeWeek"
+      ]
+    },
+    {
+      "id": "shiftPayroll-47e7e3ed3cc7",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftPayroll"
+      ]
+    },
+    {
+      "id": "payrollShiftKey-de191be9bb0c",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "payrollShiftKey"
+      ]
+    },
+    {
+      "id": "orderPayrollShift-c649370ab426",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "orderPayrollShift"
+      ]
+    },
+    {
+      "id": "orderDispatcherName-e1b2a3589c14",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderDispatcherName"
+      ]
+    },
+    {
+      "id": "syncDispatcherShiftFilter-22d5d4dd1ed2",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncDispatcherShiftFilter"
+      ]
+    },
+    {
+      "id": "orderMatchesDispatcher-05c985aa8903",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderMatchesDispatcher"
+      ]
+    },
+    {
+      "id": "shiftOrderDate-452385374378",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftOrderDate"
+      ]
+    },
+    {
+      "id": "shiftOrders-c3172a1a8ab9",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftOrders"
+      ]
+    },
+    {
+      "id": "shiftCashRecordedDate-bb7ae06cbd75",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "shiftCashRecordedDate"
+      ]
+    },
+    {
+      "id": "payrollSchedule-1efca8b4814c",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollSchedule"
+      ]
+    },
+    {
+      "id": "payrollScheduledShift-c1afebecd70e",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollScheduledShift"
+      ]
+    },
+    {
+      "id": "payrollOrderCashRecorded-1c79091ab17c",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "payrollOrderCashRecorded"
+      ]
+    },
+    {
+      "id": "payrollSettlementLedger-14262713128c",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollSettlementLedger"
+      ]
+    },
+    {
+      "id": "shiftSettlementDate-86078c009dca",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftSettlementDate"
+      ]
+    },
+    {
+      "id": "payrollAccountingReport-8262249d3fbf",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollAccountingReport"
+      ]
+    },
+    {
+      "id": "payrollAccountedIds-dec75e968adb",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "payrollAccountedIds"
+      ]
+    },
+    {
+      "id": "shiftSettlementOrders-6ae28aa841d7",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftSettlementOrders"
+      ]
+    },
+    {
+      "id": "legacyShiftSnapshot-24816aa9569e",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "legacyShiftSnapshot"
+      ]
+    },
+    {
+      "id": "shiftSnapshot-8356621c5670",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shiftSnapshot"
+      ]
+    },
+    {
+      "id": "shiftReportText-5df0194eaeef",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "shiftReportText"
+      ]
+    },
+    {
+      "id": "shiftIntegrity-41b32c581208",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "shiftIntegrity"
+      ]
+    },
+    {
+      "id": "renderShiftClose-91849dc4d2a9",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "renderShiftClose"
+      ]
+    },
+    {
+      "id": "subscribeShiftCenter-65cb1a7c09e6",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "subscribeShiftCenter"
+      ]
+    },
+    {
+      "id": "hydrateShiftCenter-f8c9af343d75",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "hydrateShiftCenter"
+      ]
+    },
+    {
+      "id": "closeCurrentShift-1be40ec4dc2f",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "closeCurrentShift"
+      ]
+    },
+    {
+      "id": "shareShiftReport-ea312222b8dd",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "shareShiftReport"
+      ]
+    },
+    {
+      "id": "renderShiftReports-f6c11424f0a2",
+      "domain": "payroll",
+      "file": "payroll/owner-dispatcher.js",
+      "symbols": [
+        "renderShiftReports"
+      ]
+    },
+    {
+      "id": "performanceStaffGroups-feedaf3d420d",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "performanceStaffGroups"
+      ]
+    },
+    {
+      "id": "renderTeamPerformance-5dfba5728a27",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderTeamPerformance"
+      ]
+    },
+    {
+      "id": "aiEligibleMasters-c2995f6f567d",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiEligibleMasters"
+      ]
+    },
+    {
+      "id": "aiOrderRecency-0c2675db88b5",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiOrderRecency"
+      ]
+    },
+    {
+      "id": "aiFeaturesForMaster-4c267a132a77",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "aiFeaturesForMaster"
+      ]
+    },
+    {
+      "id": "renderAI-287f6106851f",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "renderAI"
+      ]
+    },
+    {
+      "id": "historicalDayBuckets-4da2a2453fb7",
+      "domain": "payroll",
+      "file": "payroll/dispatcher-master.js",
+      "symbols": [
+        "historicalDayBuckets"
+      ]
+    },
+    {
+      "id": "dayStats-752202cfd647",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "dayStats"
+      ]
+    },
+    {
+      "id": "forecastForDow-56b9beab64a7",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "forecastForDow"
+      ]
+    },
+    {
+      "id": "renderTodayForecast-a4f3c14e904a",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "renderTodayForecast"
+      ]
+    },
+    {
+      "id": "renderExtendedForecasts-4619085512a3",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "renderExtendedForecasts"
+      ]
+    },
+    {
+      "id": "parseOrderIdFromText-ac8cad9ea0e7",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "parseOrderIdFromText"
+      ]
+    },
+    {
+      "id": "findKnownMasterInText-f93771babe43",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "findKnownMasterInText"
+      ]
+    },
+    {
+      "id": "renderAICommand-043221f0096d",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderAICommand"
+      ]
+    },
+    {
+      "id": "runAICommand-df233c1d7bf9",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "runAICommand"
+      ]
+    },
+    {
+      "id": "applyAICommand-ef1d402a4caf",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "applyAICommand"
+      ]
+    },
+    {
+      "id": "buildAudit100-45e223a02ee1",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "buildAudit100"
+      ]
+    },
+    {
+      "id": "runAudit100-fb7a501ce829",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "runAudit100"
+      ]
+    },
+    {
+      "id": "autoHeal100-a4e4bd2efe17",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "autoHeal100"
+      ]
+    },
+    {
+      "id": "renderDailyCash-a349dd44a257",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "renderDailyCash"
+      ]
+    },
+    {
+      "id": "renderDashboard-40a515c112f2",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderDashboard"
+      ]
+    },
+    {
+      "id": "renderPerformance-dc373758dc06",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderPerformance"
+      ]
+    },
+    {
+      "id": "collectionsLag-66288b43b81e",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "collectionsLag"
+      ]
+    },
+    {
+      "id": "renderPendingPayroll-3fa09e73ca9b",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "renderPendingPayroll"
+      ]
+    },
+    {
+      "id": "renderPayrollFinance-8ed84cc3ba51",
+      "domain": "payroll",
+      "file": "payroll/dispatcher.js",
+      "symbols": [
+        "renderPayrollFinance"
+      ]
+    },
+    {
+      "id": "renderFinance-e8ed6c7d091b",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "renderFinance"
+      ]
+    },
+    {
+      "id": "isExcelSerialTime-01db0335f5d8",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "isExcelSerialTime"
+      ]
+    },
+    {
+      "id": "duplicateOrderKey-69bd3bb684bc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrderKey"
+      ]
+    },
+    {
+      "id": "duplicateOrderIds-314ec516517a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrderIds"
+      ]
+    },
+    {
+      "id": "quality-1219182597bf",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "quality"
+      ]
+    },
+    {
+      "id": "renderQuality-47f0262a9ca4",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderQuality"
+      ]
+    },
+    {
+      "id": "refillFilters-173622a1ecf2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "refillFilters"
+      ]
+    },
+    {
+      "id": "setRange-7d4c663b6060",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setRange"
+      ]
+    },
+    {
+      "id": "addExpense-c74724e4c843",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "addExpense"
+      ]
+    },
+    {
+      "id": "download-5bb00b801e89",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "download"
+      ]
+    },
+    {
+      "id": "orderToRow-b155218a8279",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderToRow"
+      ]
+    },
+    {
+      "id": "legacyOrderToRow-c7a01d9d66dc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "legacyOrderToRow"
+      ]
+    },
+    {
+      "id": "csvCell-8200d9d73766",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "csvCell"
+      ]
+    },
+    {
+      "id": "exportCSV-aa3552f1c253",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportCSV"
+      ]
+    },
+    {
+      "id": "ensureXLSX-07a8c28507e4",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "ensureXLSX"
+      ]
+    },
+    {
+      "id": "normalizeImportHeaders-2acda9c05ca2",
+      "domain": "imports",
+      "file": "imports/owner-dispatcher.js",
+      "symbols": [
+        "normalizeImportHeaders"
+      ]
+    },
+    {
+      "id": "sheetRowToOrder-d6a2f6cdbc81",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "sheetRowToOrder"
+      ]
+    },
+    {
+      "id": "normalizeExcelDate-0ab09495411a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeExcelDate"
+      ]
+    },
+    {
+      "id": "normalizeExcelTime-244f86b59d0d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeExcelTime"
+      ]
+    },
+    {
+      "id": "loadFile-f370024baacb",
+      "domain": "imports",
+      "file": "imports/dispatcher.js",
+      "symbols": [
+        "loadFile"
+      ]
+    },
+    {
+      "id": "renderImportPreview-a2b5498c0c3e",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "renderImportPreview"
+      ]
+    },
+    {
+      "id": "mergeImport-d4a96626f927",
+      "domain": "imports",
+      "file": "imports/dispatcher.js",
+      "symbols": [
+        "mergeImport"
+      ]
+    },
+    {
+      "id": "exportExcel-fadafc6ec0c9",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportExcel"
+      ]
+    },
+    {
+      "id": "backupPayload-82ac3d98450a",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "backupPayload"
+      ]
+    },
+    {
+      "id": "backup-52ebbec9b47b",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "backup"
+      ]
+    },
+    {
+      "id": "restore-4a5cf24f52ad",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "restore"
+      ]
+    },
+    {
+      "id": "renderSchema-36437645be4c",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "renderSchema"
+      ]
+    },
+    {
+      "id": "applySettings-53a28fa277d1",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "applySettings"
+      ]
+    },
+    {
+      "id": "saveSettings-abf2a9273ae6",
+      "domain": "settings",
+      "file": "settings/owner-dispatcher.js",
+      "symbols": [
+        "saveSettings"
+      ]
+    },
+    {
+      "id": "applyOrderFormPermissions-341227c15906",
+      "domain": "orders",
+      "file": "orders/owner-dispatcher.js",
+      "symbols": [
+        "applyOrderFormPermissions"
+      ]
+    },
+    {
+      "id": "AI_UI_DEFAULT-e1d713e60152",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "AI_UI_DEFAULT"
+      ]
+    },
+    {
+      "id": "mergeDeep-2023fa420bd4",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "mergeDeep"
+      ]
+    },
+    {
+      "id": "hexSafe-ff7b7bb1637a",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "hexSafe"
+      ]
+    },
+    {
+      "id": "aiUiModuleAllowed-22c6779527be",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiUiModuleAllowed"
+      ]
+    },
+    {
+      "id": "renderRoleWorkGuide-dba80b0c2528",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "renderRoleWorkGuide"
+      ]
+    },
+    {
+      "id": "applyRoleUI-c7708ba8b08b",
+      "domain": "ui",
+      "file": "ui/dispatcher.js",
+      "symbols": [
+        "applyRoleUI"
+      ]
+    },
+    {
+      "id": "loginProfiles-0c708dd61a4f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "loginProfiles"
+      ]
+    },
+    {
+      "id": "renderLoginUsers-d423accc23e0",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "renderLoginUsers"
+      ]
+    },
+    {
+      "id": "BETA_SESSION_KEY-75cea82d61b8",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "BETA_SESSION_KEY",
+        "BETA_LAST_USER_KEY"
+      ]
+    },
+    {
+      "id": "betaSessionSignature-7ab73ef8ef9b",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaSessionSignature"
+      ]
+    },
+    {
+      "id": "betaClearRememberedLogin-fed1542cf90f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaClearRememberedLogin"
+      ]
+    },
+    {
+      "id": "betaRememberProfile-921e53e3701d",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaRememberProfile"
+      ]
+    },
+    {
+      "id": "betaRestoreRememberedLogin-35caf2a7f67f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaRestoreRememberedLogin"
+      ]
+    },
+    {
+      "id": "beginLogin-5b1658364f72",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "beginLogin"
+      ]
+    },
+    {
+      "id": "loginNow-7b3c6ef6dfb6",
+      "domain": "staff",
+      "file": "staff/dispatcher.js",
+      "symbols": [
+        "loginNow"
+      ]
+    },
+    {
+      "id": "logout-2987d08e7b36",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "logout"
+      ]
+    },
+    {
+      "id": "toggleNewStaffPin-7ba1ecc80f77",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "toggleNewStaffPin"
+      ]
+    },
+    {
+      "id": "renderStaff-13b233a85851",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "renderStaff"
+      ]
+    },
+    {
+      "id": "toggleStaff-9293ecb3836f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "toggleStaff"
+      ]
+    },
+    {
+      "id": "renderMasterRoster-ef6400f03ce1",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "renderMasterRoster"
+      ]
+    },
+    {
+      "id": "setMasterFixedMode-b5b8dae3f489",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "setMasterFixedMode"
+      ]
+    },
+    {
+      "id": "prepareMasterAccount-72d26133092a",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "prepareMasterAccount"
+      ]
+    },
+    {
+      "id": "persistMasterRoster-7a607f3b6e93",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "persistMasterRoster"
+      ]
+    },
+    {
+      "id": "addRosterMaster-944d61da0ded",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "addRosterMaster"
+      ]
+    },
+    {
+      "id": "removeRosterMaster-ccd3061bbefa",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "removeRosterMaster"
+      ]
+    },
+    {
+      "id": "saveAccessSettings-9aede80542ca",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "saveAccessSettings"
+      ]
+    },
+    {
+      "id": "addStaff-093e291d99a2",
+      "domain": "staff",
+      "file": "staff/owner-dispatcher.js",
+      "symbols": [
+        "addStaff"
+      ]
+    },
+    {
+      "id": "randomSecret-5eef36a6c9a4",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "randomSecret"
+      ]
+    },
+    {
+      "id": "saveOpsSettings-0b157414e061",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "saveOpsSettings"
+      ]
+    },
+    {
+      "id": "renderSettings-8d3540859f1a",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "renderSettings"
+      ]
+    },
+    {
+      "id": "selfTests-9fe468e221cf",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "selfTests"
+      ]
+    },
+    {
+      "id": "liveQualityMonitor-9be3a7b7b66b",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "liveQualityMonitor"
+      ]
+    },
+    {
+      "id": "refreshLiveQuality-e2fb0d2da0de",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "refreshLiveQuality"
+      ]
+    },
+    {
+      "id": "refresh-68119759e731",
+      "domain": "ui",
+      "file": "ui/dispatcher-master.js",
+      "symbols": [
+        "refresh"
+      ]
+    },
+    {
+      "id": "autoStatusFromVisit-95d7d21ee03b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "autoStatusFromVisit"
+      ]
+    },
+    {
+      "id": "wireLabels-d1d86fd5a7f8",
+      "domain": "bootstrap",
+      "file": "bootstrap/shared.js",
+      "symbols": [
+        "wireLabels"
+      ]
+    },
+    {
+      "id": "bind-ccb32c7c457b",
+      "domain": "bootstrap",
+      "file": "bootstrap/dispatcher.js",
+      "symbols": [
+        "bind"
+      ]
+    },
+    {
+      "id": "init-68feca4cce38",
+      "domain": "bootstrap",
+      "file": "bootstrap/dispatcher.js",
+      "symbols": [
+        "init"
+      ]
+    },
+    {
+      "id": "betaSeedLocal-0bb2d3f1e43d",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaSeedLocal"
+      ]
+    },
+    {
+      "id": "betaResetLocal-b34dc2e4f9fd",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaResetLocal"
+      ]
+    }
+  ],
+  "master": [
+    {
+      "id": "ImportDeclaration-0-8478b81bfdad",
+      "domain": "bootstrap",
+      "file": "bootstrap/shared.js",
+      "symbols": [
+        "loadOptionalFeature"
+      ]
+    },
+    {
+      "id": "PRESETS-5cd5988cc4c6",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "PRESETS"
+      ]
+    },
+    {
+      "id": "HEADERS-66318dec10a1",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "HEADERS"
+      ]
+    },
+    {
+      "id": "KEYS-e3ade43bac5e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "KEYS"
+      ]
+    },
+    {
+      "id": "APP_HEADERS-89dae34ea3f2",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "APP_HEADERS"
+      ]
+    },
+    {
+      "id": "APP_KEYS-47024d710bf9",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "APP_KEYS"
+      ]
+    },
+    {
+      "id": "LABELS-af51307ae05e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "LABELS"
+      ]
+    },
+    {
+      "id": "$-0d332a6d83e9",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "$",
+        "$$"
+      ]
+    },
+    {
+      "id": "STATUS_META-e51ce7bfad4d",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "STATUS_META"
+      ]
+    },
+    {
+      "id": "STATUS_ORDER-c5706335410c",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "STATUS_ORDER"
+      ]
+    },
+    {
+      "id": "REVIEW_WORKFLOW-0ea9f6f9c161",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "REVIEW_WORKFLOW"
+      ]
+    },
+    {
+      "id": "MASTER_STAGE_LABELS-fbb8454e6145",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "MASTER_STAGE_LABELS"
+      ]
+    },
+    {
+      "id": "isReviewWorkflow-95b461338238",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isReviewWorkflow"
+      ]
+    },
+    {
+      "id": "workflowStage-518137d122de",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStage"
+      ]
+    },
+    {
+      "id": "workflowStageLabel-fe94894a1075",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStageLabel"
+      ]
+    },
+    {
+      "id": "workflowStageChip-170ebd21721c",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowStageChip"
+      ]
+    },
+    {
+      "id": "clearWorkflowExecution-bfd1093bc22e",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "clearWorkflowExecution"
+      ]
+    },
+    {
+      "id": "resetWorkflowForAssignment-3eb6e5b5547b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "resetWorkflowForAssignment"
+      ]
+    },
+    {
+      "id": "markNewReviewWorkflow-7fe7d5d6fdb9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "markNewReviewWorkflow"
+      ]
+    },
+    {
+      "id": "workflowReviewerAllowed-dbf49d65f176",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "workflowReviewerAllowed"
+      ]
+    },
+    {
+      "id": "FORCED_APP_ROLE-b33481c1cb61",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "FORCED_APP_ROLE",
+        "FORCED_APP_ROLES",
+        "SECURE_CLOUD_REQUIRED"
+      ]
+    },
+    {
+      "id": "canonicalRole-bfadaaac0548",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "canonicalRole"
+      ]
+    },
+    {
+      "id": "ownerPreviewActive-acb127e2eb65",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "ownerPreviewActive"
+      ]
+    },
+    {
+      "id": "forcedRoleOk-d92c02b0deea",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "forcedRoleOk"
+      ]
+    },
+    {
+      "id": "roleEntryUrl-bf4ce1aeeac0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleEntryUrl"
+      ]
+    },
+    {
+      "id": "redirectRoleMismatch-800d5c8e8792",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "redirectRoleMismatch"
+      ]
+    },
+    {
+      "id": "ROLE_META-afb65230d9f9",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "ROLE_META"
+      ]
+    },
+    {
+      "id": "state-2e28e2d557d2",
+      "domain": "core",
+      "file": "core/master.js",
+      "symbols": [
+        "state"
+      ]
+    },
+    {
+      "id": "clean-261b7b93dc6f",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "clean"
+      ]
+    },
+    {
+      "id": "norm-6d60250fb036",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "norm"
+      ]
+    },
+    {
+      "id": "esc-9b205d5c660f",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "esc"
+      ]
+    },
+    {
+      "id": "numMaybe-8ffc3d64b266",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "numMaybe"
+      ]
+    },
+    {
+      "id": "num-889072de6386",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "num"
+      ]
+    },
+    {
+      "id": "uid-7b425bb2dd8e",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "uid"
+      ]
+    },
+    {
+      "id": "pinHash-bb0b5c795f64",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "pinHash"
+      ]
+    },
+    {
+      "id": "orderIdDate-89c6e635e3a8",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderIdDate"
+      ]
+    },
+    {
+      "id": "makeOrderId-88f46a51bc2d",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "makeOrderId"
+      ]
+    },
+    {
+      "id": "ensureOrderIds-d8995ad3ab56",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "ensureOrderIds"
+      ]
+    },
+    {
+      "id": "currentUser-906eb37d9e7b",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "currentUser"
+      ]
+    },
+    {
+      "id": "lockedDispatcher-de9b2c5d76d0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "lockedDispatcher"
+      ]
+    },
+    {
+      "id": "shiftName-0298716bb354",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "shiftName"
+      ]
+    },
+    {
+      "id": "currentRole-f062f8586d49",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "currentRole"
+      ]
+    },
+    {
+      "id": "roleMeta-5a8af9f31c83",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleMeta"
+      ]
+    },
+    {
+      "id": "can-e610ddd0f514",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "can"
+      ]
+    },
+    {
+      "id": "masterNamesEquivalent-6d9db39204b0",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "masterNamesEquivalent"
+      ]
+    },
+    {
+      "id": "canonicalMasterSelection-af9f448256ce",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "canonicalMasterSelection"
+      ]
+    },
+    {
+      "id": "canonicalDispatcherSelection-aa071ccf9cec",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "canonicalDispatcherSelection"
+      ]
+    },
+    {
+      "id": "canonicalNameChoices-51d572165626",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "canonicalNameChoices"
+      ]
+    },
+    {
+      "id": "masterRoleOrderMatch-7c678c146e87",
+      "domain": "staff",
+      "file": "staff/owner-master.js",
+      "symbols": [
+        "masterRoleOrderMatch"
+      ]
+    },
+    {
+      "id": "roleVisibleOrders-0758e6178c78",
+      "domain": "staff",
+      "file": "staff/owner-master.js",
+      "symbols": [
+        "roleVisibleOrders"
+      ]
+    },
+    {
+      "id": "roleLabel-9e8182a0b3cd",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "roleLabel"
+      ]
+    },
+    {
+      "id": "employeeLaunchMode-2008ac89159a",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "employeeLaunchMode"
+      ]
+    },
+    {
+      "id": "parseDate-ee08a73dee34",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "parseDate"
+      ]
+    },
+    {
+      "id": "iso-1f3770793236",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "iso"
+      ]
+    },
+    {
+      "id": "fmtDate-9c852657c996",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "fmtDate"
+      ]
+    },
+    {
+      "id": "today-fc88c9aae119",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "today"
+      ]
+    },
+    {
+      "id": "ddmm-7e44aad38ab5",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "ddmm"
+      ]
+    },
+    {
+      "id": "money-f0cbc3bddf82",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "money"
+      ]
+    },
+    {
+      "id": "integer-45638ccae914",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "integer"
+      ]
+    },
+    {
+      "id": "pct-73a437a9dcf1",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "pct"
+      ]
+    },
+    {
+      "id": "truthReview-46d365034e98",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "truthReview"
+      ]
+    },
+    {
+      "id": "masterAccountFor-89dd250e400b",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "masterAccountFor"
+      ]
+    },
+    {
+      "id": "masterFixedMode-1966cfb335d4",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "masterFixedMode"
+      ]
+    },
+    {
+      "id": "calcAuto-181a9473b16d",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "calcAuto"
+      ]
+    },
+    {
+      "id": "recalcOpenReviewBonusOrders-05db837eebc2",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "recalcOpenReviewBonusOrders"
+      ]
+    },
+    {
+      "id": "orderDate-adaab4c6e88d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderDate"
+      ]
+    },
+    {
+      "id": "timeHour-933365304aab",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "timeHour"
+      ]
+    },
+    {
+      "id": "unique-fe008ed5febb",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "unique"
+      ]
+    },
+    {
+      "id": "median-1a3598681d96",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "median"
+      ]
+    },
+    {
+      "id": "sum-a6808df06ac0",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "sum"
+      ]
+    },
+    {
+      "id": "normalizeOrder-537f42548194",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeOrder"
+      ]
+    },
+    {
+      "id": "semanticValue-0eadcbfc3884",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "semanticValue"
+      ]
+    },
+    {
+      "id": "isMeaningful-f4022b5a4dae",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isMeaningful"
+      ]
+    },
+    {
+      "id": "isSeparatorLike-76f6825a8663",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "isSeparatorLike"
+      ]
+    },
+    {
+      "id": "isServiceMaster-38dfd651b10e",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "isServiceMaster"
+      ]
+    },
+    {
+      "id": "derivedStage-56b52419be93",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "derivedStage"
+      ]
+    },
+    {
+      "id": "stageClass-c1dd8103e974",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "stageClass"
+      ]
+    },
+    {
+      "id": "statusPill-9d4e17bb4b66",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "statusPill"
+      ]
+    },
+    {
+      "id": "parseGridRates-d975af59a0d4",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "parseGridRates"
+      ]
+    },
+    {
+      "id": "financeMetric-8eb47db63944",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "financeMetric"
+      ]
+    },
+    {
+      "id": "inferredStatusFromStyle-1eee42a9c1d9",
+      "domain": "imports",
+      "file": "imports/master.js",
+      "symbols": [
+        "inferredStatusFromStyle"
+      ]
+    },
+    {
+      "id": "statusFromWorksheetRow-af1cbc1a49eb",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "statusFromWorksheetRow"
+      ]
+    },
+    {
+      "id": "canonicalKey-cbef10fde4cc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "canonicalKey"
+      ]
+    },
+    {
+      "id": "normalizeKnown-ccd45603e385",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeKnown"
+      ]
+    },
+    {
+      "id": "cleanPhoneForCompare-17f460f3f524",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "cleanPhoneForCompare"
+      ]
+    },
+    {
+      "id": "invalidMoney-d40cd6117233",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "invalidMoney"
+      ]
+    },
+    {
+      "id": "fingerprint-cd4068d48aaf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "fingerprint"
+      ]
+    },
+    {
+      "id": "log-87f9014907a4",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "log"
+      ]
+    },
+    {
+      "id": "toast-bd39ae2e7c29",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "toast"
+      ]
+    },
+    {
+      "id": "DB-07afe27772bb",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "DB",
+        "STORE",
+        "KEY"
+      ]
+    },
+    {
+      "id": "idbOpen-74cf566368f9",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "idbOpen"
+      ]
+    },
+    {
+      "id": "legacyIdbRead-28fa1f1c4aa5",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "legacyIdbRead"
+      ]
+    },
+    {
+      "id": "BETA_STATE_API-5a95484d63eb",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "BETA_STATE_API",
+        "BETA_RESET_API"
+      ]
+    },
+    {
+      "id": "betaLastAppliedSavedAt-cc3a494a1c3d",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaLastAppliedSavedAt",
+        "betaBroadcast",
+        "betaSyncBusy",
+        "betaLiveTimer",
+        "betaReminderTimer",
+        "betaCloudSnapshotReady"
+      ]
+    },
+    {
+      "id": "betaSafeSettings-799ed7603a7b",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaSafeSettings"
+      ]
+    },
+    {
+      "id": "betaApplyTombstones-f274cd0fe608",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaApplyTombstones"
+      ]
+    },
+    {
+      "id": "betaServerRead-05b53348b00f",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaServerRead"
+      ]
+    },
+    {
+      "id": "betaServerWrite-1a56935d0a08",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaServerWrite"
+      ]
+    },
+    {
+      "id": "dbRead-8746923ed5d0",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "dbRead"
+      ]
+    },
+    {
+      "id": "dbWrite-5eaa1527cdc4",
+      "domain": "integrations",
+      "file": "integrations/master.js",
+      "symbols": [
+        "dbWrite"
+      ]
+    },
+    {
+      "id": "betaOrderKey-7f90fc0e2f2a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "betaOrderKey"
+      ]
+    },
+    {
+      "id": "betaNotificationAllowedFor-2cb2d674107e",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaNotificationAllowedFor"
+      ]
+    },
+    {
+      "id": "betaNotify-848fe6ec2f46",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaNotify"
+      ]
+    },
+    {
+      "id": "betaUpdateNotificationButtons-7948d1635939",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaUpdateNotificationButtons"
+      ]
+    },
+    {
+      "id": "betaEnableNotifications-d0ca1b082b9d",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaEnableNotifications"
+      ]
+    },
+    {
+      "id": "betaApplyIncoming-fef54da8f700",
+      "domain": "integrations",
+      "file": "integrations/master.js",
+      "symbols": [
+        "betaApplyIncoming"
+      ]
+    },
+    {
+      "id": "betaPullServerState-65e7de049695",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaPullServerState"
+      ]
+    },
+    {
+      "id": "betaUpcomingReminders-dd613d60e2c1",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "betaUpcomingReminders"
+      ]
+    },
+    {
+      "id": "betaStartLiveSync-34e7675e0732",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "betaStartLiveSync"
+      ]
+    },
+    {
+      "id": "fillDatalists-913eec741a00",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "fillDatalists"
+      ]
+    },
+    {
+      "id": "switchTab-0a5fbc31ee87",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "switchTab"
+      ]
+    },
+    {
+      "id": "formRecord-25a7543b5785",
+      "domain": "orders",
+      "file": "orders/master.js",
+      "symbols": [
+        "formRecord"
+      ]
+    },
+    {
+      "id": "setForm-e5217c33b9d3",
+      "domain": "orders",
+      "file": "orders/master.js",
+      "symbols": [
+        "setForm"
+      ]
+    },
+    {
+      "id": "syncStatusPalette-92bc6790daa0",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncStatusPalette"
+      ]
+    },
+    {
+      "id": "syncFinanceMode-25edc8187ab0",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "syncFinanceMode"
+      ]
+    },
+    {
+      "id": "recalculateFinance-b07b9f4393b6",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "recalculateFinance"
+      ]
+    },
+    {
+      "id": "renderFormPreview-9741d38ae83b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderFormPreview"
+      ]
+    },
+    {
+      "id": "applyFinanceHint-45058b1cab01",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "applyFinanceHint"
+      ]
+    },
+    {
+      "id": "saveOrder-6e145cfb8284",
+      "domain": "orders",
+      "file": "orders/master.js",
+      "symbols": [
+        "saveOrder"
+      ]
+    },
+    {
+      "id": "editOrder-2f196f017148",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "editOrder"
+      ]
+    },
+    {
+      "id": "openOrderDetails-b88d7ebc2db5",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "openOrderDetails"
+      ]
+    },
+    {
+      "id": "deleteOrder-adf12642f08a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "deleteOrder"
+      ]
+    },
+    {
+      "id": "addressWithoutApartment-afc06e4d1fa0",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "addressWithoutApartment"
+      ]
+    },
+    {
+      "id": "callTimestamp-d89ec1ceb417",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "callTimestamp"
+      ]
+    },
+    {
+      "id": "problemDisclosure-3ce100108875",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "problemDisclosure"
+      ]
+    },
+    {
+      "id": "copyOrderForMaster-003ed92f86a2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "copyOrderForMaster"
+      ]
+    },
+    {
+      "id": "duplicateOrder-285e73846c6a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrder"
+      ]
+    },
+    {
+      "id": "openModal-6fbb992c5929",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openModal"
+      ]
+    },
+    {
+      "id": "closeModal-f6d68ca21f4f",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "closeModal"
+      ]
+    },
+    {
+      "id": "openOrder-2bb06a9f1d59",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "openOrder"
+      ]
+    },
+    {
+      "id": "masterQuickInput-671a1a62515a",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "masterQuickInput"
+      ]
+    },
+    {
+      "id": "quickSetMaster-f8a1ce3780c5",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "quickSetMaster"
+      ]
+    },
+    {
+      "id": "setOrderColorFilter-b00128c350d9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setOrderColorFilter"
+      ]
+    },
+    {
+      "id": "cloudMode-e9383c487759",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "cloudMode"
+      ]
+    },
+    {
+      "id": "connectCloudWithPin-782f3e0fb919",
+      "domain": "integrations",
+      "file": "integrations/master.js",
+      "symbols": [
+        "connectCloudWithPin"
+      ]
+    },
+    {
+      "id": "setDashboardColorFilter-9c95a5e17d0c",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setDashboardColorFilter"
+      ]
+    },
+    {
+      "id": "currentOrderRows-50d81cc04c81",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "currentOrderRows"
+      ]
+    },
+    {
+      "id": "syncSelectionUI-38d9e7bd8e92",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncSelectionUI"
+      ]
+    },
+    {
+      "id": "toggleOrderSelection-5950cd509e6d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "toggleOrderSelection"
+      ]
+    },
+    {
+      "id": "clearSelection-5e1a9c591e5d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "clearSelection"
+      ]
+    },
+    {
+      "id": "selectAllFound-244de9878ed9",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "selectAllFound"
+      ]
+    },
+    {
+      "id": "renderRecentMasters-295bed3506df",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderRecentMasters"
+      ]
+    },
+    {
+      "id": "renderColorAudit-e0569be1b9cc",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderColorAudit"
+      ]
+    },
+    {
+      "id": "openBulkModal-d876cc4005bb",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openBulkModal"
+      ]
+    },
+    {
+      "id": "applyBulkChanges-4d9e7027575a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "applyBulkChanges"
+      ]
+    },
+    {
+      "id": "exportSelectedCSV-ee032baf8618",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportSelectedCSV"
+      ]
+    },
+    {
+      "id": "deleteSelectedOrders-961d7d3b08cf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "deleteSelectedOrders"
+      ]
+    },
+    {
+      "id": "maskedPhone-1e6b44df05fb",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "maskedPhone"
+      ]
+    },
+    {
+      "id": "localDateParts-15523fa0f90a",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "localDateParts"
+      ]
+    },
+    {
+      "id": "clockParts-c54ac801b360",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "clockParts"
+      ]
+    },
+    {
+      "id": "moscowTodayISO-a8b4639cbaa2",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "moscowTodayISO"
+      ]
+    },
+    {
+      "id": "moscowAppointmentDate-ef2508bba56b",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "moscowAppointmentDate"
+      ]
+    },
+    {
+      "id": "visitUnlockAt-10166122800b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitUnlockAt"
+      ]
+    },
+    {
+      "id": "visitDayClass-5d672647fd0f",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitDayClass"
+      ]
+    },
+    {
+      "id": "visitDayChip-52eb933b40f4",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "visitDayChip"
+      ]
+    },
+    {
+      "id": "phoneUnlockLabel-9143bc7452cf",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "phoneUnlockLabel"
+      ]
+    },
+    {
+      "id": "masterCanSeePhone-334dcacc1e51",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "masterCanSeePhone"
+      ]
+    },
+    {
+      "id": "phoneCell-fb4c90b4d1d2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "phoneCell"
+      ]
+    },
+    {
+      "id": "revealMasterPhone-675065afbf78",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "revealMasterPhone"
+      ]
+    },
+    {
+      "id": "setMasterStage-b4829c7592fd",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setMasterStage"
+      ]
+    },
+    {
+      "id": "openMasterReport-21967407407d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "openMasterReport"
+      ]
+    },
+    {
+      "id": "saveMasterReport-29c9d4505a44",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "saveMasterReport"
+      ]
+    },
+    {
+      "id": "masterActionButtons-2e9466316917",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "masterActionButtons"
+      ]
+    },
+    {
+      "id": "closeReviewActions-54a557b67258",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "closeReviewActions"
+      ]
+    },
+    {
+      "id": "approveMasterClose-7f16c882cea5",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "approveMasterClose"
+      ]
+    },
+    {
+      "id": "returnMasterClose-b661ae3398db",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "returnMasterClose"
+      ]
+    },
+    {
+      "id": "ORDER_PAGE_SIZE-7a35ec7867dd",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "ORDER_PAGE_SIZE"
+      ]
+    },
+    {
+      "id": "orderPage-a83482235701",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderPage",
+        "orderPageFilterKey"
+      ]
+    },
+    {
+      "id": "currentOrderPage-58495227d868",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "currentOrderPage"
+      ]
+    },
+    {
+      "id": "renderOrderPagination-cd604dc059e7",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderOrderPagination"
+      ]
+    },
+    {
+      "id": "renderOrders-dc71cc4037d9",
+      "domain": "orders",
+      "file": "orders/master.js",
+      "symbols": [
+        "renderOrders"
+      ]
+    },
+    {
+      "id": "hasRecordedCashSurrenderOn-437f4036f0a7",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "hasRecordedCashSurrenderOn"
+      ]
+    },
+    {
+      "id": "renderToday-f276d10a7135",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "renderToday"
+      ]
+    },
+    {
+      "id": "matchesDrill-d5b8a7801f0d",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "matchesDrill"
+      ]
+    },
+    {
+      "id": "spbArea-a4bbc7d86fbb",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "spbArea"
+      ]
+    },
+    {
+      "id": "filterRows-260239d24127",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "filterRows"
+      ]
+    },
+    {
+      "id": "renderDrillBanner-0052c56715cd",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderDrillBanner"
+      ]
+    },
+    {
+      "id": "clearDrill-f11513f9f3b6",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "clearDrill"
+      ]
+    },
+    {
+      "id": "setDrill-caaea8c044dd",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setDrill"
+      ]
+    },
+    {
+      "id": "applySimpleDrill-0603eecf4699",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "applySimpleDrill"
+      ]
+    },
+    {
+      "id": "setSelectCanonical-0bb71564f875",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setSelectCanonical"
+      ]
+    },
+    {
+      "id": "setCanonicalFilter-1ac6ea233522",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "setCanonicalFilter"
+      ]
+    },
+    {
+      "id": "bindBarsToFilter-74c77861f5a8",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "bindBarsToFilter"
+      ]
+    },
+    {
+      "id": "handleKpiDrill-57b4d54e0de8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "handleKpiDrill"
+      ]
+    },
+    {
+      "id": "currentExpenses-c1b1b8a1c565",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "currentExpenses"
+      ]
+    },
+    {
+      "id": "kpiData-81c4ff44c4a8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "kpiData"
+      ]
+    },
+    {
+      "id": "kpiCard-8938b3ef664c",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "kpiCard"
+      ]
+    },
+    {
+      "id": "renderExecutiveSummary-a35e007e8a21",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderExecutiveSummary"
+      ]
+    },
+    {
+      "id": "group-6b61418b25b1",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "group"
+      ]
+    },
+    {
+      "id": "barsHTML-3543fccdbb46",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "barsHTML"
+      ]
+    },
+    {
+      "id": "lineSVG-2893e25a807d",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "lineSVG"
+      ]
+    },
+    {
+      "id": "periodKey-60e2d767ced8",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "periodKey"
+      ]
+    },
+    {
+      "id": "minutesBetween-ae5481e2531c",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "minutesBetween"
+      ]
+    },
+    {
+      "id": "staffProfileById-079ab6c22371",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "staffProfileById"
+      ]
+    },
+    {
+      "id": "onDutyMasters-81f6d43639a3",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "onDutyMasters"
+      ]
+    },
+    {
+      "id": "masterNames-257354127b23",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "masterNames"
+      ]
+    },
+    {
+      "id": "renderMasterShifts-268ed2a50619",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "renderMasterShifts"
+      ]
+    },
+    {
+      "id": "saveMasterShift-50dee55d48a3",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "saveMasterShift"
+      ]
+    },
+    {
+      "id": "shiftPayroll-4b7fcded20e0",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "shiftPayroll"
+      ]
+    },
+    {
+      "id": "payrollShiftKey-de191be9bb0c",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "payrollShiftKey"
+      ]
+    },
+    {
+      "id": "orderPayrollShift-c649370ab426",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "orderPayrollShift"
+      ]
+    },
+    {
+      "id": "orderDispatcherName-e1b2a3589c14",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderDispatcherName"
+      ]
+    },
+    {
+      "id": "syncDispatcherShiftFilter-22d5d4dd1ed2",
+      "domain": "integrations",
+      "file": "integrations/shared.js",
+      "symbols": [
+        "syncDispatcherShiftFilter"
+      ]
+    },
+    {
+      "id": "orderMatchesDispatcher-05c985aa8903",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderMatchesDispatcher"
+      ]
+    },
+    {
+      "id": "shiftOrders-2fde38baa365",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "shiftOrders"
+      ]
+    },
+    {
+      "id": "shiftSnapshot-7eef9142847d",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "shiftSnapshot"
+      ]
+    },
+    {
+      "id": "shiftReportText-7f5073c6c915",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "shiftReportText"
+      ]
+    },
+    {
+      "id": "shiftIntegrity-6454f63bdf8e",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "shiftIntegrity"
+      ]
+    },
+    {
+      "id": "renderShiftClose-43188a3f4753",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "renderShiftClose"
+      ]
+    },
+    {
+      "id": "subscribeShiftCenter-753946d07258",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "subscribeShiftCenter"
+      ]
+    },
+    {
+      "id": "hydrateShiftCenter-fb11248b88e7",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "hydrateShiftCenter"
+      ]
+    },
+    {
+      "id": "closeCurrentShift-202b53068b9e",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "closeCurrentShift"
+      ]
+    },
+    {
+      "id": "shareShiftReport-badfb060027f",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "shareShiftReport"
+      ]
+    },
+    {
+      "id": "renderShiftReports-68f4571d5796",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "renderShiftReports"
+      ]
+    },
+    {
+      "id": "performanceStaffGroups-feedaf3d420d",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "performanceStaffGroups"
+      ]
+    },
+    {
+      "id": "renderTeamPerformance-5dfba5728a27",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderTeamPerformance"
+      ]
+    },
+    {
+      "id": "aiEligibleMasters-c2995f6f567d",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiEligibleMasters"
+      ]
+    },
+    {
+      "id": "aiOrderRecency-0c2675db88b5",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiOrderRecency"
+      ]
+    },
+    {
+      "id": "aiFeaturesForMaster-4c267a132a77",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "aiFeaturesForMaster"
+      ]
+    },
+    {
+      "id": "renderAI-287f6106851f",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "renderAI"
+      ]
+    },
+    {
+      "id": "historicalDayBuckets-4da2a2453fb7",
+      "domain": "payroll",
+      "file": "payroll/dispatcher-master.js",
+      "symbols": [
+        "historicalDayBuckets"
+      ]
+    },
+    {
+      "id": "dayStats-752202cfd647",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "dayStats"
+      ]
+    },
+    {
+      "id": "forecastForDow-56b9beab64a7",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "forecastForDow"
+      ]
+    },
+    {
+      "id": "renderTodayForecast-a4f3c14e904a",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "renderTodayForecast"
+      ]
+    },
+    {
+      "id": "renderExtendedForecasts-4619085512a3",
+      "domain": "analytics",
+      "file": "analytics/dispatcher-master.js",
+      "symbols": [
+        "renderExtendedForecasts"
+      ]
+    },
+    {
+      "id": "parseOrderIdFromText-ac8cad9ea0e7",
+      "domain": "orders",
+      "file": "orders/dispatcher-master.js",
+      "symbols": [
+        "parseOrderIdFromText"
+      ]
+    },
+    {
+      "id": "findKnownMasterInText-f93771babe43",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "findKnownMasterInText"
+      ]
+    },
+    {
+      "id": "renderAICommand-043221f0096d",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderAICommand"
+      ]
+    },
+    {
+      "id": "runAICommand-df233c1d7bf9",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "runAICommand"
+      ]
+    },
+    {
+      "id": "applyAICommand-ef1d402a4caf",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "applyAICommand"
+      ]
+    },
+    {
+      "id": "buildAudit100-45e223a02ee1",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "buildAudit100"
+      ]
+    },
+    {
+      "id": "runAudit100-fb7a501ce829",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "runAudit100"
+      ]
+    },
+    {
+      "id": "autoHeal100-a4e4bd2efe17",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "autoHeal100"
+      ]
+    },
+    {
+      "id": "renderDailyCash-a349dd44a257",
+      "domain": "payroll",
+      "file": "payroll/shared.js",
+      "symbols": [
+        "renderDailyCash"
+      ]
+    },
+    {
+      "id": "renderDashboard-40a515c112f2",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderDashboard"
+      ]
+    },
+    {
+      "id": "renderPerformance-dc373758dc06",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "renderPerformance"
+      ]
+    },
+    {
+      "id": "collectionsLag-66288b43b81e",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "collectionsLag"
+      ]
+    },
+    {
+      "id": "renderPayrollFinance-cae555fcf833",
+      "domain": "payroll",
+      "file": "payroll/master.js",
+      "symbols": [
+        "renderPayrollFinance"
+      ]
+    },
+    {
+      "id": "renderFinance-e8ed6c7d091b",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "renderFinance"
+      ]
+    },
+    {
+      "id": "isExcelSerialTime-01db0335f5d8",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "isExcelSerialTime"
+      ]
+    },
+    {
+      "id": "duplicateOrderKey-69bd3bb684bc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrderKey"
+      ]
+    },
+    {
+      "id": "duplicateOrderIds-314ec516517a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "duplicateOrderIds"
+      ]
+    },
+    {
+      "id": "quality-1219182597bf",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "quality"
+      ]
+    },
+    {
+      "id": "renderQuality-47f0262a9ca4",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "renderQuality"
+      ]
+    },
+    {
+      "id": "refillFilters-173622a1ecf2",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "refillFilters"
+      ]
+    },
+    {
+      "id": "setRange-7d4c663b6060",
+      "domain": "analytics",
+      "file": "analytics/shared.js",
+      "symbols": [
+        "setRange"
+      ]
+    },
+    {
+      "id": "addExpense-c74724e4c843",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "addExpense"
+      ]
+    },
+    {
+      "id": "download-5bb00b801e89",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "download"
+      ]
+    },
+    {
+      "id": "orderToRow-b155218a8279",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "orderToRow"
+      ]
+    },
+    {
+      "id": "legacyOrderToRow-c7a01d9d66dc",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "legacyOrderToRow"
+      ]
+    },
+    {
+      "id": "csvCell-8200d9d73766",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "csvCell"
+      ]
+    },
+    {
+      "id": "exportCSV-aa3552f1c253",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportCSV"
+      ]
+    },
+    {
+      "id": "ensureXLSX-07a8c28507e4",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "ensureXLSX"
+      ]
+    },
+    {
+      "id": "sheetRowToOrder-d6a2f6cdbc81",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "sheetRowToOrder"
+      ]
+    },
+    {
+      "id": "normalizeExcelDate-0ab09495411a",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeExcelDate"
+      ]
+    },
+    {
+      "id": "normalizeExcelTime-244f86b59d0d",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "normalizeExcelTime"
+      ]
+    },
+    {
+      "id": "loadFile-7ac01467be8b",
+      "domain": "imports",
+      "file": "imports/master.js",
+      "symbols": [
+        "loadFile"
+      ]
+    },
+    {
+      "id": "renderImportPreview-a2b5498c0c3e",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "renderImportPreview"
+      ]
+    },
+    {
+      "id": "mergeImport-e29d591b5a4c",
+      "domain": "imports",
+      "file": "imports/master.js",
+      "symbols": [
+        "mergeImport"
+      ]
+    },
+    {
+      "id": "exportExcel-fadafc6ec0c9",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "exportExcel"
+      ]
+    },
+    {
+      "id": "backupPayload-82ac3d98450a",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "backupPayload"
+      ]
+    },
+    {
+      "id": "backup-52ebbec9b47b",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "backup"
+      ]
+    },
+    {
+      "id": "restore-4a5cf24f52ad",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "restore"
+      ]
+    },
+    {
+      "id": "renderSchema-36437645be4c",
+      "domain": "imports",
+      "file": "imports/shared.js",
+      "symbols": [
+        "renderSchema"
+      ]
+    },
+    {
+      "id": "applySettings-53a28fa277d1",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "applySettings"
+      ]
+    },
+    {
+      "id": "saveSettings-11c07101a5aa",
+      "domain": "settings",
+      "file": "settings/master.js",
+      "symbols": [
+        "saveSettings"
+      ]
+    },
+    {
+      "id": "applyOrderFormPermissions-8c040d73782c",
+      "domain": "orders",
+      "file": "orders/master.js",
+      "symbols": [
+        "applyOrderFormPermissions"
+      ]
+    },
+    {
+      "id": "AI_UI_DEFAULT-e1d713e60152",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "AI_UI_DEFAULT"
+      ]
+    },
+    {
+      "id": "mergeDeep-2023fa420bd4",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "mergeDeep"
+      ]
+    },
+    {
+      "id": "hexSafe-ff7b7bb1637a",
+      "domain": "core",
+      "file": "core/shared.js",
+      "symbols": [
+        "hexSafe"
+      ]
+    },
+    {
+      "id": "aiUiModuleAllowed-22c6779527be",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "aiUiModuleAllowed"
+      ]
+    },
+    {
+      "id": "renderRoleWorkGuide-dba80b0c2528",
+      "domain": "ui",
+      "file": "ui/shared.js",
+      "symbols": [
+        "renderRoleWorkGuide"
+      ]
+    },
+    {
+      "id": "applyRoleUI-4bf7776aa0be",
+      "domain": "ui",
+      "file": "ui/master.js",
+      "symbols": [
+        "applyRoleUI"
+      ]
+    },
+    {
+      "id": "loginProfiles-0c708dd61a4f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "loginProfiles"
+      ]
+    },
+    {
+      "id": "renderLoginUsers-73fc1943abb0",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "renderLoginUsers"
+      ]
+    },
+    {
+      "id": "BETA_SESSION_KEY-75cea82d61b8",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "BETA_SESSION_KEY",
+        "BETA_LAST_USER_KEY"
+      ]
+    },
+    {
+      "id": "betaSessionSignature-7ab73ef8ef9b",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaSessionSignature"
+      ]
+    },
+    {
+      "id": "betaClearRememberedLogin-fed1542cf90f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaClearRememberedLogin"
+      ]
+    },
+    {
+      "id": "betaRememberProfile-921e53e3701d",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaRememberProfile"
+      ]
+    },
+    {
+      "id": "betaRestoreRememberedLogin-35caf2a7f67f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "betaRestoreRememberedLogin"
+      ]
+    },
+    {
+      "id": "beginLogin-5b1658364f72",
+      "domain": "staff",
+      "file": "staff/dispatcher-master.js",
+      "symbols": [
+        "beginLogin"
+      ]
+    },
+    {
+      "id": "loginNow-756c97f24a54",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "loginNow"
+      ]
+    },
+    {
+      "id": "logout-2987d08e7b36",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "logout"
+      ]
+    },
+    {
+      "id": "toggleNewStaffPin-7ba1ecc80f77",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "toggleNewStaffPin"
+      ]
+    },
+    {
+      "id": "renderStaff-13b233a85851",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "renderStaff"
+      ]
+    },
+    {
+      "id": "toggleStaff-9293ecb3836f",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "toggleStaff"
+      ]
+    },
+    {
+      "id": "renderMasterRoster-a878251df808",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "renderMasterRoster"
+      ]
+    },
+    {
+      "id": "setMasterFixedMode-d0c2e46fc374",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "setMasterFixedMode"
+      ]
+    },
+    {
+      "id": "prepareMasterAccount-72d26133092a",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "prepareMasterAccount"
+      ]
+    },
+    {
+      "id": "persistMasterRoster-c510cb689986",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "persistMasterRoster"
+      ]
+    },
+    {
+      "id": "addRosterMaster-944d61da0ded",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "addRosterMaster"
+      ]
+    },
+    {
+      "id": "removeRosterMaster-ccd3061bbefa",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "removeRosterMaster"
+      ]
+    },
+    {
+      "id": "saveAccessSettings-9aede80542ca",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "saveAccessSettings"
+      ]
+    },
+    {
+      "id": "addStaff-8c3fd1206c92",
+      "domain": "staff",
+      "file": "staff/master.js",
+      "symbols": [
+        "addStaff"
+      ]
+    },
+    {
+      "id": "randomSecret-5eef36a6c9a4",
+      "domain": "staff",
+      "file": "staff/shared.js",
+      "symbols": [
+        "randomSecret"
+      ]
+    },
+    {
+      "id": "saveOpsSettings-0b157414e061",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "saveOpsSettings"
+      ]
+    },
+    {
+      "id": "renderSettings-8d3540859f1a",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "renderSettings"
+      ]
+    },
+    {
+      "id": "selfTests-9fe468e221cf",
+      "domain": "quality",
+      "file": "quality/dispatcher-master.js",
+      "symbols": [
+        "selfTests"
+      ]
+    },
+    {
+      "id": "liveQualityMonitor-9be3a7b7b66b",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "liveQualityMonitor"
+      ]
+    },
+    {
+      "id": "refreshLiveQuality-e2fb0d2da0de",
+      "domain": "quality",
+      "file": "quality/shared.js",
+      "symbols": [
+        "refreshLiveQuality"
+      ]
+    },
+    {
+      "id": "refresh-68119759e731",
+      "domain": "ui",
+      "file": "ui/dispatcher-master.js",
+      "symbols": [
+        "refresh"
+      ]
+    },
+    {
+      "id": "autoStatusFromVisit-95d7d21ee03b",
+      "domain": "orders",
+      "file": "orders/shared.js",
+      "symbols": [
+        "autoStatusFromVisit"
+      ]
+    },
+    {
+      "id": "wireLabels-d1d86fd5a7f8",
+      "domain": "bootstrap",
+      "file": "bootstrap/shared.js",
+      "symbols": [
+        "wireLabels"
+      ]
+    },
+    {
+      "id": "bind-db200c0b2eec",
+      "domain": "bootstrap",
+      "file": "bootstrap/master.js",
+      "symbols": [
+        "bind"
+      ]
+    },
+    {
+      "id": "init-f832f763b866",
+      "domain": "bootstrap",
+      "file": "bootstrap/master.js",
+      "symbols": [
+        "init"
+      ]
+    },
+    {
+      "id": "betaSeedLocal-0bb2d3f1e43d",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaSeedLocal"
+      ]
+    },
+    {
+      "id": "betaResetLocal-b34dc2e4f9fd",
+      "domain": "settings",
+      "file": "settings/shared.js",
+      "symbols": [
+        "betaResetLocal"
+      ]
+    }
+  ]
+}

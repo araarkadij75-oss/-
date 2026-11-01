@@ -1,0 +1,2 @@
+/* CRM_UNIT:historicalDayBuckets-4da2a2453fb7 */
+function historicalDayBuckets(lookback=120){const cut=new Date();cut.setDate(cut.getDate()-lookback);const m=new Map();for(const r of state.orders){const d=parseDate(r.callDate||r.visitDate);if(!d||d>=parseDate(today())||d<parseDate(iso(cut)))continue;const k=iso(d);if(!m.has(k))m.set(k,[]);m.get(k).push(r)}return m}/* CRM_END:historicalDayBuckets-4da2a2453fb7 */

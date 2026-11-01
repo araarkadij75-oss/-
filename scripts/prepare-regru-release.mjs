@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { buildCRM } from './build-crm.mjs';
+
+// Only checked, current module output may enter an immutable release package.
+buildCRM({check: true});
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = path.join(root, 'hosted-snapshot');

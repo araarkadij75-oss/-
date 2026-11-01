@@ -28,6 +28,7 @@ jobs:
           node-version: '22'
       - run: npm install --ignore-scripts
       - run: npm run gate:static
+      - run: npm run test:architecture
       - run: npm run test:unit
 
   firestore-rules:

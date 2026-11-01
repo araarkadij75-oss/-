@@ -1,0 +1,6796 @@
+{
+  "schemaVersion": 1,
+  "description": "Deterministic build-time modules; shared application lexical scope retained during migration.",
+  "roles": {
+    "owner": {
+      "template": "roles/owner.html",
+      "output": "index.html",
+      "scripts": {
+        "application": [
+          "ImportDeclaration-0-8478b81bfdad",
+          "ImportDeclaration-1-6329805c4c48",
+          "PRESETS-5cd5988cc4c6",
+          "HEADERS-66318dec10a1",
+          "KEYS-e3ade43bac5e",
+          "APP_HEADERS-89dae34ea3f2",
+          "APP_KEYS-47024d710bf9",
+          "LABELS-af51307ae05e",
+          "$-0d332a6d83e9",
+          "STATUS_META-e51ce7bfad4d",
+          "STATUS_ORDER-c5706335410c",
+          "REVIEW_WORKFLOW-0ea9f6f9c161",
+          "MASTER_STAGE_LABELS-fbb8454e6145",
+          "isReviewWorkflow-95b461338238",
+          "workflowStage-518137d122de",
+          "workflowStageLabel-fe94894a1075",
+          "workflowStageChip-170ebd21721c",
+          "clearWorkflowExecution-bfd1093bc22e",
+          "resetWorkflowForAssignment-3eb6e5b5547b",
+          "markNewReviewWorkflow-7fe7d5d6fdb9",
+          "workflowReviewerAllowed-dbf49d65f176",
+          "FORCED_APP_ROLE-4359a072c745",
+          "canonicalRole-bfadaaac0548",
+          "ownerPreviewActive-acb127e2eb65",
+          "forcedRoleOk-d92c02b0deea",
+          "roleEntryUrl-bf4ce1aeeac0",
+          "redirectRoleMismatch-800d5c8e8792",
+          "ROLE_META-905cb9bfb32b",
+          "masterWeekDirty-aae79739fe5f",
+          "state-b8a02bb34fad",
+          "clean-261b7b93dc6f",
+          "norm-6d60250fb036",
+          "esc-9b205d5c660f",
+          "numMaybe-8ffc3d64b266",
+          "num-889072de6386",
+          "uid-7b425bb2dd8e",
+          "pinHash-bb0b5c795f64",
+          "orderIdDate-89c6e635e3a8",
+          "makeOrderId-69110d3b7b6f",
+          "ensureOrderIds-d8995ad3ab56",
+          "previewStaffProfile-03732088eea6",
+          "ownerRolePreview-3275c2f10a5f",
+          "currentUser-bb8fc54704ca",
+          "lockedDispatcher-de9b2c5d76d0",
+          "shiftName-0298716bb354",
+          "currentRole-f062f8586d49",
+          "roleMeta-5a8af9f31c83",
+          "can-d37c7ee56dfc",
+          "masterNamesEquivalent-6d9db39204b0",
+          "canonicalMasterSelection-f1fb4e3178e4",
+          "canonicalDispatcherSelection-aa071ccf9cec",
+          "canonicalNameChoices-33c9c0a12cba",
+          "masterRoleOrderMatch-7c678c146e87",
+          "roleVisibleOrders-0758e6178c78",
+          "isPickupOrder-732fc3fcfc77",
+          "isStaffOrderLocked-9c834c4f0bef",
+          "roleLabel-9e8182a0b3cd",
+          "employeeLaunchMode-2008ac89159a",
+          "parseDate-ee08a73dee34",
+          "iso-1f3770793236",
+          "fmtDate-9c852657c996",
+          "today-fc88c9aae119",
+          "ddmm-7e44aad38ab5",
+          "money-f0cbc3bddf82",
+          "integer-45638ccae914",
+          "pct-73a437a9dcf1",
+          "truthReview-46d365034e98",
+          "masterAccountFor-8f573cbf6734",
+          "masterFixedMode-16e066a94e88",
+          "calcAuto-181a9473b16d",
+          "recalcOpenReviewBonusOrders-05db837eebc2",
+          "orderDate-adaab4c6e88d",
+          "timeHour-933365304aab",
+          "unique-fe008ed5febb",
+          "median-1a3598681d96",
+          "sum-a6808df06ac0",
+          "normalizeOrder-537f42548194",
+          "semanticValue-0eadcbfc3884",
+          "isMeaningful-f4022b5a4dae",
+          "isSeparatorLike-76f6825a8663",
+          "isServiceMaster-38dfd651b10e",
+          "derivedStage-56b52419be93",
+          "stageClass-c1dd8103e974",
+          "statusPill-9d4e17bb4b66",
+          "parseGridRates-d975af59a0d4",
+          "financeMetric-8eb47db63944",
+          "inferredStatusFromStyle-4545c5d7db0c",
+          "statusFromWorksheetRow-af1cbc1a49eb",
+          "canonicalKey-cbef10fde4cc",
+          "normalizeKnown-ccd45603e385",
+          "cleanPhoneForCompare-17f460f3f524",
+          "invalidMoney-d40cd6117233",
+          "fingerprint-cd4068d48aaf",
+          "log-87f9014907a4",
+          "toast-bd39ae2e7c29",
+          "DB-07afe27772bb",
+          "importCloudPendingIds-255122f87113",
+          "idbOpen-74cf566368f9",
+          "legacyIdbRead-28fa1f1c4aa5",
+          "BETA_STATE_API-5a95484d63eb",
+          "betaLastAppliedSavedAt-cc3a494a1c3d",
+          "ExpressionStatement-101-2597401021a9",
+          "betaSafeSettings-799ed7603a7b",
+          "betaApplyTombstones-f274cd0fe608",
+          "betaServerRead-05b53348b00f",
+          "betaServerWrite-1a56935d0a08",
+          "dbRead-8746923ed5d0",
+          "dbWrite-6f8a515f66f8",
+          "betaOrderKey-7f90fc0e2f2a",
+          "betaNotificationAllowedFor-2cb2d674107e",
+          "betaNotify-848fe6ec2f46",
+          "betaUpdateNotificationButtons-7948d1635939",
+          "betaEnableNotifications-d0ca1b082b9d",
+          "betaApplyIncoming-4c1e27d002d7",
+          "betaPullServerState-65e7de049695",
+          "betaUpcomingReminders-dd613d60e2c1",
+          "betaStartLiveSync-34e7675e0732",
+          "fillDatalists-913eec741a00",
+          "switchTab-0a5fbc31ee87",
+          "formRecord-8571039a158b",
+          "setForm-5883854858fe",
+          "syncStatusPalette-92bc6790daa0",
+          "syncFinanceMode-25edc8187ab0",
+          "recalculateFinance-b07b9f4393b6",
+          "renderFormPreview-9741d38ae83b",
+          "applyFinanceHint-45058b1cab01",
+          "saveOrder-bbeb655dc006",
+          "editOrder-2f196f017148",
+          "openOrderDetails-b88d7ebc2db5",
+          "deleteOrder-adf12642f08a",
+          "addressWithoutApartment-afc06e4d1fa0",
+          "callTimestamp-d89ec1ceb417",
+          "responsibilityMoment-15b8ca5fefc9",
+          "orderResponsibility-587e7a530fdc",
+          "problemDisclosure-3ce100108875",
+          "copyOrderForMaster-003ed92f86a2",
+          "duplicateOrder-285e73846c6a",
+          "openModal-6fbb992c5929",
+          "closeModal-f6d68ca21f4f",
+          "openOrder-3ed847322aab",
+          "masterQuickInput-82e46a97a6fc",
+          "quickSetMaster-258c12e87798",
+          "setOrderColorFilter-b00128c350d9",
+          "cloudMode-e9383c487759",
+          "ExpressionStatement-144-a54a591d3228",
+          "ExpressionStatement-145-51516cc81b80",
+          "ExpressionStatement-146-4d51f2c4c715",
+          "dispatcherCloseRows-b54d52d0ab14",
+          "ORDER_CLOSE_KEYS-26096ce9640a",
+          "ExpressionStatement-149-beb14e20d56b",
+          "ExpressionStatement-150-0312da6ac190",
+          "ExpressionStatement-151-e7731ac5d27b",
+          "ExpressionStatement-152-6de8032c1e47",
+          "connectCloudWithPin-700dd9f7528d",
+          "setDashboardColorFilter-9c95a5e17d0c",
+          "currentOrderRows-50d81cc04c81",
+          "syncSelectionUI-38d9e7bd8e92",
+          "toggleOrderSelection-5950cd509e6d",
+          "clearSelection-5e1a9c591e5d",
+          "selectAllFound-244de9878ed9",
+          "renderRecentMasters-295bed3506df",
+          "renderColorAudit-e0569be1b9cc",
+          "openBulkModal-d876cc4005bb",
+          "applyBulkChanges-4d9e7027575a",
+          "exportSelectedCSV-ee032baf8618",
+          "deleteSelectedOrders-961d7d3b08cf",
+          "maskedPhone-1e6b44df05fb",
+          "localDateParts-15523fa0f90a",
+          "clockParts-c54ac801b360",
+          "moscowTodayISO-a8b4639cbaa2",
+          "moscowAppointmentDate-ef2508bba56b",
+          "visitUnlockAt-10166122800b",
+          "ExpressionStatement-172-7f48893282b5",
+          "visitDayClass-5d672647fd0f",
+          "visitDayChip-52eb933b40f4",
+          "phoneUnlockLabel-9143bc7452cf",
+          "masterCanSeePhone-334dcacc1e51",
+          "phoneCell-fb4c90b4d1d2",
+          "revealMasterPhone-675065afbf78",
+          "setMasterStage-b4829c7592fd",
+          "ExpressionStatement-180-7add076cc221",
+          "openMasterReport-21967407407d",
+          "saveMasterReport-29c9d4505a44",
+          "masterActionButtons-9cc227f589e3",
+          "closeReviewActions-6ec82a50a908",
+          "approveMasterClose-7f16c882cea5",
+          "ownerConfirmCloseFromTable-b7b0b3451d43",
+          "EmptyStatement-187-41b805ea7ac0",
+          "returnMasterClose-ee8b4e415d5b",
+          "ORDER_PAGE_SIZE-7a35ec7867dd",
+          "orderPage-a83482235701",
+          "currentOrderPage-58495227d868",
+          "renderOrderPagination-cd604dc059e7",
+          "renderOrders-e4044ce1a8b6",
+          "hasRecordedCashSurrenderOn-437f4036f0a7",
+          "renderToday-f276d10a7135",
+          "matchesDrill-d5b8a7801f0d",
+          "spbArea-a4bbc7d86fbb",
+          "filterRows-260239d24127",
+          "renderDrillBanner-0052c56715cd",
+          "clearDrill-f11513f9f3b6",
+          "setDrill-caaea8c044dd",
+          "applySimpleDrill-0603eecf4699",
+          "setSelectCanonical-0bb71564f875",
+          "setCanonicalFilter-1ac6ea233522",
+          "bindBarsToFilter-74c77861f5a8",
+          "handleKpiDrill-57b4d54e0de8",
+          "currentExpenses-c1b1b8a1c565",
+          "kpiData-81c4ff44c4a8",
+          "kpiCard-8938b3ef664c",
+          "renderExecutiveSummary-a35e007e8a21",
+          "group-6b61418b25b1",
+          "barsHTML-3543fccdbb46",
+          "lineSVG-2893e25a807d",
+          "periodKey-60e2d767ced8",
+          "minutesBetween-ae5481e2531c",
+          "staffProfileById-079ab6c22371",
+          "onDutyMasters-81f6d43639a3",
+          "masterNames-257354127b23",
+          "mergeMasterShiftCache-852178977ec7",
+          "weekDates-cb5f15db9132",
+          "shiftWeekLabel-b9210364f09b",
+          "loadMasterWeek-b7101efa4120",
+          "requestMasterWeekLoad-284aa9a224e0",
+          "updateMasterWeekSummary-1bd0af8c6d38",
+          "renderMasterShifts-d2957c00853e",
+          "saveMasterShift-b87eeacec732",
+          "weekRange-a071a18ef59e",
+          "uniqueShiftReports-80829dbf4114",
+          "weeklySnapshot-3c59599390df",
+          "loadOwnerWeekReports-70511cebd786",
+          "payrollShiftKey-de191be9bb0c",
+          "orderPayrollShift-c649370ab426",
+          "orderDispatcherName-e1b2a3589c14",
+          "syncDispatcherShiftFilter-22d5d4dd1ed2",
+          "orderMatchesDispatcher-05c985aa8903",
+          "payrollAccountingReport-8262249d3fbf",
+          "payrollAccountedIds-dec75e968adb",
+          "payrollSchedule-1efca8b4814c",
+          "payrollSettlementLedger-14262713128c",
+          "payrollOrdersFor-09376c14f586",
+          "payrollOrderCountLabel-8ca66ef3d582",
+          "payrollOrderCashRecorded-b82d4711ff17",
+          "payrollScheduledShift-c1afebecd70e",
+          "historicalPayrollOrderAudit-0a2d62b5a38a",
+          "historicalPayrollScopeLabel-3a812f0a9531",
+          "renderHistoricalPayroll-d4b66f01929a",
+          "backfillClosedHistoricalShifts-25b9ad1fd867",
+          "bindBackfill-06a48d6840b8",
+          "renderTwoDayPayrollPayouts-4220e297a7ad",
+          "renderLatePayrollQueue-239fd1732e61",
+          "renderDailyPayrollReconciliation-4d6a5baa9ddd",
+          "payrollCycleUiStatus-ee8dc199619d",
+          "renderPayrollCycleRegister-5260983879c4",
+          "renderWeeklyReports-c5fbfc82e66a",
+          "closeWeek-21ed3e4d901d",
+          "shiftPayroll-47e7e3ed3cc7",
+          "shiftOrderDate-452385374378",
+          "shiftOrders-c3172a1a8ab9",
+          "shiftCashRecordedDate-c84eda69bbe0",
+          "shiftSettlementDate-86078c009dca",
+          "shiftSettlementOrders-6ae28aa841d7",
+          "legacyShiftSnapshot-24816aa9569e",
+          "shiftSnapshot-8356621c5670",
+          "shiftReportText-018ca82c90ef",
+          "historicalPayrollDigest-5cbc8bc7ef0b",
+          "historicalPayrollShiftSnapshot-411d2e3b38de",
+          "shiftIntegrity-c1b12ee49adf",
+          "shiftReportComparison-4901c292557e",
+          "renderOwnerShiftApprovals-c715451eca6a",
+          "renderShiftClose-0c2972d31b20",
+          "subscribeShiftCenter-65cb1a7c09e6",
+          "hydrateShiftCenter-19f69f0dfb9d",
+          "closeCurrentShift-732d417b56f5",
+          "shareShiftReport-ea312222b8dd",
+          "renderShiftReports-f6c11424f0a2",
+          "performanceStaffGroups-feedaf3d420d",
+          "renderTeamPerformance-5dfba5728a27",
+          "aiEligibleMasters-c2995f6f567d",
+          "aiFeaturesForMaster-81075ebfbf77",
+          "aiCashDay-73bef13077f1",
+          "aiIsCashClosed-35465e8b83f1",
+          "aiOrderRecency-0c2675db88b5",
+          "renderAI-daf2a699a278",
+          "parseOrderIdFromText-097dbb7aee8f",
+          "findKnownMasterInText-f93771babe43",
+          "renderAICommand-043221f0096d",
+          "runAICommand-287d9f27c0a2",
+          "applyAICommand-ef1d402a4caf",
+          "buildAudit100-45e223a02ee1",
+          "runAudit100-fb7a501ce829",
+          "autoHeal100-a4e4bd2efe17",
+          "renderDailyCash-a349dd44a257",
+          "renderDashboard-40a515c112f2",
+          "renderPerformance-dc373758dc06",
+          "collectionsLag-66288b43b81e",
+          "payrollDailyEstimate-50f83c29ef78",
+          "renderPendingPayroll-f2027e1b0761",
+          "renderPayrollFinance-b7274f246ed3",
+          "renderFinance-e8ed6c7d091b",
+          "isExcelSerialTime-01db0335f5d8",
+          "duplicateOrderKey-69bd3bb684bc",
+          "duplicateOrderIds-314ec516517a",
+          "quality-1219182597bf",
+          "renderQuality-47f0262a9ca4",
+          "refillFilters-173622a1ecf2",
+          "setRange-7d4c663b6060",
+          "addExpense-c74724e4c843",
+          "download-5bb00b801e89",
+          "orderToRow-b155218a8279",
+          "legacyOrderToRow-c7a01d9d66dc",
+          "csvCell-8200d9d73766",
+          "exportCSV-aa3552f1c253",
+          "ensureXLSX-07a8c28507e4",
+          "normalizeImportHeaders-2acda9c05ca2",
+          "sheetRowToOrder-d6a2f6cdbc81",
+          "normalizeExcelDate-0ab09495411a",
+          "normalizeExcelTime-244f86b59d0d",
+          "loadFile-c5cc618cdd8b",
+          "renderImportPreview-a2b5498c0c3e",
+          "mergeImport-bcdda54ffa78",
+          "exportExcel-fadafc6ec0c9",
+          "backupPayload-82ac3d98450a",
+          "backup-52ebbec9b47b",
+          "restore-4a5cf24f52ad",
+          "renderSchema-36437645be4c",
+          "applySettings-53a28fa277d1",
+          "saveSettings-abf2a9273ae6",
+          "applyOrderFormPermissions-341227c15906",
+          "AI_UI_DEFAULT-e1d713e60152",
+          "mergeDeep-2023fa420bd4",
+          "hexSafe-ff7b7bb1637a",
+          "ExpressionStatement-332-ccebc6ac88dc",
+          "aiUiModuleAllowed-22c6779527be",
+          "renderRoleWorkGuide-dba80b0c2528",
+          "applyRoleUI-ce5d50ae73d8",
+          "loginProfiles-0c708dd61a4f",
+          "renderLoginUsers-d423accc23e0",
+          "BETA_SESSION_KEY-75cea82d61b8",
+          "betaSessionSignature-7ab73ef8ef9b",
+          "betaClearRememberedLogin-fed1542cf90f",
+          "betaRememberProfile-921e53e3701d",
+          "betaRestoreRememberedLogin-35caf2a7f67f",
+          "beginLogin-a0a8fae7f376",
+          "loginNow-31f59ac1571c",
+          "logout-2987d08e7b36",
+          "toggleNewStaffPin-7ba1ecc80f77",
+          "renderStaff-13b233a85851",
+          "toggleStaff-9293ecb3836f",
+          "renderMasterRoster-ef6400f03ce1",
+          "setMasterFixedMode-b5b8dae3f489",
+          "prepareMasterAccount-72d26133092a",
+          "persistMasterRoster-7a607f3b6e93",
+          "addRosterMaster-944d61da0ded",
+          "removeRosterMaster-ccd3061bbefa",
+          "saveAccessSettings-9aede80542ca",
+          "addStaff-093e291d99a2",
+          "randomSecret-5eef36a6c9a4",
+          "saveOpsSettings-0b157414e061",
+          "renderSettings-8d3540859f1a",
+          "selfTests-12e66b81ffb4",
+          "liveQualityMonitor-9be3a7b7b66b",
+          "refreshLiveQuality-e2fb0d2da0de",
+          "refresh-48a223ceb4d4",
+          "autoStatusFromVisit-95d7d21ee03b",
+          "wireLabels-d1d86fd5a7f8",
+          "bind-dde3d28f3c78",
+          "init-cd3e0f18cc26",
+          "betaSeedLocal-0bb2d3f1e43d",
+          "betaResetLocal-b34dc2e4f9fd",
+          "ExpressionStatement-370-c2c95b78cf7e",
+          "IfStatement-371-ee539c55841f",
+          "EmptyStatement-187-41b805ea7ac0",
+          "ExpressionStatement-373-39bbde244107",
+          "trailing-space-7eb70257593d"
+        ],
+        "cloud": [
+          "cloud-adapter-ded3948fd37c"
+        ]
+      }
+    },
+    "dispatcher": {
+      "template": "roles/dispatcher.html",
+      "output": "dispatcher-logistic.html",
+      "scripts": {
+        "application": [
+          "ImportDeclaration-0-8478b81bfdad",
+          "ImportDeclaration-1-6329805c4c48",
+          "PRESETS-5cd5988cc4c6",
+          "HEADERS-66318dec10a1",
+          "KEYS-e3ade43bac5e",
+          "APP_HEADERS-89dae34ea3f2",
+          "APP_KEYS-47024d710bf9",
+          "LABELS-af51307ae05e",
+          "$-0d332a6d83e9",
+          "STATUS_META-e51ce7bfad4d",
+          "STATUS_ORDER-c5706335410c",
+          "REVIEW_WORKFLOW-0ea9f6f9c161",
+          "MASTER_STAGE_LABELS-fbb8454e6145",
+          "isReviewWorkflow-95b461338238",
+          "workflowStage-518137d122de",
+          "workflowStageLabel-fe94894a1075",
+          "workflowStageChip-170ebd21721c",
+          "clearWorkflowExecution-bfd1093bc22e",
+          "resetWorkflowForAssignment-3eb6e5b5547b",
+          "markNewReviewWorkflow-7fe7d5d6fdb9",
+          "workflowReviewerAllowed-dbf49d65f176",
+          "FORCED_APP_ROLE-b33481c1cb61",
+          "canonicalRole-bfadaaac0548",
+          "ownerPreviewActive-acb127e2eb65",
+          "forcedRoleOk-d92c02b0deea",
+          "roleEntryUrl-bf4ce1aeeac0",
+          "redirectRoleMismatch-800d5c8e8792",
+          "ROLE_META-f36539688fb5",
+          "masterWeekDirty-aae79739fe5f",
+          "state-ab1159ba4148",
+          "clean-261b7b93dc6f",
+          "norm-6d60250fb036",
+          "esc-9b205d5c660f",
+          "numMaybe-8ffc3d64b266",
+          "num-889072de6386",
+          "uid-7b425bb2dd8e",
+          "pinHash-bb0b5c795f64",
+          "orderIdDate-89c6e635e3a8",
+          "makeOrderId-88f46a51bc2d",
+          "ensureOrderIds-d8995ad3ab56",
+          "currentUser-906eb37d9e7b",
+          "lockedDispatcher-de9b2c5d76d0",
+          "shiftName-0298716bb354",
+          "currentRole-f062f8586d49",
+          "roleMeta-5a8af9f31c83",
+          "can-e610ddd0f514",
+          "masterNamesEquivalent-6d9db39204b0",
+          "canonicalMasterSelection-af9f448256ce",
+          "canonicalDispatcherSelection-aa071ccf9cec",
+          "canonicalNameChoices-51d572165626",
+          "roleVisibleOrders-c3ca249e8658",
+          "isPickupOrder-95999f071c21",
+          "isStaffOrderLocked-9c834c4f0bef",
+          "roleLabel-9e8182a0b3cd",
+          "employeeLaunchMode-2008ac89159a",
+          "parseDate-ee08a73dee34",
+          "iso-1f3770793236",
+          "fmtDate-9c852657c996",
+          "today-fc88c9aae119",
+          "ddmm-7e44aad38ab5",
+          "money-f0cbc3bddf82",
+          "integer-45638ccae914",
+          "pct-73a437a9dcf1",
+          "truthReview-46d365034e98",
+          "masterAccountFor-8f573cbf6734",
+          "masterFixedMode-16e066a94e88",
+          "calcAuto-181a9473b16d",
+          "recalcOpenReviewBonusOrders-05db837eebc2",
+          "orderDate-adaab4c6e88d",
+          "timeHour-933365304aab",
+          "unique-fe008ed5febb",
+          "median-1a3598681d96",
+          "sum-a6808df06ac0",
+          "normalizeOrder-537f42548194",
+          "semanticValue-0eadcbfc3884",
+          "isMeaningful-f4022b5a4dae",
+          "isSeparatorLike-76f6825a8663",
+          "isServiceMaster-38dfd651b10e",
+          "derivedStage-56b52419be93",
+          "stageClass-c1dd8103e974",
+          "statusPill-9d4e17bb4b66",
+          "parseGridRates-d975af59a0d4",
+          "financeMetric-8eb47db63944",
+          "inferredStatusFromStyle-214e037d7630",
+          "statusFromWorksheetRow-af1cbc1a49eb",
+          "canonicalKey-cbef10fde4cc",
+          "normalizeKnown-ccd45603e385",
+          "cleanPhoneForCompare-17f460f3f524",
+          "invalidMoney-d40cd6117233",
+          "fingerprint-cd4068d48aaf",
+          "log-87f9014907a4",
+          "toast-bd39ae2e7c29",
+          "DB-07afe27772bb",
+          "idbOpen-74cf566368f9",
+          "legacyIdbRead-28fa1f1c4aa5",
+          "BETA_STATE_API-5a95484d63eb",
+          "betaLastAppliedSavedAt-cc3a494a1c3d",
+          "ExpressionStatement-101-2597401021a9",
+          "betaSafeSettings-799ed7603a7b",
+          "betaApplyTombstones-f274cd0fe608",
+          "betaServerRead-05b53348b00f",
+          "betaServerWrite-1a56935d0a08",
+          "dbRead-8746923ed5d0",
+          "dbWrite-21fa20a04eed",
+          "betaOrderKey-7f90fc0e2f2a",
+          "betaNotificationAllowedFor-2cb2d674107e",
+          "betaNotify-848fe6ec2f46",
+          "betaUpdateNotificationButtons-7948d1635939",
+          "betaEnableNotifications-d0ca1b082b9d",
+          "betaApplyIncoming-4c1e27d002d7",
+          "betaPullServerState-65e7de049695",
+          "betaUpcomingReminders-dd613d60e2c1",
+          "betaStartLiveSync-34e7675e0732",
+          "fillDatalists-913eec741a00",
+          "switchTab-0a5fbc31ee87",
+          "formRecord-a30f01552ee8",
+          "setForm-46a7de53d184",
+          "syncStatusPalette-92bc6790daa0",
+          "syncFinanceMode-25edc8187ab0",
+          "recalculateFinance-b07b9f4393b6",
+          "renderFormPreview-9741d38ae83b",
+          "applyFinanceHint-45058b1cab01",
+          "saveOrder-50dd35b2e695",
+          "editOrder-2f196f017148",
+          "openOrderDetails-b88d7ebc2db5",
+          "deleteOrder-adf12642f08a",
+          "addressWithoutApartment-afc06e4d1fa0",
+          "callTimestamp-d89ec1ceb417",
+          "responsibilityMoment-15b8ca5fefc9",
+          "orderResponsibility-587e7a530fdc",
+          "problemDisclosure-3ce100108875",
+          "copyOrderForMaster-003ed92f86a2",
+          "duplicateOrder-285e73846c6a",
+          "openModal-6fbb992c5929",
+          "closeModal-f6d68ca21f4f",
+          "openOrder-2bb06a9f1d59",
+          "masterQuickInput-671a1a62515a",
+          "quickSetMaster-f8a1ce3780c5",
+          "setOrderColorFilter-b00128c350d9",
+          "cloudMode-e9383c487759",
+          "ExpressionStatement-144-a54a591d3228",
+          "ExpressionStatement-145-51516cc81b80",
+          "ExpressionStatement-146-4d51f2c4c715",
+          "dispatcherCloseRows-b54d52d0ab14",
+          "ORDER_CLOSE_KEYS-3493b65f2a46",
+          "ExpressionStatement-149-beb14e20d56b",
+          "ExpressionStatement-150-0312da6ac190",
+          "ExpressionStatement-151-e7731ac5d27b",
+          "ExpressionStatement-152-6de8032c1e47",
+          "connectCloudWithPin-700dd9f7528d",
+          "setDashboardColorFilter-9c95a5e17d0c",
+          "currentOrderRows-50d81cc04c81",
+          "syncSelectionUI-38d9e7bd8e92",
+          "toggleOrderSelection-5950cd509e6d",
+          "clearSelection-5e1a9c591e5d",
+          "selectAllFound-244de9878ed9",
+          "renderRecentMasters-295bed3506df",
+          "renderColorAudit-e0569be1b9cc",
+          "openBulkModal-d876cc4005bb",
+          "applyBulkChanges-4d9e7027575a",
+          "exportSelectedCSV-ee032baf8618",
+          "deleteSelectedOrders-961d7d3b08cf",
+          "maskedPhone-1e6b44df05fb",
+          "localDateParts-15523fa0f90a",
+          "clockParts-c54ac801b360",
+          "moscowTodayISO-a8b4639cbaa2",
+          "moscowAppointmentDate-ef2508bba56b",
+          "visitUnlockAt-10166122800b",
+          "ExpressionStatement-172-7f48893282b5",
+          "visitDayClass-5d672647fd0f",
+          "visitDayChip-52eb933b40f4",
+          "phoneUnlockLabel-9143bc7452cf",
+          "masterCanSeePhone-334dcacc1e51",
+          "phoneCell-fb4c90b4d1d2",
+          "revealMasterPhone-675065afbf78",
+          "setMasterStage-b4829c7592fd",
+          "ExpressionStatement-180-7add076cc221",
+          "openMasterReport-21967407407d",
+          "saveMasterReport-29c9d4505a44",
+          "masterActionButtons-2e9466316917",
+          "closeReviewActions-54a557b67258",
+          "approveMasterClose-7f16c882cea5",
+          "returnMasterClose-b661ae3398db",
+          "ORDER_PAGE_SIZE-7a35ec7867dd",
+          "orderPage-a83482235701",
+          "currentOrderPage-58495227d868",
+          "renderOrderPagination-cd604dc059e7",
+          "dispatcherTotalChip-3ebceb3ebc15",
+          "renderOrders-4a614bc9b2fb",
+          "hasRecordedCashSurrenderOn-437f4036f0a7",
+          "renderToday-f276d10a7135",
+          "matchesDrill-d5b8a7801f0d",
+          "spbArea-a4bbc7d86fbb",
+          "filterRows-260239d24127",
+          "renderDrillBanner-0052c56715cd",
+          "clearDrill-f11513f9f3b6",
+          "setDrill-caaea8c044dd",
+          "applySimpleDrill-0603eecf4699",
+          "setSelectCanonical-0bb71564f875",
+          "setCanonicalFilter-1ac6ea233522",
+          "bindBarsToFilter-74c77861f5a8",
+          "handleKpiDrill-57b4d54e0de8",
+          "currentExpenses-c1b1b8a1c565",
+          "kpiData-81c4ff44c4a8",
+          "kpiCard-8938b3ef664c",
+          "renderExecutiveSummary-a35e007e8a21",
+          "group-6b61418b25b1",
+          "barsHTML-3543fccdbb46",
+          "lineSVG-2893e25a807d",
+          "periodKey-60e2d767ced8",
+          "minutesBetween-ae5481e2531c",
+          "staffProfileById-079ab6c22371",
+          "onDutyMasters-81f6d43639a3",
+          "masterNames-257354127b23",
+          "mergeMasterShiftCache-852178977ec7",
+          "weekDates-cb5f15db9132",
+          "shiftWeekLabel-b9210364f09b",
+          "loadMasterWeek-b7101efa4120",
+          "requestMasterWeekLoad-284aa9a224e0",
+          "updateMasterWeekSummary-1bd0af8c6d38",
+          "renderMasterShifts-d2957c00853e",
+          "saveMasterShift-b87eeacec732",
+          "weekRange-a071a18ef59e",
+          "uniqueShiftReports-80829dbf4114",
+          "weeklySnapshot-1cb532ad60ba",
+          "loadOwnerWeekReports-70511cebd786",
+          "renderWeeklyReports-af5b29e8544f",
+          "closeWeek-21ed3e4d901d",
+          "shiftPayroll-47e7e3ed3cc7",
+          "payrollShiftKey-de191be9bb0c",
+          "orderPayrollShift-c649370ab426",
+          "orderDispatcherName-e1b2a3589c14",
+          "syncDispatcherShiftFilter-22d5d4dd1ed2",
+          "orderMatchesDispatcher-05c985aa8903",
+          "shiftOrderDate-452385374378",
+          "shiftOrders-c3172a1a8ab9",
+          "shiftCashRecordedDate-bb7ae06cbd75",
+          "payrollSchedule-1efca8b4814c",
+          "payrollScheduledShift-c1afebecd70e",
+          "payrollOrderCashRecorded-1c79091ab17c",
+          "payrollSettlementLedger-14262713128c",
+          "shiftSettlementDate-86078c009dca",
+          "payrollAccountingReport-8262249d3fbf",
+          "payrollAccountedIds-dec75e968adb",
+          "shiftSettlementOrders-6ae28aa841d7",
+          "legacyShiftSnapshot-24816aa9569e",
+          "shiftSnapshot-8356621c5670",
+          "shiftReportText-5df0194eaeef",
+          "shiftIntegrity-41b32c581208",
+          "renderShiftClose-91849dc4d2a9",
+          "subscribeShiftCenter-65cb1a7c09e6",
+          "hydrateShiftCenter-f8c9af343d75",
+          "closeCurrentShift-1be40ec4dc2f",
+          "shareShiftReport-ea312222b8dd",
+          "renderShiftReports-f6c11424f0a2",
+          "performanceStaffGroups-feedaf3d420d",
+          "renderTeamPerformance-5dfba5728a27",
+          "aiEligibleMasters-c2995f6f567d",
+          "aiOrderRecency-0c2675db88b5",
+          "aiFeaturesForMaster-4c267a132a77",
+          "renderAI-287f6106851f",
+          "historicalDayBuckets-4da2a2453fb7",
+          "dayStats-752202cfd647",
+          "forecastForDow-56b9beab64a7",
+          "renderTodayForecast-a4f3c14e904a",
+          "renderExtendedForecasts-4619085512a3",
+          "parseOrderIdFromText-ac8cad9ea0e7",
+          "findKnownMasterInText-f93771babe43",
+          "renderAICommand-043221f0096d",
+          "runAICommand-df233c1d7bf9",
+          "applyAICommand-ef1d402a4caf",
+          "buildAudit100-45e223a02ee1",
+          "runAudit100-fb7a501ce829",
+          "autoHeal100-a4e4bd2efe17",
+          "renderDailyCash-a349dd44a257",
+          "renderDashboard-40a515c112f2",
+          "renderPerformance-dc373758dc06",
+          "collectionsLag-66288b43b81e",
+          "renderPendingPayroll-3fa09e73ca9b",
+          "renderPayrollFinance-8ed84cc3ba51",
+          "renderFinance-e8ed6c7d091b",
+          "isExcelSerialTime-01db0335f5d8",
+          "duplicateOrderKey-69bd3bb684bc",
+          "duplicateOrderIds-314ec516517a",
+          "quality-1219182597bf",
+          "renderQuality-47f0262a9ca4",
+          "refillFilters-173622a1ecf2",
+          "setRange-7d4c663b6060",
+          "addExpense-c74724e4c843",
+          "download-5bb00b801e89",
+          "orderToRow-b155218a8279",
+          "legacyOrderToRow-c7a01d9d66dc",
+          "csvCell-8200d9d73766",
+          "exportCSV-aa3552f1c253",
+          "ensureXLSX-07a8c28507e4",
+          "normalizeImportHeaders-2acda9c05ca2",
+          "sheetRowToOrder-d6a2f6cdbc81",
+          "normalizeExcelDate-0ab09495411a",
+          "normalizeExcelTime-244f86b59d0d",
+          "loadFile-f370024baacb",
+          "renderImportPreview-a2b5498c0c3e",
+          "mergeImport-d4a96626f927",
+          "exportExcel-fadafc6ec0c9",
+          "backupPayload-82ac3d98450a",
+          "backup-52ebbec9b47b",
+          "restore-4a5cf24f52ad",
+          "renderSchema-36437645be4c",
+          "applySettings-53a28fa277d1",
+          "saveSettings-abf2a9273ae6",
+          "applyOrderFormPermissions-341227c15906",
+          "AI_UI_DEFAULT-e1d713e60152",
+          "mergeDeep-2023fa420bd4",
+          "hexSafe-ff7b7bb1637a",
+          "ExpressionStatement-332-ccebc6ac88dc",
+          "aiUiModuleAllowed-22c6779527be",
+          "renderRoleWorkGuide-dba80b0c2528",
+          "applyRoleUI-c7708ba8b08b",
+          "loginProfiles-0c708dd61a4f",
+          "renderLoginUsers-d423accc23e0",
+          "BETA_SESSION_KEY-75cea82d61b8",
+          "betaSessionSignature-7ab73ef8ef9b",
+          "betaClearRememberedLogin-fed1542cf90f",
+          "betaRememberProfile-921e53e3701d",
+          "betaRestoreRememberedLogin-35caf2a7f67f",
+          "beginLogin-5b1658364f72",
+          "loginNow-7b3c6ef6dfb6",
+          "logout-2987d08e7b36",
+          "toggleNewStaffPin-7ba1ecc80f77",
+          "renderStaff-13b233a85851",
+          "toggleStaff-9293ecb3836f",
+          "renderMasterRoster-ef6400f03ce1",
+          "setMasterFixedMode-b5b8dae3f489",
+          "prepareMasterAccount-72d26133092a",
+          "persistMasterRoster-7a607f3b6e93",
+          "addRosterMaster-944d61da0ded",
+          "removeRosterMaster-ccd3061bbefa",
+          "saveAccessSettings-9aede80542ca",
+          "addStaff-093e291d99a2",
+          "randomSecret-5eef36a6c9a4",
+          "saveOpsSettings-0b157414e061",
+          "renderSettings-8d3540859f1a",
+          "selfTests-9fe468e221cf",
+          "liveQualityMonitor-9be3a7b7b66b",
+          "refreshLiveQuality-e2fb0d2da0de",
+          "refresh-68119759e731",
+          "autoStatusFromVisit-95d7d21ee03b",
+          "wireLabels-d1d86fd5a7f8",
+          "bind-ccb32c7c457b",
+          "init-68feca4cce38",
+          "betaSeedLocal-0bb2d3f1e43d",
+          "betaResetLocal-b34dc2e4f9fd",
+          "ExpressionStatement-370-c2c95b78cf7e",
+          "IfStatement-371-ee539c55841f",
+          "EmptyStatement-187-41b805ea7ac0",
+          "ExpressionStatement-373-39bbde244107",
+          "trailing-space-7eb70257593d"
+        ],
+        "cloud": [
+          "cloud-adapter-dc0ed02d327b"
+        ]
+      }
+    },
+    "master": {
+      "template": "roles/master.html",
+      "output": "master.html",
+      "scripts": {
+        "application": [
+          "ImportDeclaration-0-8478b81bfdad",
+          "ImportDeclaration-1-6329805c4c48",
+          "PRESETS-5cd5988cc4c6",
+          "HEADERS-66318dec10a1",
+          "KEYS-e3ade43bac5e",
+          "APP_HEADERS-89dae34ea3f2",
+          "APP_KEYS-47024d710bf9",
+          "LABELS-af51307ae05e",
+          "$-0d332a6d83e9",
+          "STATUS_META-e51ce7bfad4d",
+          "STATUS_ORDER-c5706335410c",
+          "REVIEW_WORKFLOW-0ea9f6f9c161",
+          "MASTER_STAGE_LABELS-fbb8454e6145",
+          "isReviewWorkflow-95b461338238",
+          "workflowStage-518137d122de",
+          "workflowStageLabel-fe94894a1075",
+          "workflowStageChip-170ebd21721c",
+          "clearWorkflowExecution-bfd1093bc22e",
+          "resetWorkflowForAssignment-3eb6e5b5547b",
+          "markNewReviewWorkflow-7fe7d5d6fdb9",
+          "workflowReviewerAllowed-dbf49d65f176",
+          "FORCED_APP_ROLE-b33481c1cb61",
+          "canonicalRole-bfadaaac0548",
+          "ownerPreviewActive-acb127e2eb65",
+          "forcedRoleOk-d92c02b0deea",
+          "roleEntryUrl-bf4ce1aeeac0",
+          "redirectRoleMismatch-800d5c8e8792",
+          "ROLE_META-afb65230d9f9",
+          "state-2e28e2d557d2",
+          "clean-261b7b93dc6f",
+          "norm-6d60250fb036",
+          "esc-9b205d5c660f",
+          "numMaybe-8ffc3d64b266",
+          "num-889072de6386",
+          "uid-7b425bb2dd8e",
+          "pinHash-bb0b5c795f64",
+          "orderIdDate-89c6e635e3a8",
+          "makeOrderId-88f46a51bc2d",
+          "ensureOrderIds-d8995ad3ab56",
+          "currentUser-906eb37d9e7b",
+          "lockedDispatcher-de9b2c5d76d0",
+          "shiftName-0298716bb354",
+          "currentRole-f062f8586d49",
+          "roleMeta-5a8af9f31c83",
+          "can-e610ddd0f514",
+          "masterNamesEquivalent-6d9db39204b0",
+          "canonicalMasterSelection-af9f448256ce",
+          "canonicalDispatcherSelection-aa071ccf9cec",
+          "canonicalNameChoices-51d572165626",
+          "masterRoleOrderMatch-7c678c146e87",
+          "roleVisibleOrders-0758e6178c78",
+          "roleLabel-9e8182a0b3cd",
+          "employeeLaunchMode-2008ac89159a",
+          "parseDate-ee08a73dee34",
+          "iso-1f3770793236",
+          "fmtDate-9c852657c996",
+          "today-fc88c9aae119",
+          "ddmm-7e44aad38ab5",
+          "money-f0cbc3bddf82",
+          "integer-45638ccae914",
+          "pct-73a437a9dcf1",
+          "truthReview-46d365034e98",
+          "masterAccountFor-89dd250e400b",
+          "masterFixedMode-1966cfb335d4",
+          "calcAuto-181a9473b16d",
+          "recalcOpenReviewBonusOrders-05db837eebc2",
+          "orderDate-adaab4c6e88d",
+          "timeHour-933365304aab",
+          "unique-fe008ed5febb",
+          "median-1a3598681d96",
+          "sum-a6808df06ac0",
+          "normalizeOrder-537f42548194",
+          "semanticValue-0eadcbfc3884",
+          "isMeaningful-f4022b5a4dae",
+          "isSeparatorLike-76f6825a8663",
+          "isServiceMaster-38dfd651b10e",
+          "derivedStage-56b52419be93",
+          "stageClass-c1dd8103e974",
+          "statusPill-9d4e17bb4b66",
+          "parseGridRates-d975af59a0d4",
+          "financeMetric-8eb47db63944",
+          "inferredStatusFromStyle-1eee42a9c1d9",
+          "statusFromWorksheetRow-af1cbc1a49eb",
+          "canonicalKey-cbef10fde4cc",
+          "normalizeKnown-ccd45603e385",
+          "cleanPhoneForCompare-17f460f3f524",
+          "invalidMoney-d40cd6117233",
+          "fingerprint-cd4068d48aaf",
+          "log-87f9014907a4",
+          "toast-bd39ae2e7c29",
+          "DB-07afe27772bb",
+          "idbOpen-74cf566368f9",
+          "legacyIdbRead-28fa1f1c4aa5",
+          "BETA_STATE_API-5a95484d63eb",
+          "betaLastAppliedSavedAt-cc3a494a1c3d",
+          "ExpressionStatement-101-2597401021a9",
+          "betaSafeSettings-799ed7603a7b",
+          "betaApplyTombstones-f274cd0fe608",
+          "betaServerRead-05b53348b00f",
+          "betaServerWrite-1a56935d0a08",
+          "dbRead-8746923ed5d0",
+          "dbWrite-5eaa1527cdc4",
+          "betaOrderKey-7f90fc0e2f2a",
+          "betaNotificationAllowedFor-2cb2d674107e",
+          "betaNotify-848fe6ec2f46",
+          "betaUpdateNotificationButtons-7948d1635939",
+          "betaEnableNotifications-d0ca1b082b9d",
+          "betaApplyIncoming-fef54da8f700",
+          "betaPullServerState-65e7de049695",
+          "betaUpcomingReminders-dd613d60e2c1",
+          "betaStartLiveSync-34e7675e0732",
+          "fillDatalists-913eec741a00",
+          "switchTab-0a5fbc31ee87",
+          "formRecord-25a7543b5785",
+          "setForm-e5217c33b9d3",
+          "syncStatusPalette-92bc6790daa0",
+          "syncFinanceMode-25edc8187ab0",
+          "recalculateFinance-b07b9f4393b6",
+          "renderFormPreview-9741d38ae83b",
+          "applyFinanceHint-45058b1cab01",
+          "saveOrder-6e145cfb8284",
+          "editOrder-2f196f017148",
+          "openOrderDetails-b88d7ebc2db5",
+          "deleteOrder-adf12642f08a",
+          "addressWithoutApartment-afc06e4d1fa0",
+          "callTimestamp-d89ec1ceb417",
+          "problemDisclosure-3ce100108875",
+          "copyOrderForMaster-003ed92f86a2",
+          "duplicateOrder-285e73846c6a",
+          "openModal-6fbb992c5929",
+          "closeModal-f6d68ca21f4f",
+          "openOrder-2bb06a9f1d59",
+          "masterQuickInput-671a1a62515a",
+          "quickSetMaster-f8a1ce3780c5",
+          "setOrderColorFilter-b00128c350d9",
+          "cloudMode-e9383c487759",
+          "ExpressionStatement-144-a54a591d3228",
+          "ExpressionStatement-145-51516cc81b80",
+          "ExpressionStatement-146-4d51f2c4c715",
+          "ExpressionStatement-152-6de8032c1e47",
+          "connectCloudWithPin-782f3e0fb919",
+          "setDashboardColorFilter-9c95a5e17d0c",
+          "currentOrderRows-50d81cc04c81",
+          "syncSelectionUI-38d9e7bd8e92",
+          "toggleOrderSelection-5950cd509e6d",
+          "clearSelection-5e1a9c591e5d",
+          "selectAllFound-244de9878ed9",
+          "renderRecentMasters-295bed3506df",
+          "renderColorAudit-e0569be1b9cc",
+          "openBulkModal-d876cc4005bb",
+          "applyBulkChanges-4d9e7027575a",
+          "exportSelectedCSV-ee032baf8618",
+          "deleteSelectedOrders-961d7d3b08cf",
+          "maskedPhone-1e6b44df05fb",
+          "localDateParts-15523fa0f90a",
+          "clockParts-c54ac801b360",
+          "moscowTodayISO-a8b4639cbaa2",
+          "moscowAppointmentDate-ef2508bba56b",
+          "visitUnlockAt-10166122800b",
+          "ExpressionStatement-172-7f48893282b5",
+          "visitDayClass-5d672647fd0f",
+          "visitDayChip-52eb933b40f4",
+          "phoneUnlockLabel-9143bc7452cf",
+          "masterCanSeePhone-334dcacc1e51",
+          "phoneCell-fb4c90b4d1d2",
+          "revealMasterPhone-675065afbf78",
+          "setMasterStage-b4829c7592fd",
+          "ExpressionStatement-180-7add076cc221",
+          "openMasterReport-21967407407d",
+          "saveMasterReport-29c9d4505a44",
+          "masterActionButtons-2e9466316917",
+          "closeReviewActions-54a557b67258",
+          "approveMasterClose-7f16c882cea5",
+          "returnMasterClose-b661ae3398db",
+          "ORDER_PAGE_SIZE-7a35ec7867dd",
+          "orderPage-a83482235701",
+          "currentOrderPage-58495227d868",
+          "renderOrderPagination-cd604dc059e7",
+          "renderOrders-dc71cc4037d9",
+          "hasRecordedCashSurrenderOn-437f4036f0a7",
+          "renderToday-f276d10a7135",
+          "matchesDrill-d5b8a7801f0d",
+          "spbArea-a4bbc7d86fbb",
+          "filterRows-260239d24127",
+          "renderDrillBanner-0052c56715cd",
+          "clearDrill-f11513f9f3b6",
+          "setDrill-caaea8c044dd",
+          "applySimpleDrill-0603eecf4699",
+          "setSelectCanonical-0bb71564f875",
+          "setCanonicalFilter-1ac6ea233522",
+          "bindBarsToFilter-74c77861f5a8",
+          "handleKpiDrill-57b4d54e0de8",
+          "currentExpenses-c1b1b8a1c565",
+          "kpiData-81c4ff44c4a8",
+          "kpiCard-8938b3ef664c",
+          "renderExecutiveSummary-a35e007e8a21",
+          "group-6b61418b25b1",
+          "barsHTML-3543fccdbb46",
+          "lineSVG-2893e25a807d",
+          "periodKey-60e2d767ced8",
+          "minutesBetween-ae5481e2531c",
+          "staffProfileById-079ab6c22371",
+          "onDutyMasters-81f6d43639a3",
+          "masterNames-257354127b23",
+          "renderMasterShifts-268ed2a50619",
+          "saveMasterShift-50dee55d48a3",
+          "shiftPayroll-4b7fcded20e0",
+          "payrollShiftKey-de191be9bb0c",
+          "orderPayrollShift-c649370ab426",
+          "orderDispatcherName-e1b2a3589c14",
+          "syncDispatcherShiftFilter-22d5d4dd1ed2",
+          "orderMatchesDispatcher-05c985aa8903",
+          "shiftOrders-2fde38baa365",
+          "shiftSnapshot-7eef9142847d",
+          "shiftReportText-7f5073c6c915",
+          "shiftIntegrity-6454f63bdf8e",
+          "renderShiftClose-43188a3f4753",
+          "subscribeShiftCenter-753946d07258",
+          "hydrateShiftCenter-fb11248b88e7",
+          "closeCurrentShift-202b53068b9e",
+          "shareShiftReport-badfb060027f",
+          "renderShiftReports-68f4571d5796",
+          "performanceStaffGroups-feedaf3d420d",
+          "renderTeamPerformance-5dfba5728a27",
+          "aiEligibleMasters-c2995f6f567d",
+          "aiOrderRecency-0c2675db88b5",
+          "aiFeaturesForMaster-4c267a132a77",
+          "renderAI-287f6106851f",
+          "historicalDayBuckets-4da2a2453fb7",
+          "dayStats-752202cfd647",
+          "forecastForDow-56b9beab64a7",
+          "renderTodayForecast-a4f3c14e904a",
+          "renderExtendedForecasts-4619085512a3",
+          "parseOrderIdFromText-ac8cad9ea0e7",
+          "findKnownMasterInText-f93771babe43",
+          "renderAICommand-043221f0096d",
+          "runAICommand-df233c1d7bf9",
+          "applyAICommand-ef1d402a4caf",
+          "buildAudit100-45e223a02ee1",
+          "runAudit100-fb7a501ce829",
+          "autoHeal100-a4e4bd2efe17",
+          "renderDailyCash-a349dd44a257",
+          "renderDashboard-40a515c112f2",
+          "renderPerformance-dc373758dc06",
+          "collectionsLag-66288b43b81e",
+          "renderPayrollFinance-cae555fcf833",
+          "renderFinance-e8ed6c7d091b",
+          "isExcelSerialTime-01db0335f5d8",
+          "duplicateOrderKey-69bd3bb684bc",
+          "duplicateOrderIds-314ec516517a",
+          "quality-1219182597bf",
+          "renderQuality-47f0262a9ca4",
+          "refillFilters-173622a1ecf2",
+          "setRange-7d4c663b6060",
+          "addExpense-c74724e4c843",
+          "download-5bb00b801e89",
+          "orderToRow-b155218a8279",
+          "legacyOrderToRow-c7a01d9d66dc",
+          "csvCell-8200d9d73766",
+          "exportCSV-aa3552f1c253",
+          "ensureXLSX-07a8c28507e4",
+          "sheetRowToOrder-d6a2f6cdbc81",
+          "normalizeExcelDate-0ab09495411a",
+          "normalizeExcelTime-244f86b59d0d",
+          "loadFile-7ac01467be8b",
+          "renderImportPreview-a2b5498c0c3e",
+          "mergeImport-e29d591b5a4c",
+          "exportExcel-fadafc6ec0c9",
+          "backupPayload-82ac3d98450a",
+          "backup-52ebbec9b47b",
+          "restore-4a5cf24f52ad",
+          "renderSchema-36437645be4c",
+          "applySettings-53a28fa277d1",
+          "saveSettings-11c07101a5aa",
+          "applyOrderFormPermissions-8c040d73782c",
+          "AI_UI_DEFAULT-e1d713e60152",
+          "mergeDeep-2023fa420bd4",
+          "hexSafe-ff7b7bb1637a",
+          "ExpressionStatement-332-ccebc6ac88dc",
+          "aiUiModuleAllowed-22c6779527be",
+          "renderRoleWorkGuide-dba80b0c2528",
+          "applyRoleUI-4bf7776aa0be",
+          "loginProfiles-0c708dd61a4f",
+          "renderLoginUsers-73fc1943abb0",
+          "BETA_SESSION_KEY-75cea82d61b8",
+          "betaSessionSignature-7ab73ef8ef9b",
+          "betaClearRememberedLogin-fed1542cf90f",
+          "betaRememberProfile-921e53e3701d",
+          "betaRestoreRememberedLogin-35caf2a7f67f",
+          "beginLogin-5b1658364f72",
+          "loginNow-756c97f24a54",
+          "logout-2987d08e7b36",
+          "toggleNewStaffPin-7ba1ecc80f77",
+          "renderStaff-13b233a85851",
+          "toggleStaff-9293ecb3836f",
+          "renderMasterRoster-a878251df808",
+          "setMasterFixedMode-d0c2e46fc374",
+          "prepareMasterAccount-72d26133092a",
+          "persistMasterRoster-c510cb689986",
+          "addRosterMaster-944d61da0ded",
+          "removeRosterMaster-ccd3061bbefa",
+          "saveAccessSettings-9aede80542ca",
+          "addStaff-8c3fd1206c92",
+          "randomSecret-5eef36a6c9a4",
+          "saveOpsSettings-0b157414e061",
+          "renderSettings-8d3540859f1a",
+          "selfTests-9fe468e221cf",
+          "liveQualityMonitor-9be3a7b7b66b",
+          "refreshLiveQuality-e2fb0d2da0de",
+          "refresh-68119759e731",
+          "autoStatusFromVisit-95d7d21ee03b",
+          "wireLabels-d1d86fd5a7f8",
+          "bind-db200c0b2eec",
+          "init-f832f763b866",
+          "betaSeedLocal-0bb2d3f1e43d",
+          "betaResetLocal-b34dc2e4f9fd",
+          "ExpressionStatement-370-c2c95b78cf7e",
+          "IfStatement-371-ee539c55841f",
+          "EmptyStatement-187-41b805ea7ac0",
+          "ExpressionStatement-373-39bbde244107",
+          "trailing-space-7eb70257593d"
+        ],
+        "cloud": [
+          "cloud-adapter-00566c64d8dd"
+        ]
+      }
+    }
+  },
+  "units": {
+    "ImportDeclaration-0-8478b81bfdad": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "loadOptionalFeature"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ImportDeclaration-1-6329805c4c48": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "PRESETS-5cd5988cc4c6": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "PRESETS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "HEADERS-66318dec10a1": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "HEADERS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "KEYS-e3ade43bac5e": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "KEYS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "APP_HEADERS-89dae34ea3f2": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "APP_HEADERS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "APP_KEYS-47024d710bf9": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "APP_KEYS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "LABELS-af51307ae05e": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "LABELS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "$-0d332a6d83e9": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "$",
+        "$$"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "STATUS_META-e51ce7bfad4d": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "STATUS_META"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "STATUS_ORDER-c5706335410c": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "STATUS_ORDER"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "REVIEW_WORKFLOW-0ea9f6f9c161": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "REVIEW_WORKFLOW"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "MASTER_STAGE_LABELS-fbb8454e6145": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "MASTER_STAGE_LABELS"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "isReviewWorkflow-95b461338238": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "isReviewWorkflow"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "workflowStage-518137d122de": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "workflowStage"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "workflowStageLabel-fe94894a1075": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "workflowStageLabel"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "workflowStageChip-170ebd21721c": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "workflowStageChip"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "clearWorkflowExecution-bfd1093bc22e": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "clearWorkflowExecution"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "resetWorkflowForAssignment-3eb6e5b5547b": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "resetWorkflowForAssignment"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "markNewReviewWorkflow-7fe7d5d6fdb9": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "markNewReviewWorkflow"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "workflowReviewerAllowed-dbf49d65f176": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "workflowReviewerAllowed"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "FORCED_APP_ROLE-4359a072c745": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "FORCED_APP_ROLE",
+        "FORCED_APP_ROLES",
+        "SECURE_CLOUD_REQUIRED"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "canonicalRole-bfadaaac0548": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "canonicalRole"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ownerPreviewActive-acb127e2eb65": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "ownerPreviewActive"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "forcedRoleOk-d92c02b0deea": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "forcedRoleOk"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "roleEntryUrl-bf4ce1aeeac0": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "roleEntryUrl"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "redirectRoleMismatch-800d5c8e8792": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "redirectRoleMismatch"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ROLE_META-905cb9bfb32b": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "ROLE_META"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "masterWeekDirty-aae79739fe5f": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "masterWeekDirty",
+        "masterWeekLoading",
+        "masterWeekSaving",
+        "masterWeekReady",
+        "masterWeekAnchor",
+        "masterWeekRequest"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "state-b8a02bb34fad": {
+      "file": "core/owner.js",
+      "domain": "core",
+      "symbols": [
+        "state"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "clean-261b7b93dc6f": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "clean"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "norm-6d60250fb036": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "norm"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "esc-9b205d5c660f": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "esc"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "numMaybe-8ffc3d64b266": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "numMaybe"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "num-889072de6386": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "num"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "uid-7b425bb2dd8e": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "uid"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "pinHash-bb0b5c795f64": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "pinHash"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderIdDate-89c6e635e3a8": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "orderIdDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "makeOrderId-69110d3b7b6f": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "makeOrderId"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "ensureOrderIds-d8995ad3ab56": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "ensureOrderIds"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "previewStaffProfile-03732088eea6": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "previewStaffProfile"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "ownerRolePreview-3275c2f10a5f": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "ownerRolePreview"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "currentUser-bb8fc54704ca": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "currentUser"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "lockedDispatcher-de9b2c5d76d0": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "lockedDispatcher"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "shiftName-0298716bb354": {
+      "file": "payroll/shared.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftName"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "currentRole-f062f8586d49": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "currentRole"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "roleMeta-5a8af9f31c83": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "roleMeta"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "can-d37c7ee56dfc": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "can"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "masterNamesEquivalent-6d9db39204b0": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "masterNamesEquivalent"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "canonicalMasterSelection-f1fb4e3178e4": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "canonicalMasterSelection"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "canonicalDispatcherSelection-aa071ccf9cec": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "canonicalDispatcherSelection"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "canonicalNameChoices-33c9c0a12cba": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "canonicalNameChoices"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "masterRoleOrderMatch-7c678c146e87": {
+      "file": "staff/owner-master.js",
+      "domain": "staff",
+      "symbols": [
+        "masterRoleOrderMatch"
+      ],
+      "roles": [
+        "owner",
+        "master"
+      ]
+    },
+    "roleVisibleOrders-0758e6178c78": {
+      "file": "staff/owner-master.js",
+      "domain": "staff",
+      "symbols": [
+        "roleVisibleOrders"
+      ],
+      "roles": [
+        "owner",
+        "master"
+      ]
+    },
+    "isPickupOrder-732fc3fcfc77": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "isPickupOrder"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "isStaffOrderLocked-9c834c4f0bef": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "isStaffOrderLocked"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "roleLabel-9e8182a0b3cd": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "roleLabel"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "employeeLaunchMode-2008ac89159a": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "employeeLaunchMode"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "parseDate-ee08a73dee34": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "parseDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "iso-1f3770793236": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "iso"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "fmtDate-9c852657c996": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "fmtDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "today-fc88c9aae119": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "today"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ddmm-7e44aad38ab5": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "ddmm"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "money-f0cbc3bddf82": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "money"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "integer-45638ccae914": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "integer"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "pct-73a437a9dcf1": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "pct"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "truthReview-46d365034e98": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "truthReview"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "masterAccountFor-8f573cbf6734": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "masterAccountFor"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "masterFixedMode-16e066a94e88": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "masterFixedMode"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "calcAuto-181a9473b16d": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "calcAuto"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "recalcOpenReviewBonusOrders-05db837eebc2": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "recalcOpenReviewBonusOrders"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderDate-adaab4c6e88d": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "orderDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "timeHour-933365304aab": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "timeHour"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "unique-fe008ed5febb": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "unique"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "median-1a3598681d96": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "median"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "sum-a6808df06ac0": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "sum"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "normalizeOrder-537f42548194": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "normalizeOrder"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "semanticValue-0eadcbfc3884": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "semanticValue"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "isMeaningful-f4022b5a4dae": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "isMeaningful"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "isSeparatorLike-76f6825a8663": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "isSeparatorLike"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "isServiceMaster-38dfd651b10e": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "isServiceMaster"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "derivedStage-56b52419be93": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "derivedStage"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "stageClass-c1dd8103e974": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "stageClass"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "statusPill-9d4e17bb4b66": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "statusPill"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "parseGridRates-d975af59a0d4": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "parseGridRates"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "financeMetric-8eb47db63944": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "financeMetric"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "inferredStatusFromStyle-4545c5d7db0c": {
+      "file": "imports/owner.js",
+      "domain": "imports",
+      "symbols": [
+        "inferredStatusFromStyle"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "statusFromWorksheetRow-af1cbc1a49eb": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "statusFromWorksheetRow"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "canonicalKey-cbef10fde4cc": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "canonicalKey"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "normalizeKnown-ccd45603e385": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "normalizeKnown"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "cleanPhoneForCompare-17f460f3f524": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "cleanPhoneForCompare"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "invalidMoney-d40cd6117233": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "invalidMoney"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "fingerprint-cd4068d48aaf": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "fingerprint"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "log-87f9014907a4": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "log"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "toast-bd39ae2e7c29": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "toast"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "DB-07afe27772bb": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "DB",
+        "STORE",
+        "KEY"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "importCloudPendingIds-255122f87113": {
+      "file": "imports/owner.js",
+      "domain": "imports",
+      "symbols": [
+        "importCloudPendingIds"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "idbOpen-74cf566368f9": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "idbOpen"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "legacyIdbRead-28fa1f1c4aa5": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "legacyIdbRead"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "BETA_STATE_API-5a95484d63eb": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "BETA_STATE_API",
+        "BETA_RESET_API"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaLastAppliedSavedAt-cc3a494a1c3d": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaLastAppliedSavedAt",
+        "betaBroadcast",
+        "betaSyncBusy",
+        "betaLiveTimer",
+        "betaReminderTimer",
+        "betaCloudSnapshotReady"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-101-2597401021a9": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaSafeSettings-799ed7603a7b": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "betaSafeSettings"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaApplyTombstones-f274cd0fe608": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaApplyTombstones"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaServerRead-05b53348b00f": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaServerRead"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaServerWrite-1a56935d0a08": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaServerWrite"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "dbRead-8746923ed5d0": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "dbRead"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "dbWrite-6f8a515f66f8": {
+      "file": "integrations/owner.js",
+      "domain": "integrations",
+      "symbols": [
+        "dbWrite"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "betaOrderKey-7f90fc0e2f2a": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "betaOrderKey"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaNotificationAllowedFor-2cb2d674107e": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "betaNotificationAllowedFor"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaNotify-848fe6ec2f46": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "betaNotify"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaUpdateNotificationButtons-7948d1635939": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "betaUpdateNotificationButtons"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaEnableNotifications-d0ca1b082b9d": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "betaEnableNotifications"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaApplyIncoming-4c1e27d002d7": {
+      "file": "integrations/owner-dispatcher.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaApplyIncoming"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "betaPullServerState-65e7de049695": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaPullServerState"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaUpcomingReminders-dd613d60e2c1": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "betaUpcomingReminders"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaStartLiveSync-34e7675e0732": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaStartLiveSync"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "fillDatalists-913eec741a00": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "fillDatalists"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "switchTab-0a5fbc31ee87": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "switchTab"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "formRecord-8571039a158b": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "formRecord"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "setForm-5883854858fe": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "setForm"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "syncStatusPalette-92bc6790daa0": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "syncStatusPalette"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "syncFinanceMode-25edc8187ab0": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "syncFinanceMode"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "recalculateFinance-b07b9f4393b6": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "recalculateFinance"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderFormPreview-9741d38ae83b": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "renderFormPreview"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "applyFinanceHint-45058b1cab01": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "applyFinanceHint"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "saveOrder-bbeb655dc006": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "saveOrder"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "editOrder-2f196f017148": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "editOrder"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "openOrderDetails-b88d7ebc2db5": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "openOrderDetails"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "deleteOrder-adf12642f08a": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "deleteOrder"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "addressWithoutApartment-afc06e4d1fa0": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "addressWithoutApartment"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "callTimestamp-d89ec1ceb417": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "callTimestamp"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "responsibilityMoment-15b8ca5fefc9": {
+      "file": "orders/owner-dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "responsibilityMoment"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "orderResponsibility-587e7a530fdc": {
+      "file": "orders/owner-dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "orderResponsibility"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "problemDisclosure-3ce100108875": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "problemDisclosure"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "copyOrderForMaster-003ed92f86a2": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "copyOrderForMaster"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "duplicateOrder-285e73846c6a": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "duplicateOrder"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "openModal-6fbb992c5929": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "openModal"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "closeModal-f6d68ca21f4f": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "closeModal"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "openOrder-3ed847322aab": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "openOrder"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "masterQuickInput-82e46a97a6fc": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "masterQuickInput"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "quickSetMaster-258c12e87798": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "quickSetMaster"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "setOrderColorFilter-b00128c350d9": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "setOrderColorFilter"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "cloudMode-e9383c487759": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "cloudMode"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-144-a54a591d3228": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-145-51516cc81b80": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-146-4d51f2c4c715": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "dispatcherCloseRows-b54d52d0ab14": {
+      "file": "orders/owner-dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "dispatcherCloseRows"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "ORDER_CLOSE_KEYS-26096ce9640a": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "ORDER_CLOSE_KEYS"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "ExpressionStatement-149-beb14e20d56b": {
+      "file": "bootstrap/owner-dispatcher.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "ExpressionStatement-150-0312da6ac190": {
+      "file": "bootstrap/owner-dispatcher.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "ExpressionStatement-151-e7731ac5d27b": {
+      "file": "bootstrap/owner-dispatcher.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "ExpressionStatement-152-6de8032c1e47": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "connectCloudWithPin-700dd9f7528d": {
+      "file": "integrations/owner-dispatcher.js",
+      "domain": "integrations",
+      "symbols": [
+        "connectCloudWithPin"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "setDashboardColorFilter-9c95a5e17d0c": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "setDashboardColorFilter"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "currentOrderRows-50d81cc04c81": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "currentOrderRows"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "syncSelectionUI-38d9e7bd8e92": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "syncSelectionUI"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "toggleOrderSelection-5950cd509e6d": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "toggleOrderSelection"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "clearSelection-5e1a9c591e5d": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "clearSelection"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "selectAllFound-244de9878ed9": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "selectAllFound"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderRecentMasters-295bed3506df": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "renderRecentMasters"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderColorAudit-e0569be1b9cc": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "renderColorAudit"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "openBulkModal-d876cc4005bb": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "openBulkModal"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "applyBulkChanges-4d9e7027575a": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "applyBulkChanges"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "exportSelectedCSV-ee032baf8618": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "exportSelectedCSV"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "deleteSelectedOrders-961d7d3b08cf": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "deleteSelectedOrders"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "maskedPhone-1e6b44df05fb": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "maskedPhone"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "localDateParts-15523fa0f90a": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "localDateParts"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "clockParts-c54ac801b360": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "clockParts"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "moscowTodayISO-a8b4639cbaa2": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "moscowTodayISO"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "moscowAppointmentDate-ef2508bba56b": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "moscowAppointmentDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "visitUnlockAt-10166122800b": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "visitUnlockAt"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-172-7f48893282b5": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "visitDayClass-5d672647fd0f": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "visitDayClass"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "visitDayChip-52eb933b40f4": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "visitDayChip"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "phoneUnlockLabel-9143bc7452cf": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "phoneUnlockLabel"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "masterCanSeePhone-334dcacc1e51": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "masterCanSeePhone"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "phoneCell-fb4c90b4d1d2": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "phoneCell"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "revealMasterPhone-675065afbf78": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "revealMasterPhone"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "setMasterStage-b4829c7592fd": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "setMasterStage"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-180-7add076cc221": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "openMasterReport-21967407407d": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "openMasterReport"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "saveMasterReport-29c9d4505a44": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "saveMasterReport"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "masterActionButtons-9cc227f589e3": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "masterActionButtons"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "closeReviewActions-6ec82a50a908": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "closeReviewActions"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "approveMasterClose-7f16c882cea5": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "approveMasterClose"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ownerConfirmCloseFromTable-b7b0b3451d43": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "ownerConfirmCloseFromTable"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "EmptyStatement-187-41b805ea7ac0": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ],
+      "repeatable": true
+    },
+    "returnMasterClose-ee8b4e415d5b": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "returnMasterClose"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "ORDER_PAGE_SIZE-7a35ec7867dd": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "ORDER_PAGE_SIZE"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderPage-a83482235701": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "orderPage",
+        "orderPageFilterKey"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "currentOrderPage-58495227d868": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "currentOrderPage"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderOrderPagination-cd604dc059e7": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "renderOrderPagination"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderOrders-e4044ce1a8b6": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "renderOrders"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "hasRecordedCashSurrenderOn-437f4036f0a7": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "hasRecordedCashSurrenderOn"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderToday-f276d10a7135": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "renderToday"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "matchesDrill-d5b8a7801f0d": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "matchesDrill"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "spbArea-a4bbc7d86fbb": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "spbArea"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "filterRows-260239d24127": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "filterRows"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderDrillBanner-0052c56715cd": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderDrillBanner"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "clearDrill-f11513f9f3b6": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "clearDrill"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "setDrill-caaea8c044dd": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "setDrill"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "applySimpleDrill-0603eecf4699": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "applySimpleDrill"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "setSelectCanonical-0bb71564f875": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "setSelectCanonical"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "setCanonicalFilter-1ac6ea233522": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "setCanonicalFilter"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "bindBarsToFilter-74c77861f5a8": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "bindBarsToFilter"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "handleKpiDrill-57b4d54e0de8": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "handleKpiDrill"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "currentExpenses-c1b1b8a1c565": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "currentExpenses"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "kpiData-81c4ff44c4a8": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "kpiData"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "kpiCard-8938b3ef664c": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "kpiCard"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderExecutiveSummary-a35e007e8a21": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderExecutiveSummary"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "group-6b61418b25b1": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "group"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "barsHTML-3543fccdbb46": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "barsHTML"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "lineSVG-2893e25a807d": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "lineSVG"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "periodKey-60e2d767ced8": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "periodKey"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "minutesBetween-ae5481e2531c": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "minutesBetween"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "staffProfileById-079ab6c22371": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "staffProfileById"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "onDutyMasters-81f6d43639a3": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "onDutyMasters"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "masterNames-257354127b23": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "masterNames"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "mergeMasterShiftCache-852178977ec7": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "mergeMasterShiftCache"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "weekDates-cb5f15db9132": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "weekDates"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftWeekLabel-b9210364f09b": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftWeekLabel"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "loadMasterWeek-b7101efa4120": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "loadMasterWeek"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "requestMasterWeekLoad-284aa9a224e0": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "requestMasterWeekLoad"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "updateMasterWeekSummary-1bd0af8c6d38": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "updateMasterWeekSummary"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "renderMasterShifts-d2957c00853e": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "renderMasterShifts"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "saveMasterShift-b87eeacec732": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "saveMasterShift"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "weekRange-a071a18ef59e": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "weekRange"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "uniqueShiftReports-80829dbf4114": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "uniqueShiftReports"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "weeklySnapshot-3c59599390df": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "weeklySnapshot"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "loadOwnerWeekReports-70511cebd786": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "loadOwnerWeekReports"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "payrollShiftKey-de191be9bb0c": {
+      "file": "payroll/shared.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollShiftKey"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderPayrollShift-c649370ab426": {
+      "file": "payroll/shared.js",
+      "domain": "payroll",
+      "symbols": [
+        "orderPayrollShift"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderDispatcherName-e1b2a3589c14": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "orderDispatcherName"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "syncDispatcherShiftFilter-22d5d4dd1ed2": {
+      "file": "integrations/shared.js",
+      "domain": "integrations",
+      "symbols": [
+        "syncDispatcherShiftFilter"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderMatchesDispatcher-05c985aa8903": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "orderMatchesDispatcher"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "payrollAccountingReport-8262249d3fbf": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollAccountingReport"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "payrollAccountedIds-dec75e968adb": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollAccountedIds"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "payrollSchedule-1efca8b4814c": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollSchedule"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "payrollSettlementLedger-14262713128c": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollSettlementLedger"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "payrollOrdersFor-09376c14f586": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollOrdersFor"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "payrollOrderCountLabel-8ca66ef3d582": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollOrderCountLabel"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "payrollOrderCashRecorded-b82d4711ff17": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollOrderCashRecorded"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "payrollScheduledShift-c1afebecd70e": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollScheduledShift"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "historicalPayrollOrderAudit-0a2d62b5a38a": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "historicalPayrollOrderAudit"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "historicalPayrollScopeLabel-3a812f0a9531": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "historicalPayrollScopeLabel"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderHistoricalPayroll-d4b66f01929a": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderHistoricalPayroll"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "backfillClosedHistoricalShifts-25b9ad1fd867": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "backfillClosedHistoricalShifts"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "bindBackfill-06a48d6840b8": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "bindBackfill"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderTwoDayPayrollPayouts-4220e297a7ad": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderTwoDayPayrollPayouts"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderLatePayrollQueue-239fd1732e61": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderLatePayrollQueue"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderDailyPayrollReconciliation-4d6a5baa9ddd": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderDailyPayrollReconciliation"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "payrollCycleUiStatus-ee8dc199619d": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollCycleUiStatus"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderPayrollCycleRegister-5260983879c4": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderPayrollCycleRegister"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderWeeklyReports-c5fbfc82e66a": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderWeeklyReports"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "closeWeek-21ed3e4d901d": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "closeWeek"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftPayroll-47e7e3ed3cc7": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftPayroll"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftOrderDate-452385374378": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftOrderDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftOrders-c3172a1a8ab9": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftOrders"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftCashRecordedDate-c84eda69bbe0": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftCashRecordedDate"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "shiftSettlementDate-86078c009dca": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftSettlementDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftSettlementOrders-6ae28aa841d7": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftSettlementOrders"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "legacyShiftSnapshot-24816aa9569e": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "legacyShiftSnapshot"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftSnapshot-8356621c5670": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftSnapshot"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftReportText-018ca82c90ef": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftReportText"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "historicalPayrollDigest-5cbc8bc7ef0b": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "historicalPayrollDigest"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "historicalPayrollShiftSnapshot-411d2e3b38de": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "historicalPayrollShiftSnapshot"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "shiftIntegrity-c1b12ee49adf": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftIntegrity"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "shiftReportComparison-4901c292557e": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftReportComparison"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderOwnerShiftApprovals-c715451eca6a": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderOwnerShiftApprovals"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderShiftClose-0c2972d31b20": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderShiftClose"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "subscribeShiftCenter-65cb1a7c09e6": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "subscribeShiftCenter"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "hydrateShiftCenter-19f69f0dfb9d": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "hydrateShiftCenter"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "closeCurrentShift-732d417b56f5": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "closeCurrentShift"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "shareShiftReport-ea312222b8dd": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shareShiftReport"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "renderShiftReports-f6c11424f0a2": {
+      "file": "payroll/owner-dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderShiftReports"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "performanceStaffGroups-feedaf3d420d": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "performanceStaffGroups"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderTeamPerformance-5dfba5728a27": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderTeamPerformance"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "aiEligibleMasters-c2995f6f567d": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "aiEligibleMasters"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "aiFeaturesForMaster-81075ebfbf77": {
+      "file": "quality/owner.js",
+      "domain": "quality",
+      "symbols": [
+        "aiFeaturesForMaster"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "aiCashDay-73bef13077f1": {
+      "file": "finance/owner.js",
+      "domain": "finance",
+      "symbols": [
+        "aiCashDay"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "aiIsCashClosed-35465e8b83f1": {
+      "file": "finance/owner.js",
+      "domain": "finance",
+      "symbols": [
+        "aiIsCashClosed"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "aiOrderRecency-0c2675db88b5": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "aiOrderRecency"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderAI-daf2a699a278": {
+      "file": "quality/owner.js",
+      "domain": "quality",
+      "symbols": [
+        "renderAI"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "parseOrderIdFromText-097dbb7aee8f": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "parseOrderIdFromText"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "findKnownMasterInText-f93771babe43": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "findKnownMasterInText"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderAICommand-043221f0096d": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "renderAICommand"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "runAICommand-287d9f27c0a2": {
+      "file": "quality/owner.js",
+      "domain": "quality",
+      "symbols": [
+        "runAICommand"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "applyAICommand-ef1d402a4caf": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "applyAICommand"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "buildAudit100-45e223a02ee1": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "buildAudit100"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "runAudit100-fb7a501ce829": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "runAudit100"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "autoHeal100-a4e4bd2efe17": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "autoHeal100"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderDailyCash-a349dd44a257": {
+      "file": "payroll/shared.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderDailyCash"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderDashboard-40a515c112f2": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderDashboard"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderPerformance-dc373758dc06": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderPerformance"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "collectionsLag-66288b43b81e": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "collectionsLag"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "payrollDailyEstimate-50f83c29ef78": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollDailyEstimate"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderPendingPayroll-f2027e1b0761": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderPendingPayroll"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderPayrollFinance-b7274f246ed3": {
+      "file": "payroll/owner.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderPayrollFinance"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderFinance-e8ed6c7d091b": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "renderFinance"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "isExcelSerialTime-01db0335f5d8": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "isExcelSerialTime"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "duplicateOrderKey-69bd3bb684bc": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "duplicateOrderKey"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "duplicateOrderIds-314ec516517a": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "duplicateOrderIds"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "quality-1219182597bf": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "quality"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderQuality-47f0262a9ca4": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "renderQuality"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "refillFilters-173622a1ecf2": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "refillFilters"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "setRange-7d4c663b6060": {
+      "file": "analytics/shared.js",
+      "domain": "analytics",
+      "symbols": [
+        "setRange"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "addExpense-c74724e4c843": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "addExpense"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "download-5bb00b801e89": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "download"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orderToRow-b155218a8279": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "orderToRow"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "legacyOrderToRow-c7a01d9d66dc": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "legacyOrderToRow"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "csvCell-8200d9d73766": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "csvCell"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "exportCSV-aa3552f1c253": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "exportCSV"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ensureXLSX-07a8c28507e4": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "ensureXLSX"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "normalizeImportHeaders-2acda9c05ca2": {
+      "file": "imports/owner-dispatcher.js",
+      "domain": "imports",
+      "symbols": [
+        "normalizeImportHeaders"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "sheetRowToOrder-d6a2f6cdbc81": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "sheetRowToOrder"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "normalizeExcelDate-0ab09495411a": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "normalizeExcelDate"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "normalizeExcelTime-244f86b59d0d": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "normalizeExcelTime"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "loadFile-c5cc618cdd8b": {
+      "file": "imports/owner.js",
+      "domain": "imports",
+      "symbols": [
+        "loadFile"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "renderImportPreview-a2b5498c0c3e": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "renderImportPreview"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "mergeImport-bcdda54ffa78": {
+      "file": "imports/owner.js",
+      "domain": "imports",
+      "symbols": [
+        "mergeImport"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "exportExcel-fadafc6ec0c9": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "exportExcel"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "backupPayload-82ac3d98450a": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "backupPayload"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "backup-52ebbec9b47b": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "backup"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "restore-4a5cf24f52ad": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "restore"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderSchema-36437645be4c": {
+      "file": "imports/shared.js",
+      "domain": "imports",
+      "symbols": [
+        "renderSchema"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "applySettings-53a28fa277d1": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "applySettings"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "saveSettings-abf2a9273ae6": {
+      "file": "settings/owner-dispatcher.js",
+      "domain": "settings",
+      "symbols": [
+        "saveSettings"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "applyOrderFormPermissions-341227c15906": {
+      "file": "orders/owner-dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "applyOrderFormPermissions"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "AI_UI_DEFAULT-e1d713e60152": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "AI_UI_DEFAULT"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "mergeDeep-2023fa420bd4": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "mergeDeep"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "hexSafe-ff7b7bb1637a": {
+      "file": "core/shared.js",
+      "domain": "core",
+      "symbols": [
+        "hexSafe"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-332-ccebc6ac88dc": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "aiUiModuleAllowed-22c6779527be": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "aiUiModuleAllowed"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderRoleWorkGuide-dba80b0c2528": {
+      "file": "ui/shared.js",
+      "domain": "ui",
+      "symbols": [
+        "renderRoleWorkGuide"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "applyRoleUI-ce5d50ae73d8": {
+      "file": "ui/owner.js",
+      "domain": "ui",
+      "symbols": [
+        "applyRoleUI"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "loginProfiles-0c708dd61a4f": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "loginProfiles"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderLoginUsers-d423accc23e0": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "renderLoginUsers"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "BETA_SESSION_KEY-75cea82d61b8": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "BETA_SESSION_KEY",
+        "BETA_LAST_USER_KEY"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaSessionSignature-7ab73ef8ef9b": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "betaSessionSignature"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaClearRememberedLogin-fed1542cf90f": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "betaClearRememberedLogin"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaRememberProfile-921e53e3701d": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "betaRememberProfile"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaRestoreRememberedLogin-35caf2a7f67f": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "betaRestoreRememberedLogin"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "beginLogin-a0a8fae7f376": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "beginLogin"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "loginNow-31f59ac1571c": {
+      "file": "staff/owner.js",
+      "domain": "staff",
+      "symbols": [
+        "loginNow"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "logout-2987d08e7b36": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "logout"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "toggleNewStaffPin-7ba1ecc80f77": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "toggleNewStaffPin"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderStaff-13b233a85851": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "renderStaff"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "toggleStaff-9293ecb3836f": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "toggleStaff"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderMasterRoster-ef6400f03ce1": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "renderMasterRoster"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "setMasterFixedMode-b5b8dae3f489": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "setMasterFixedMode"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "prepareMasterAccount-72d26133092a": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "prepareMasterAccount"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "persistMasterRoster-7a607f3b6e93": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "persistMasterRoster"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "addRosterMaster-944d61da0ded": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "addRosterMaster"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "removeRosterMaster-ccd3061bbefa": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "removeRosterMaster"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "saveAccessSettings-9aede80542ca": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "saveAccessSettings"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "addStaff-093e291d99a2": {
+      "file": "staff/owner-dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "addStaff"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "randomSecret-5eef36a6c9a4": {
+      "file": "staff/shared.js",
+      "domain": "staff",
+      "symbols": [
+        "randomSecret"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "saveOpsSettings-0b157414e061": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "saveOpsSettings"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderSettings-8d3540859f1a": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "renderSettings"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "selfTests-12e66b81ffb4": {
+      "file": "quality/owner.js",
+      "domain": "quality",
+      "symbols": [
+        "selfTests"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "liveQualityMonitor-9be3a7b7b66b": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "liveQualityMonitor"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "refreshLiveQuality-e2fb0d2da0de": {
+      "file": "quality/shared.js",
+      "domain": "quality",
+      "symbols": [
+        "refreshLiveQuality"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "refresh-48a223ceb4d4": {
+      "file": "ui/owner.js",
+      "domain": "ui",
+      "symbols": [
+        "refresh"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "autoStatusFromVisit-95d7d21ee03b": {
+      "file": "orders/shared.js",
+      "domain": "orders",
+      "symbols": [
+        "autoStatusFromVisit"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "wireLabels-d1d86fd5a7f8": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "wireLabels"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "bind-dde3d28f3c78": {
+      "file": "bootstrap/owner.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "bind"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "init-cd3e0f18cc26": {
+      "file": "bootstrap/owner.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "init"
+      ],
+      "roles": [
+        "owner"
+      ]
+    },
+    "betaSeedLocal-0bb2d3f1e43d": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "betaSeedLocal"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "betaResetLocal-b34dc2e4f9fd": {
+      "file": "settings/shared.js",
+      "domain": "settings",
+      "symbols": [
+        "betaResetLocal"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-370-c2c95b78cf7e": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "IfStatement-371-ee539c55841f": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ExpressionStatement-373-39bbde244107": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "trailing-space-7eb70257593d": {
+      "file": "bootstrap/shared.js",
+      "domain": "bootstrap",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "cloud-adapter-ded3948fd37c": {
+      "file": "integrations/owner.js",
+      "domain": "integrations",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "base-style-0-8305cc8d6eba": {
+      "file": "ui/styles/owner.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "base-style-1-64c3111aa1ed": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "workingUiClean-072f91fd74b2": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "base-style-2-269d4c0e6f29": {
+      "file": "ui/styles/owner.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "base-style-3-b4117cd4ce32": {
+      "file": "ui/styles/owner-dispatcher.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "order-intake-layout-14e2d9d588c1": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "sync-clarity-refresh-59a937bbb578": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "crm-clarity-audit-refresh-f65d1380225d": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "order-table-soft-groups-f331e994cbf1": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "order-role-column-clarity-13a902e3c615": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "order-field-polish-94e3a71862f8": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "order-table-compact-palette-d793073cd6f5": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "closed-shift-density-v1-cec4be9b92eb": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orders-workspace-density-v2-ca16e204fc2f": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "today-cash-split-v1-1dc82d8a0e83": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "audit-responsive-layout-23c2cc74e41c": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "order-date-readability-v1-47d6d2e58a63": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "order-table-responsive-fit-v1-aa0d925b7a0d": {
+      "file": "ui/styles/shared.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "settings-015549e16d14": {
+      "file": "ui/screens/shared.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "diagnostics-b8ca0bab0b74": {
+      "file": "ui/screens/shared.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "import-ce68846e604f": {
+      "file": "ui/screens/owner.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "quality-fa102902c0c8": {
+      "file": "ui/screens/shared.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "finance-2e761b51a9b9": {
+      "file": "ui/screens/owner-dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "reports-3d99d1345fe2": {
+      "file": "ui/screens/owner.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "payrollcycles-525d4886afc3": {
+      "file": "ui/screens/owner.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "ai-f44cf5b5190c": {
+      "file": "ui/screens/owner.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "performance-f78e93d20177": {
+      "file": "ui/screens/owner-dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "shiftclose-1255661e88b1": {
+      "file": "ui/screens/owner.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "mastershifts-957d7d0623b8": {
+      "file": "ui/screens/owner-dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher"
+      ]
+    },
+    "dashboard-d821a46f9152": {
+      "file": "ui/screens/shared.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "orders-0b8fd14eaa0b": {
+      "file": "ui/screens/owner.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "owner"
+      ]
+    },
+    "FORCED_APP_ROLE-b33481c1cb61": {
+      "file": "staff/dispatcher-master.js",
+      "domain": "staff",
+      "symbols": [
+        "FORCED_APP_ROLE",
+        "FORCED_APP_ROLES",
+        "SECURE_CLOUD_REQUIRED"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ROLE_META-f36539688fb5": {
+      "file": "staff/dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "ROLE_META"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "state-ab1159ba4148": {
+      "file": "core/dispatcher.js",
+      "domain": "core",
+      "symbols": [
+        "state"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "makeOrderId-88f46a51bc2d": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "makeOrderId"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "currentUser-906eb37d9e7b": {
+      "file": "staff/dispatcher-master.js",
+      "domain": "staff",
+      "symbols": [
+        "currentUser"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "can-e610ddd0f514": {
+      "file": "staff/dispatcher-master.js",
+      "domain": "staff",
+      "symbols": [
+        "can"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "canonicalMasterSelection-af9f448256ce": {
+      "file": "staff/dispatcher-master.js",
+      "domain": "staff",
+      "symbols": [
+        "canonicalMasterSelection"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "canonicalNameChoices-51d572165626": {
+      "file": "staff/dispatcher-master.js",
+      "domain": "staff",
+      "symbols": [
+        "canonicalNameChoices"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "roleVisibleOrders-c3ca249e8658": {
+      "file": "staff/dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "roleVisibleOrders"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "isPickupOrder-95999f071c21": {
+      "file": "orders/dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "isPickupOrder"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "inferredStatusFromStyle-214e037d7630": {
+      "file": "imports/dispatcher.js",
+      "domain": "imports",
+      "symbols": [
+        "inferredStatusFromStyle"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "dbWrite-21fa20a04eed": {
+      "file": "integrations/dispatcher.js",
+      "domain": "integrations",
+      "symbols": [
+        "dbWrite"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "formRecord-a30f01552ee8": {
+      "file": "orders/dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "formRecord"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "setForm-46a7de53d184": {
+      "file": "orders/dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "setForm"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "saveOrder-50dd35b2e695": {
+      "file": "orders/dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "saveOrder"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "openOrder-2bb06a9f1d59": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "openOrder"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "masterQuickInput-671a1a62515a": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "masterQuickInput"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "quickSetMaster-f8a1ce3780c5": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "quickSetMaster"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "ORDER_CLOSE_KEYS-3493b65f2a46": {
+      "file": "orders/dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "ORDER_CLOSE_KEYS"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "masterActionButtons-2e9466316917": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "masterActionButtons"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "closeReviewActions-54a557b67258": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "closeReviewActions"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "returnMasterClose-b661ae3398db": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "returnMasterClose"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "dispatcherTotalChip-3ebceb3ebc15": {
+      "file": "ui/dispatcher.js",
+      "domain": "ui",
+      "symbols": [
+        "dispatcherTotalChip"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "renderOrders-4a614bc9b2fb": {
+      "file": "orders/dispatcher.js",
+      "domain": "orders",
+      "symbols": [
+        "renderOrders"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "weeklySnapshot-1cb532ad60ba": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "weeklySnapshot"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "renderWeeklyReports-af5b29e8544f": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderWeeklyReports"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "shiftCashRecordedDate-bb7ae06cbd75": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftCashRecordedDate"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "payrollOrderCashRecorded-1c79091ab17c": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "payrollOrderCashRecorded"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "shiftReportText-5df0194eaeef": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftReportText"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "shiftIntegrity-41b32c581208": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftIntegrity"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "renderShiftClose-91849dc4d2a9": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderShiftClose"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "hydrateShiftCenter-f8c9af343d75": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "hydrateShiftCenter"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "closeCurrentShift-1be40ec4dc2f": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "closeCurrentShift"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "aiFeaturesForMaster-4c267a132a77": {
+      "file": "quality/dispatcher-master.js",
+      "domain": "quality",
+      "symbols": [
+        "aiFeaturesForMaster"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderAI-287f6106851f": {
+      "file": "quality/dispatcher-master.js",
+      "domain": "quality",
+      "symbols": [
+        "renderAI"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "historicalDayBuckets-4da2a2453fb7": {
+      "file": "payroll/dispatcher-master.js",
+      "domain": "payroll",
+      "symbols": [
+        "historicalDayBuckets"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "dayStats-752202cfd647": {
+      "file": "analytics/dispatcher-master.js",
+      "domain": "analytics",
+      "symbols": [
+        "dayStats"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "forecastForDow-56b9beab64a7": {
+      "file": "analytics/dispatcher-master.js",
+      "domain": "analytics",
+      "symbols": [
+        "forecastForDow"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderTodayForecast-a4f3c14e904a": {
+      "file": "analytics/dispatcher-master.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderTodayForecast"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderExtendedForecasts-4619085512a3": {
+      "file": "analytics/dispatcher-master.js",
+      "domain": "analytics",
+      "symbols": [
+        "renderExtendedForecasts"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "parseOrderIdFromText-ac8cad9ea0e7": {
+      "file": "orders/dispatcher-master.js",
+      "domain": "orders",
+      "symbols": [
+        "parseOrderIdFromText"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "runAICommand-df233c1d7bf9": {
+      "file": "quality/dispatcher-master.js",
+      "domain": "quality",
+      "symbols": [
+        "runAICommand"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "renderPendingPayroll-3fa09e73ca9b": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderPendingPayroll"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "renderPayrollFinance-8ed84cc3ba51": {
+      "file": "payroll/dispatcher.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderPayrollFinance"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "loadFile-f370024baacb": {
+      "file": "imports/dispatcher.js",
+      "domain": "imports",
+      "symbols": [
+        "loadFile"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "mergeImport-d4a96626f927": {
+      "file": "imports/dispatcher.js",
+      "domain": "imports",
+      "symbols": [
+        "mergeImport"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "applyRoleUI-c7708ba8b08b": {
+      "file": "ui/dispatcher.js",
+      "domain": "ui",
+      "symbols": [
+        "applyRoleUI"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "beginLogin-5b1658364f72": {
+      "file": "staff/dispatcher-master.js",
+      "domain": "staff",
+      "symbols": [
+        "beginLogin"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "loginNow-7b3c6ef6dfb6": {
+      "file": "staff/dispatcher.js",
+      "domain": "staff",
+      "symbols": [
+        "loginNow"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "selfTests-9fe468e221cf": {
+      "file": "quality/dispatcher-master.js",
+      "domain": "quality",
+      "symbols": [
+        "selfTests"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "refresh-68119759e731": {
+      "file": "ui/dispatcher-master.js",
+      "domain": "ui",
+      "symbols": [
+        "refresh"
+      ],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "bind-ccb32c7c457b": {
+      "file": "bootstrap/dispatcher.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "bind"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "init-68feca4cce38": {
+      "file": "bootstrap/dispatcher.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "init"
+      ],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "cloud-adapter-dc0ed02d327b": {
+      "file": "integrations/dispatcher.js",
+      "domain": "integrations",
+      "symbols": [],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "base-style-0-a6d4a09ca45e": {
+      "file": "ui/styles/dispatcher.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "import-b4c78e1da987": {
+      "file": "ui/screens/dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "reports-0314465b81e1": {
+      "file": "ui/screens/dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "ai-6884e6cf8a27": {
+      "file": "ui/screens/dispatcher-master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "dispatcher",
+        "master"
+      ]
+    },
+    "shiftclose-e88c97a15b3b": {
+      "file": "ui/screens/dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "orders-4ffc0393011d": {
+      "file": "ui/screens/dispatcher.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "dispatcher"
+      ]
+    },
+    "ROLE_META-afb65230d9f9": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "ROLE_META"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "state-2e28e2d557d2": {
+      "file": "core/master.js",
+      "domain": "core",
+      "symbols": [
+        "state"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "masterAccountFor-89dd250e400b": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "masterAccountFor"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "masterFixedMode-1966cfb335d4": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "masterFixedMode"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "inferredStatusFromStyle-1eee42a9c1d9": {
+      "file": "imports/master.js",
+      "domain": "imports",
+      "symbols": [
+        "inferredStatusFromStyle"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "dbWrite-5eaa1527cdc4": {
+      "file": "integrations/master.js",
+      "domain": "integrations",
+      "symbols": [
+        "dbWrite"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "betaApplyIncoming-fef54da8f700": {
+      "file": "integrations/master.js",
+      "domain": "integrations",
+      "symbols": [
+        "betaApplyIncoming"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "formRecord-25a7543b5785": {
+      "file": "orders/master.js",
+      "domain": "orders",
+      "symbols": [
+        "formRecord"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "setForm-e5217c33b9d3": {
+      "file": "orders/master.js",
+      "domain": "orders",
+      "symbols": [
+        "setForm"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "saveOrder-6e145cfb8284": {
+      "file": "orders/master.js",
+      "domain": "orders",
+      "symbols": [
+        "saveOrder"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "connectCloudWithPin-782f3e0fb919": {
+      "file": "integrations/master.js",
+      "domain": "integrations",
+      "symbols": [
+        "connectCloudWithPin"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderOrders-dc71cc4037d9": {
+      "file": "orders/master.js",
+      "domain": "orders",
+      "symbols": [
+        "renderOrders"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderMasterShifts-268ed2a50619": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "renderMasterShifts"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "saveMasterShift-50dee55d48a3": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "saveMasterShift"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "shiftPayroll-4b7fcded20e0": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftPayroll"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "shiftOrders-2fde38baa365": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftOrders"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "shiftSnapshot-7eef9142847d": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftSnapshot"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "shiftReportText-7f5073c6c915": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftReportText"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "shiftIntegrity-6454f63bdf8e": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "shiftIntegrity"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderShiftClose-43188a3f4753": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderShiftClose"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "subscribeShiftCenter-753946d07258": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "subscribeShiftCenter"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "hydrateShiftCenter-fb11248b88e7": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "hydrateShiftCenter"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "closeCurrentShift-202b53068b9e": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "closeCurrentShift"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "shareShiftReport-badfb060027f": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "shareShiftReport"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderShiftReports-68f4571d5796": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderShiftReports"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderPayrollFinance-cae555fcf833": {
+      "file": "payroll/master.js",
+      "domain": "payroll",
+      "symbols": [
+        "renderPayrollFinance"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "loadFile-7ac01467be8b": {
+      "file": "imports/master.js",
+      "domain": "imports",
+      "symbols": [
+        "loadFile"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "mergeImport-e29d591b5a4c": {
+      "file": "imports/master.js",
+      "domain": "imports",
+      "symbols": [
+        "mergeImport"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "saveSettings-11c07101a5aa": {
+      "file": "settings/master.js",
+      "domain": "settings",
+      "symbols": [
+        "saveSettings"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "applyOrderFormPermissions-8c040d73782c": {
+      "file": "orders/master.js",
+      "domain": "orders",
+      "symbols": [
+        "applyOrderFormPermissions"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "applyRoleUI-4bf7776aa0be": {
+      "file": "ui/master.js",
+      "domain": "ui",
+      "symbols": [
+        "applyRoleUI"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderLoginUsers-73fc1943abb0": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "renderLoginUsers"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "loginNow-756c97f24a54": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "loginNow"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "renderMasterRoster-a878251df808": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "renderMasterRoster"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "setMasterFixedMode-d0c2e46fc374": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "setMasterFixedMode"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "persistMasterRoster-c510cb689986": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "persistMasterRoster"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "addStaff-8c3fd1206c92": {
+      "file": "staff/master.js",
+      "domain": "staff",
+      "symbols": [
+        "addStaff"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "bind-db200c0b2eec": {
+      "file": "bootstrap/master.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "bind"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "init-f832f763b866": {
+      "file": "bootstrap/master.js",
+      "domain": "bootstrap",
+      "symbols": [
+        "init"
+      ],
+      "roles": [
+        "master"
+      ]
+    },
+    "cloud-adapter-00566c64d8dd": {
+      "file": "integrations/master.js",
+      "domain": "integrations",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "base-style-0-84fbfd66ca25": {
+      "file": "ui/styles/master.css",
+      "domain": "ui/styles",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "import-5822c89b26ba": {
+      "file": "ui/screens/master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "finance-769d92ec0b39": {
+      "file": "ui/screens/master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "reports-7228095bf409": {
+      "file": "ui/screens/master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "performance-15df5f38e06e": {
+      "file": "ui/screens/master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "mastershifts-a7c7c8f89e5b": {
+      "file": "ui/screens/master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    },
+    "orders-e959b1ec62ea": {
+      "file": "ui/screens/master.html",
+      "domain": "ui/screens",
+      "symbols": [],
+      "roles": [
+        "master"
+      ]
+    }
+  },
+  "externalModules": {
+    "telegram-ui.js": {
+      "source": "hosted-snapshot/telegram-ui.js",
+      "domain": "integrations",
+      "build": "standalone"
+    },
+    "avito-profit.js": {
+      "source": "hosted-snapshot/avito-profit.js",
+      "domain": "finance",
+      "build": "standalone"
+    },
+    "profit-accounting.js": {
+      "source": "hosted-snapshot/profit-accounting.js",
+      "domain": "finance",
+      "build": "standalone"
+    },
+    "profit-bridge.js": {
+      "source": "hosted-snapshot/profit-bridge.js",
+      "domain": "finance",
+      "build": "standalone"
+    },
+    "profit-ui.js": {
+      "source": "hosted-snapshot/profit-ui.js",
+      "domain": "finance",
+      "build": "standalone"
+    },
+    "quality-monitor.js": {
+      "source": "hosted-snapshot/quality-monitor.js",
+      "domain": "quality",
+      "build": "standalone"
+    },
+    "visual-refinement.css": {
+      "source": "hosted-snapshot/visual-refinement.css",
+      "domain": "ui",
+      "build": "standalone"
+    },
+    "premium-v181721.css": {
+      "source": "hosted-snapshot/premium-v181721.css",
+      "domain": "ui",
+      "build": "standalone"
+    },
+    "firestore-regru.js": {
+      "source": "hosted-snapshot/firestore-regru.js",
+      "domain": "integrations",
+      "build": "standalone"
+    },
+    "quota-safe-v181719.js": {
+      "source": "hosted-snapshot/quota-safe-v181719.js",
+      "domain": "integrations",
+      "build": "standalone"
+    }
+  }
+}
