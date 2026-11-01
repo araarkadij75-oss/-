@@ -256,3 +256,22 @@ body { background:radial-gradient(ellipse at 0 0,#dceaff 0,transparent 48%),radi
 .app .master-shift-hero :is(.chart-title,.chart-sub) { color:#fff; }
 @media(min-width:1100px) { .app #schemeSummary { grid-template-columns:repeat(5,minmax(0,1fr)); } }
 .app .master-week-scroll { max-width:100%; overflow-x:auto; }
+/* Independent audit: restore text scaling and override legacy dense table rules. */
+html { font-size:calc(16px * var(--font-scale,1)); }
+.app .orders-table-wrap .table tbody td .order-id { font-size:max(11px,.6875rem); line-height:1.35; }
+.app .orders-table-wrap .table :is(th,td):nth-child(2) { width:84px; }
+.app .orders-table-wrap .table tbody td:nth-child(11) .inline-master-input,
+.app .orders-table-wrap .table tbody td .order-value-chip { font-size:max(12px,.75rem); line-height:1.35; }
+.app .orders-table-wrap .table .action-cell .btn { font-size:max(12px,.75rem); min-height:30px; line-height:1.3; }
+.app [data-panel=ai] .ai-live-metrics .kpi { border:1px solid #c9aceb; border-radius:12px; background:linear-gradient(120deg,#faf7ff,#eee3ff); }
+.app [data-panel=mastershifts] { --section-accent:#076f83; }
+.app .card.master-shift-hero,.app .card.hero { background:linear-gradient(125deg,#173b77,#255fc0 70%,#286bc4); }
+.app .master-shift-hero .shift-today-count { background:#102c5a50; border:1px solid #ffffff60; color:#fff; }
+.app .master-shift-hero .shift-today-count { background:#173b77; }
+.app .master-shift-hero .shift-today-count span { opacity:1; color:#fff; }
+/* Larger user font settings expand the scrollable table instead of crushing labels. */
+.app .orders-table-wrap .table { min-width:calc(1340px * var(--font-scale,1)); }
+.app .orders-table-wrap .table th { overflow-wrap:normal; word-break:normal; }
+.app .orders-table-wrap .table :is(th,td):nth-child(6) { width:calc(100px * var(--font-scale,1)); }
+.app .orders-table-wrap .table :is(th,td):nth-child(12) { width:calc(100px * var(--font-scale,1)); }
+.app .orders-table-wrap .table :is(th,td):last-child { width:calc(106px * var(--font-scale,1)); }
