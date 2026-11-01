@@ -140,3 +140,12 @@ for(const role of ['index','dispatcher-logistic','master'])test(role+': analytic
  assert.equal(controls.get('#orderSearch').value,'');assert.equal(controls.get('#todayOrdersFilter')['aria-pressed'],'false');
  controls.get('.tab.active').dataset.tab='orders';apply('closed');assert.equal(state.drill.analyticsScope,false);
 });
+
+test('a paid order cannot become payable again after its dispatcher changes',()=>{
+ const report={id:'2026-10-18-artem',date:'2026-10-18',shift:'artem',salary:2000,cash:1500,paidOrderIds:['moved'],dataHash:'saved',closedBy:'owner'};
+ const m=model([order('moved','2026-10-17',1500,'sergey')],[report]);
+ const entry=m.payrollSettlementLedger().find(x=>x.id==='moved');
+ assert.equal(entry.who,'sergey');assert.equal(entry.accountedWho,'artem');assert.equal(entry.used,'2026-10-18');assert.equal(entry.assignedDate,'2026-10-18');
+ assert.equal(m.shiftSettlementOrders('2026-10-19',{shift:'sergey'}).length,0);assert.equal(m.payrollDailyEstimate('sergey','2026-10-24').salary,0);
+ assert.equal(report.salary,2000);assert.equal(report.cash,1500);
+});

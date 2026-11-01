@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.74-shift-drill-scope-v1';
+const CACHE='eliteservice-18.17.75-payroll-paid-guard-v1';
 const SHELL=[
   './',
   './index.html',
