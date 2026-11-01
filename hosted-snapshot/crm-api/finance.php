@@ -150,16 +150,17 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
 }
 
 function fin_reconciliation_patch(array $patch): array {
-    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn'];
+    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn','_autoFinance'];
     $id=fin_text($patch['orderId']??'',128);
     if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$id))throw new InvalidArgumentException('invalid_order_id');
     $before=$patch['before']??null;$after=$patch['after']??null;
     if(!is_array($before)||!is_array($after)||!count($after))throw new InvalidArgumentException('invalid_patch');
     $bk=array_keys($before);$ak=array_keys($after);sort($bk);sort($ak);
     if($bk!==$ak||array_diff($ak,$allowed))throw new InvalidArgumentException('invalid_patch_fields');
-    foreach($before as $v)if(!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v))throw new InvalidArgumentException('invalid_before');
+    foreach($before as $k=>$v)if(!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v)&&!($k==='_autoFinance'&&is_bool($v)))throw new InvalidArgumentException('invalid_before');
     foreach($after as $key=>$value){
-        if(in_array($key,['companyShare','masterAmount','total','parts','cleanCheck','pp'],true)){
+        if($key==='_autoFinance'){if(!is_bool($value))throw new InvalidArgumentException('invalid_auto_finance');}
+        elseif(in_array($key,['companyShare','masterAmount','total','parts','cleanCheck','pp'],true)){
             if(!is_string($value)&&!is_int($value)&&!is_float($value))throw new InvalidArgumentException('invalid_cash');
             if($value!==''&&!preg_match('/^\d+(?:\.\d{1,2})?$/',(string)$value)||(float)$value>1000000000)throw new InvalidArgumentException('invalid_cash');
         }else{
@@ -185,6 +186,13 @@ function fin_reconciliation_matches(array $order,array $patch): bool {
     }
     return true;
 }
+function fin_reconciliation_effective_patch(array $order,array $patch): array {
+    if(array_intersect(array_keys($patch['after']),['companyShare','masterAmount','total','parts','cleanCheck','pp'])){
+        $patch['before']['_autoFinance']=$order['_autoFinance']??null;
+        $patch['after']['_autoFinance']=false;
+    }
+    return $patch;
+}
 function fin_reconciliation_projection(array $projection,array $after,string $collection,string $stamp): array {
     $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts','_cashClosedOn','_duplicateOf']:['closeDate','dispatcher','_status','_duplicateOf'];
     foreach($after as $key=>$value)if(in_array($key,$allowed,true))$projection[$key]=$value;
@@ -204,6 +212,7 @@ function fin_reconcile(PDO $pdo,array $actor,array $body): array {
             $path=tg_path('orders',$patch['orderId']);$order=tg_read($pdo,$path,true);
             if(!$order||!fin_reconciliation_matches($order,$patch)){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>$order?'before_mismatch':'not_found'];continue;}
             if(!empty($patch['after']['_duplicateOf'])){$target=tg_read($pdo,tg_path('orders',$patch['after']['_duplicateOf']),true);if(!$target||!empty($target['_duplicateOf'])){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>'invalid_duplicate_target'];continue;}}
+            $patch=fin_reconciliation_effective_patch($order,$patch);
             $stamp=gmdate('c');$auditId=bin2hex(random_bytes(16));
             $audit=$patch+['id'=>$auditId,'actorUid'=>(string)$actor['uid'],'appliedAt'=>$stamp];
             foreach($patch['after'] as $key=>$value)$order[$key]=$value;
