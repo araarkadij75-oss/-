@@ -43,3 +43,11 @@ for(const page of ['index','master','dispatcher-logistic'])test(`${page}: perfor
  assert.equal(ctx.groups.length,3);assert.deepEqual(Array.from(ctx.groups[0]._memberIds),['artem','tematop']);
  const table=nodes.staffPerf.innerHTML;assert.equal((table.match(/data-staff-drill=/g)||[]).length,3);assert.ok(table.includes('artem · tematop'));assert.ok(table.includes('seregatop'));assert.match(table,/data-staff-drill="artem"[^]*?<td class="num">2<\/td><td class="num">2<\/td>/);
 });
+for(const page of ['index','master','dispatcher-logistic'])test(`${page}: fresh master schedule navigation renders employee performance without visiting another tab`,()=>{
+ const html=fs.readFileSync(new URL(`../hosted-snapshot/${page}.html`,import.meta.url),'utf8'),refresh=html.match(/^function refresh\(\).*$/m)[0];
+ const calls=[],rows=[{orderId:'CURRENT'}],ctx={$:()=>({dataset:{tab:'mastershifts'}}),filterRows:()=>rows,console};
+ for(const name of ['refreshLiveQuality','refillFilters','renderDrillBanner','renderOrders','renderDashboard','renderPerformance','renderShiftClose','renderPayrollCycleRegister','renderMasterShifts','renderShiftReports','renderQuality','renderAI','renderFinance','renderSettings','renderSchema','renderColorAudit'])ctx[name]=()=>calls.push(name);
+ ctx.renderTeamPerformance=actual=>{assert.equal(actual,rows);calls.push('renderTeamPerformance')};
+ vm.runInNewContext(refresh+';refresh()',ctx);assert.ok(calls.includes('renderMasterShifts'));assert.ok(calls.includes('renderTeamPerformance'));assert.ok(!calls.includes('renderPerformance'));
+ const markup=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');assert.ok(markup.includes('id="staffPerf"'));assert.ok(markup.includes('id="shiftSummary"'));
+});
