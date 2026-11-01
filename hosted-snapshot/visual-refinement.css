@@ -283,3 +283,13 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 .app .orders-table-wrap .table :is(th,td):nth-child(8) { width:82px; }
 .app .orders-table-wrap .table :is(th,td):nth-child(6),
 .app .orders-table-wrap .table :is(th,td):nth-child(12) { width:calc(90px * var(--font-scale,1)); }
+
+/* Shared column axes: headers and values must use the same alignment. */
+.app .orders-table-wrap .table tbody td { vertical-align:middle; padding-inline:5px; }
+.app .orders-table-wrap .table tbody td:nth-child(-n+9) { text-align:center; }
+.app .orders-table-wrap .table thead th:nth-child(10),
+.app .orders-table-wrap .table tbody td:nth-child(10) { text-align:left; padding-inline:8px; }
+.app .orders-table-wrap .table tbody td:nth-child(3)>div { margin-inline:auto; }
+.app .orders-table-wrap .table tbody td:nth-child(11) .inline-master-input { text-align:center; }
+.app .orders-table-wrap .table tbody td:last-child { text-align:center; }
+.app .orders-table-wrap .table .action-cell { justify-content:center; margin-inline:auto; }
