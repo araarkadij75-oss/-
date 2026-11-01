@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.76-live-quality-v1';
+const CACHE='eliteservice-18.17.77-source-money-v1';
 const SHELL=[
   './',
   './index.html',
@@ -14,7 +14,7 @@ const SHELL=[
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261031-profit2',
   './profit-bridge.js?v=20261101-source2',
-  './profit-ui.js?v=20261101-source2',
+  './profit-ui.js?v=20261101-source3',
   './visual-refinement.css?v=20261101-quality1',
   './quality-monitor.js?v=20261101-quality1',
   './premium-v181721.css',
