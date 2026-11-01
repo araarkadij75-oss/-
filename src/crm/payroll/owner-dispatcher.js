@@ -31,7 +31,7 @@ function shiftPayroll(cash,s=state.settings){const base=Math.max(0,num(s.shiftBa
 /* CRM_UNIT:shiftOrderDate-452385374378 */
 function shiftOrderDate(r){return iso(parseDate(r.visitDate||''))||iso(parseDate(r.callDate||''))||iso(parseDate(String(r._createdAt||'').slice(0,10)))}/* CRM_END:shiftOrderDate-452385374378 */
 /* CRM_UNIT:shiftOrders-c3172a1a8ab9 */
-function shiftOrders(date=today(),profile=currentUser()){return state.orders.filter(r=>shiftOrderDate(r)===date&&orderMatchesDispatcher(r,profile))}/* CRM_END:shiftOrders-c3172a1a8ab9 */
+function shiftOrders(date=today(),profile=currentUser()){return state.orders.filter(r=>!r._duplicateOf&&shiftOrderDate(r)===date&&orderMatchesDispatcher(r,profile))}/* CRM_END:shiftOrders-c3172a1a8ab9 */
 /* CRM_UNIT:shiftSettlementDate-86078c009dca */
 function shiftSettlementDate(r){return shiftCashRecordedDate(r)}/* CRM_END:shiftSettlementDate-86078c009dca */
 /* CRM_UNIT:shiftSettlementOrders-6ae28aa841d7 */
