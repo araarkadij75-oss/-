@@ -277,3 +277,9 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 .app .orders-table-wrap .table :is(th,td):last-child { width:calc(96px * var(--font-scale,1)); }
 /* Keep visually hidden checkboxes inside their scrollable day cells. */
 .app .master-week-check { position:relative; }
+/* Fit action labels and the final columns at the standard desktop width. */
+.app .orders-table-wrap .table .action-cell .btn.copy-master-btn { font-size:max(11px,.6875rem); padding-inline:3px; }
+.app .orders-table-wrap .table :is(th,td):nth-child(2) { width:80px; }
+.app .orders-table-wrap .table :is(th,td):nth-child(8) { width:82px; }
+.app .orders-table-wrap .table :is(th,td):nth-child(6),
+.app .orders-table-wrap .table :is(th,td):nth-child(12) { width:calc(90px * var(--font-scale,1)); }
