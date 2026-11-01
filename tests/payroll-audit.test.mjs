@@ -123,3 +123,20 @@ test('dispatcher late pickup queue uses the same responsible dispatcher as its p
  const queue=src.slice(src.indexOf('function renderPendingPayroll(')).split('\n')[0];
  assert.ok(queue);assert.match(queue,/orderMatchesDispatcher\(r,p\)/);assert.doesNotMatch(queue,/_createdByShift|_createdBy===/);
 });
+
+for(const role of ['index','dispatcher-logistic','master'])test(role+': analytics drill keeps dispatcher scope while ordinary order list stays global',()=>{
+ const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
+ const fn=name=>src.slice(src.indexOf('function '+name+'(')).split('\n')[0];
+ const rows=Array.from({length:1274},(_,i)=>({orderId:String(i),dispatcher:i<172?'artem':'sergey'}));
+ const state={orders:rows,drill:{type:'closed',analyticsScope:true},session:{}};
+ const current=new Function('state','filterRows','roleVisibleOrders','$','norm','matchesDrill','currentRole','orderDate',fn('currentOrderRows')+';return currentOrderRows')(
+ state,()=>rows.filter(r=>r.dispatcher==='artem'),r=>r,()=>({value:'',getAttribute:()=>null}),x=>String(x||''),()=>true,()=> 'owner',()=>null);
+ assert.equal(current().length,172);state.drill=null;assert.equal(current().length,1274);
+ const controls=new Map([['.tab.active',{dataset:{tab:'dashboard'}}],['#dispFilter',{value:'Артём'}],['#dashboardShift',{value:'artem'}]]);
+ for(const id of ['orderSearch','orderStageFilter','masterWorkflowFilter'])controls.set('#'+id,{value:'stale'});
+ for(const id of ['todayOrdersFilter','tomorrowOrdersFilter'])controls.set('#'+id,{setAttribute(k,v){this[k]=v}});
+ const apply=new Function('state','$','renderDrillBanner','switchTab','renderOrders','shiftName','let orderPage=4;'+fn('setDrill')+';return setDrill')(state,id=>controls.get(id),()=>{},()=>{},()=>{},x=>x);
+ apply('closed','','Выполнено');assert.equal(state.drill.analyticsScope,true);assert.match(state.drill.label,/Артём/);
+ assert.equal(controls.get('#orderSearch').value,'');assert.equal(controls.get('#todayOrdersFilter')['aria-pressed'],'false');
+ controls.get('.tab.active').dataset.tab='orders';apply('closed');assert.equal(state.drill.analyticsScope,false);
+});
