@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<script>window.MASTER_AI_FORCED_ROLE="dispatcher_logistic";window.MASTER_AI_ALLOWED_ROLES=["dispatcher_logistic"];window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EliteService</title>
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="./manifest-dispatcher-logistic.json"><link rel="icon" href="./icon.svg">
+<style>{{CRM_STYLE:base-style-0-a6d4a09ca45e}}</style><style>{{CRM_STYLE:base-style-1-64c3111aa1ed}}</style>
+
+<style id="workingUiClean">{{CRM_STYLE:workingUiClean-072f91fd74b2}}</style>
+<link rel="stylesheet" href="./premium-v181721.css?v=181735">
+<style>{{CRM_STYLE:base-style-3-b4117cd4ce32}}</style>
+<style id="order-intake-layout">{{CRM_STYLE:order-intake-layout-14e2d9d588c1}}</style>
+<style id="sync-clarity-refresh">{{CRM_STYLE:sync-clarity-refresh-59a937bbb578}}</style>
+<style id="crm-clarity-audit-refresh">{{CRM_STYLE:crm-clarity-audit-refresh-f65d1380225d}}</style>
+<style id="order-table-soft-groups">{{CRM_STYLE:order-table-soft-groups-f331e994cbf1}}</style>
+<style id="order-role-column-clarity">{{CRM_STYLE:order-role-column-clarity-13a902e3c615}}</style>
+<style id="order-field-polish">{{CRM_STYLE:order-field-polish-94e3a71862f8}}</style>
+<style id="order-table-compact-palette">{{CRM_STYLE:order-table-compact-palette-d793073cd6f5}}</style>
+<style id="closed-shift-density-v1">{{CRM_STYLE:closed-shift-density-v1-cec4be9b92eb}}</style>
+<style id="orders-workspace-density-v2">{{CRM_STYLE:orders-workspace-density-v2-ca16e204fc2f}}</style>
+<style id="today-cash-split-v1">{{CRM_STYLE:today-cash-split-v1-1dc82d8a0e83}}</style><style id="audit-responsive-layout">{{CRM_STYLE:audit-responsive-layout-23c2cc74e41c}}</style><link rel="stylesheet" href="./visual-refinement.css?v=20261101-quality1"><style id="order-date-readability-v1">{{CRM_STYLE:order-date-readability-v1-47d6d2e58a63}}</style>
+<style id="order-table-responsive-fit-v1">{{CRM_STYLE:order-table-responsive-fit-v1-aa0d925b7a0d}}</style>
+</head>
+<body class="auth-locked"><div class="app" id="app">
+<div class="top"><div class="brand"><h1>EliteService</h1><p>Приём, распределение и контроль заказов.</p></div><div class="top-actions"><span id="qualityMonitorBadge" hidden></span><button class="btn primary" id="newOrderTop">+ Новый заказ</button><button class="btn" id="backupTop" data-owner-action>Резервная копия</button><div class="admin-switch" id="adminRoleSwitch" hidden><b style="font-size:11px">Просмотр как</b><select class="select" id="adminViewRole"><option value="owner">Владелец</option><option value="dispatcher_logistic">Диспетчер‑логист</option><option value="master">Мастер</option></select><select class="select role-preview-master" id="adminViewMaster" hidden><option value="">Выберите мастера</option></select><button class="btn small" id="adminViewReset" type="button">Сбросить</button></div><span class="user-badge" id="userBadge"><span class="role-dot"></span><span id="userBadgeText">Владелец</span></span><button class="btn small" id="enableNotificationsTop" type="button">🔔 Уведомления</button><button class="btn small" id="installAppTop">⬇ Установить</button><span class="badge cloud-badge" id="cloudBadge"><span class="dot"></span><span id="cloudBadgeText">Подключение…</span></span><button class="btn small" id="logoutBtn" hidden>Выйти</button><span class="badge"><span class="dot"></span><span id="dbBadge">Заказов: 0</span></span><span class="badge" id="testBadgeWrap" hidden><span class="dot"></span><span id="testBadge">Проверка</span></span></div></div>
+<div id="toast" class="toast"></div>
+<nav class="tabs">
+<button class="tab active" data-tab="orders">Заказы</button><button class="tab" data-tab="dashboard">Дашборд</button><button class="tab" data-tab="performance">Перформанс</button><button class="tab" data-tab="mastershifts">График мастеров</button><button class="tab" data-tab="shiftclose">Закрытие смены</button><button class="tab" data-tab="reports">Недельные отчёты</button><button class="tab" data-tab="ai">AI-центр</button><button class="tab" data-tab="finance">Финансы</button><button class="tab" data-tab="quality">Контроль</button><button class="tab" data-tab="diagnostics">100-контроль</button><button class="tab" data-tab="import">Импорт / экспорт</button><button class="tab" data-tab="settings">Настройки</button>
+</nav>
+<div class="master-mobile-head"><div class="hero"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Мои заказы</b><button type="button" class="btn small" id="enableNotifications">🔔 Уведомления</button></div><p>Адрес доступен сразу. Телефон откроется автоматически в назначенное время.</p></div></div>
+
+{{CRM_SCREEN:orders-4ffc0393011d}}
+
+{{CRM_SCREEN:dashboard-d821a46f9152}}
+
+{{CRM_SCREEN:mastershifts-957d7d0623b8}}{{CRM_SCREEN:shiftclose-e88c97a15b3b}}
+
+{{CRM_SCREEN:performance-f78e93d20177}}
+
+
+{{CRM_SCREEN:ai-6884e6cf8a27}}
+
+{{CRM_SCREEN:reports-0314465b81e1}}
+
+{{CRM_SCREEN:finance-2e761b51a9b9}}
+
+{{CRM_SCREEN:quality-fa102902c0c8}}
+
+
+
+{{CRM_SCREEN:import-b4c78e1da987}}
+
+{{CRM_SCREEN:diagnostics-b8ca0bab0b74}}
+{{CRM_SCREEN:settings-015549e16d14}}
+
+<div class="modal" id="masterReportModal" role="dialog" aria-modal="true" aria-labelledby="masterReportTitle"><div class="modal-card small"><div class="modal-head"><div class="modal-head-copy"><div class="modal-title" id="masterReportTitle">Отчёт мастера</div><div class="modal-sub" id="masterReportSub">Фактические данные отправятся диспетчеру-логисту сразу.</div></div><button class="modal-x" id="closeMasterReport" type="button">×</button></div><div class="modal-scroll"><input type="hidden" id="mr_orderId"><div class="grid2"><div class="field"><label>Фактическая сумма от клиента</label><input class="input" id="mr_total" inputmode="decimal" placeholder="0"></div><div class="field"><label>Запчасти / материалы</label><input class="input" id="mr_parts" inputmode="decimal" placeholder="0"></div><div class="field span2"><label class="switch"><input type="checkbox" id="mr_review"> Хороший отзыв получен</label></div><div class="field span2"><label>Комментарий мастера</label><textarea class="textarea" id="mr_note" placeholder="Что сделано, особенности, что передать диспетчеру-логисту"></textarea></div></div><div class="notice" style="margin-top:10px">Это фактический отчёт мастера. Он не переписывает подтверждённую кассу автоматически — диспетчер-логист видит отчёт и сверяет суммы.</div></div><div class="modal-footer"><button class="btn" id="cancelMasterReport" type="button">Отмена</button><button class="btn primary" id="saveMasterReport" type="button">Отправить отчёт</button></div></div></div>
+<datalist id="directionList"></datalist><datalist id="cityList"></datalist><datalist id="masterList"></datalist><datalist id="dispatcherList"></datalist><datalist id="expenseCats"><option>Реклама</option><option>Аренда</option><option>Налоги</option><option>Транспорт</option><option>Инструменты</option><option>Связь</option><option>Зарплата</option><option>Прочие</option></datalist>
+<div class="mobile-bottom-nav" id="mobileBottomNav"><button type="button" data-mobile-view="today" class="active">Сегодня</button><button type="button" data-mobile-view="tomorrow">Завтра</button><button type="button" data-mobile-view="all">Все</button><button type="button" data-mobile-view="refresh">↻ Обновить</button></div>
+
+<div class="modal" id="connectionModal" role="dialog" aria-modal="true" aria-labelledby="connectionTitle"><div class="modal-card small"><div class="modal-head"><div class="modal-head-copy"><div class="modal-title" id="connectionTitle">Подключение к EliteService Cloud</div><div class="modal-sub">Вставьте код подключения, который создаёт владелец. Это нужно один раз на устройстве.</div></div></div><div class="modal-scroll"><div class="login-shell"><div class="field"><label for="connectionCode">Код подключения</label><textarea id="connectionCode" class="input" rows="8" placeholder='{"workspaceId":"...","firebaseConfig":{...}}'></textarea></div><div class="login-error" id="connectionError"></div><div class="row-actions"><button class="btn primary" id="saveConnectionBtn" type="button">Сохранить и перезапустить</button><button class="btn" id="clearConnectionBtn" type="button">Сбросить</button></div></div></div></div></div>
+
+</div>
+<script src="./cloud-config.js?v=181720"></script>
+<script type="module">{{CRM_SCRIPT:cloud}}</script>
+<script type="module">{{CRM_SCRIPT:application}}</script><script>window.MASTER_AI_BUILD='18.17.85-REG-RU-MODULAR-CORE';window.MASTER_AI_ARCH='SEPARATE_STAGING_FIREBASE';window.MASTER_AI_BETA=true;window.MASTER_AI_BETA_ONLINE=true;</script><script defer src="./telegram-ui.js?v=20261031-telegram9"></script><script defer src="./avito-profit.js?v=20261031-profit2"></script><script defer src="./profit-accounting.js?v=20261101-source4"></script><script defer src="./profit-ui.js?v=20261101-source5"></script></body></html>

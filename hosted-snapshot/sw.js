@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.84-name-chip-fit-v1';
+const CACHE='eliteservice-18.17.85-modular-core-v1';
 const SHELL=[
   './',
   './index.html',

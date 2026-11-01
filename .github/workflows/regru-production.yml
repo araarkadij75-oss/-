@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'src/crm/**'
+      - 'scripts/build-crm.mjs'
+      - 'scripts/crm-module-analysis.mjs'
+      - 'scripts/test-crm-module.mjs'
       - 'hosted-snapshot/**'
       - 'scripts/prepare-regru-release.mjs'
       - 'scripts/deploy-regru-ftps.py'
@@ -14,6 +18,10 @@ on:
   push:
     branches: [main]
     paths:
+      - 'src/crm/**'
+      - 'scripts/build-crm.mjs'
+      - 'scripts/crm-module-analysis.mjs'
+      - 'scripts/test-crm-module.mjs'
       - 'hosted-snapshot/**'
       - 'scripts/prepare-regru-release.mjs'
       - 'scripts/deploy-regru-ftps.py'
@@ -55,6 +63,7 @@ jobs:
           php tests/finance-api.test.php
           php -n tests/telegram-transport.test.php
       - run: npm run gate:static
+      - run: npm run test:architecture
       - run: npm run test:unit
       - name: Test FTPS deployer path handling
         run: python3 -m unittest discover --start-directory tests --pattern 'test_*.py'

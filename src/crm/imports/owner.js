@@ -1,0 +1,33 @@
+/* CRM_UNIT:inferredStatusFromStyle-4545c5d7db0c */
+function inferredStatusFromStyle(cell){const st=cell?.s;if(!st||typeof st!=='object')return '';const fg=st.fgColor||st.fill?.fgColor||st.patternFill?.fgColor||{};let rgb=clean(fg.rgb).replace(/^#/,'').slice(-6).toUpperCase();const theme=Number(fg.theme);if(!rgb&&Number.isFinite(theme)){if(theme===4)return 'Забор / техника у мастера';if(theme===5)return 'Отказ';if(theme===6)return 'В работе';return ''}if(rgb==='00FF00')return 'Выполнен';if(rgb==='FFFF00')return 'В работе';if(['4285F4','4A86E8'].includes(rgb))return 'Забор / техника у мастера';if(['B7B7B7','CCCCCC','D9D9D9'].includes(rgb))return 'Будущая дата';if(rgb==='FF0000')return 'Отказ';if(['FF9900','F9CB9C'].includes(rgb))return 'Отмена';return ''}/* CRM_END:inferredStatusFromStyle-4545c5d7db0c */
+/* CRM_UNIT:importCloudPendingIds-255122f87113 */let importCloudPendingIds=[];/* CRM_END:importCloudPendingIds-255122f87113 */
+/* CRM_UNIT:loadFile-c5cc618cdd8b */
+async function loadFile(file){if(!file)return;$('#importStatus').className='notice';$('#importStatus').textContent=`Читаю ${file.name}…`;$('#mergeImport').disabled=true;try{const XLSX=await ensureXLSX(),buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:false,cellStyles:true});let sheetName=wb.SheetNames.includes('Лист1')?'Лист1':wb.SheetNames[0],ws=wb.Sheets[sheetName],matrix=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});let hi=matrix.findIndex(r=>r&&r.some(v=>clean(v).toLowerCase()==='город')&&r.some(v=>clean(v).toLowerCase()==='дата звонка'));if(hi<0)throw new Error('Не найдена строка заголовков базы');const headers=normalizeImportHeaders(matrix[hi]);const modern=headers.includes('ID заказа');const missing=HEADERS.filter((h,i)=>i>0&&!headers.includes(h));if(missing.length)throw new Error('Не хватает колонок: '+missing.join(', '));const metaSheet=wb.Sheets['Статусы EliteService'],meta={};if(metaSheet){const mm=XLSX.utils.sheet_to_json(metaSheet,{header:1,raw:true,defval:''});for(const row of mm.slice(1)){const shifted=clean(row[0]).startsWith('MA-')||clean(row[0]).startsWith('GS-');const fp=clean(row[shifted?1:0]);if(fp)meta[fp]={orderId:shifted?clean(row[0]):'',status:clean(row[shifted?2:1]),fixed:String(row[shifted?3:2]).toLowerCase()==='true'||row[shifted?3:2]===1,known:row.length<(shifted?5:4)?true:(String(row[shifted?4:3]).toLowerCase()==='true'||row[shifted?4:3]===1)}}}const all=matrix.slice(hi+1).map((r,idx)=>{const status=statusFromWorksheetRow(ws,hi+2+idx,XLSX),o=sheetRowToOrder(r,headers,status),m=meta[fingerprint(o)];if(m){if(m.orderId&&!o.orderId)o.orderId=m.orderId;if(STATUS_ORDER.includes(m.status))o._status=m.status;o._fixedMaster=!!m.fixed;o._schemeKnown=!!m.known}return o}),meaningful=all.filter(isMeaningful),separators=all.filter(isSeparatorLike),templates=all.length-meaningful.length-separators.length;state.importRows=meaningful;state.importName=file.name;const sc=Object.fromEntries(STATUS_ORDER.map(st=>[st,meaningful.filter(r=>derivedStage(r)===st).length]));state.importStats={all:all.length,orders:meaningful.length,separators:separators.length,templates:Math.max(0,templates),statuses:sc};$('#importStatus').className='notice ok';$('#importStatus').textContent=`${file.name}: готово к импорту ${meaningful.length} реальных заявок. Учитываются только 6 рабочих цветов; любые другие и белые заливки игнорируются.`;$('#importStats').innerHTML=[['Строк после заголовка',all.length],['Реальные заявки',meaningful.length],['Разделители',separators.length],['Шаблоны / служебные',Math.max(0,templates)],...STATUS_ORDER.map(st=>[st,sc[st]])].map(([l,v])=>`<div class="import-stat"><span class="muted">${l}</span><b>${integer(v)}</b></div>`).join('');$('#mergeImport').disabled=!meaningful.length||currentUser().role!=='owner'||ownerRolePreview();$('#clearImport').disabled=false;renderImportPreview();log('import',`Проверен импорт ${file.name}: ${meaningful.length} заявок; статусы по цветам считаны`);await dbWrite()}catch(e){console.error(e);$('#importStatus').className='notice warn';$('#importStatus').textContent='Ошибка: '+e.message;$('#importStats').innerHTML=''}}/* CRM_END:loadFile-c5cc618cdd8b */
+/* CRM_UNIT:mergeImport-bcdda54ffa78 */
+async function mergeImport(){
+ if(currentUser().role!=='owner'||ownerRolePreview()){toast('Импорт в общую базу доступен владельцу вне режима просмотра');return}
+ const cloud=window.MasterAICloud;
+ if(!cloud?.connected||typeof cloud.syncOrdersNow!=='function'){toast('Нет связи с общей базой. Импорт не выполнен');return}
+ const importButton=$('#mergeImport');importButton.disabled=true;importButton.textContent='Синхронизация…';
+ const byFp=new Map(),byId=new Map();state.orders.forEach((r,i)=>{byFp.set(fingerprint(r),i);if(clean(r.orderId))byId.set(clean(r.orderId),i)});
+ let add=0,skip=0;const added=[];
+ for(const r of state.importRows){
+  r.city=clean(r.city)||'СПб';if(!clean(r.orderId))r.orderId=makeOrderId(r.callDate||r.visitDate);
+  const f=fingerprint(r),id=clean(r.orderId),idx=id&&byId.has(id)?byId.get(id):byFp.get(f);
+  if(idx!=null&&(id||f.replace(/\|/g,''))){skip++;continue}
+  byFp.set(f,state.orders.length);byId.set(id,state.orders.length);state.orders.push(r);added.push(r);add++
+ }
+ log('import',`Импортировано ${add} новых заказов; дублей пропущено ${skip}`);
+ if(!await dbWrite(true)){importButton.disabled=!state.importRows.length;importButton.textContent='Импортировать в общую CRM';toast('Не удалось сохранить импорт локально');return}
+ fillDatalists();refillFilters();refresh();
+ const pending=importCloudPendingIds.map(id=>state.orders.find(r=>clean(r.orderId)===id)).filter(Boolean),syncTargets=[...added,...pending];
+ try{
+  const result=await cloud.syncOrdersNow(syncTargets,'owner');importCloudPendingIds=[];state.importRows=[];$('#mergeImport').disabled=true;$('#mergeImport').textContent='Импортировать в общую CRM';
+  $('#importStatus').className='notice ok';$('#importStatus').textContent=`Общая CRM подтвердила запись ${result.count} заявок.`;
+  toast(`В общую CRM подтверждено: ${result.count}; новых: ${add}; дублей пропущено: ${skip}`)
+ }catch(e){
+  const done=Math.max(0,Number(e.syncedCount)||0);importCloudPendingIds=syncTargets.slice(done).map(r=>clean(r.orderId)).filter(Boolean);
+  window.MasterAICloudStatus?.('error','Синхронизация импорта не завершена: '+e.message);$('#mergeImport').disabled=!state.importRows.length;$('#mergeImport').textContent='Повторить синхронизацию';
+  toast(`CRM подтвердила ${done} из ${syncTargets.length}; нажмите повторно для оставшихся ${importCloudPendingIds.length}.`);console.error('owner import sync',e);await dbWrite()
+ }
+}/* CRM_END:mergeImport-bcdda54ffa78 */
