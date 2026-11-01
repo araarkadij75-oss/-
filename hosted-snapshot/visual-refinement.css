@@ -293,3 +293,72 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 .app .orders-table-wrap .table tbody td:nth-child(11) .inline-master-input { text-align:center; }
 .app .orders-table-wrap .table tbody td:last-child { text-align:center; }
 .app .orders-table-wrap .table .action-cell { justify-content:center; margin-inline:auto; }
+/* Secondary sections: keep labels, controls and expanded payroll rows readable. */
+.app [data-panel=settings] .grid4 {
+  grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));
+}
+.app [data-panel=settings] :is(.grid2,.grid4,.access-grid) > .field > label,
+.app .filters > .field > label {
+  min-height:2.8em;
+  display:flex;
+  align-items:flex-end;
+}
+.app [data-panel=settings] :is(.grid2,.grid4,.access-grid) > .field {
+  min-width:0;
+}
+#profitPanel .profit-mapping { align-items:stretch; }
+#profitPanel .profit-mapping label {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+  overflow-wrap:break-word;
+}
+#profitPanel .profit-mapping label > :is(input,select) { margin-top:auto; }
+#profitPanel #profitManualSave { align-self:end; min-height:38px; }
+.app .payroll-daily-wrap .payroll-cycle-register-table :is(th,td):first-child {
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+.app .payroll-cycle-orders { font-size:max(12px,.75rem); line-height:1.4; }
+.app .payroll-cycle-order {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px 8px;
+  padding:7px;
+  white-space:normal;
+  font-size:max(12px,.75rem);
+  line-height:1.4;
+}
+.app .payroll-cycle-order > * { min-width:0; max-width:100%; }
+.app .payroll-cycle-order .payroll-cycle-order-id {
+  min-height:30px!important;
+  font-size:max(12px,.75rem)!important;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+  overflow-wrap:anywhere;
+}
+.app .payroll-cycle-order :is(.payroll-cycle-order-date,.payroll-cycle-order-cash,.payroll-cycle-order-status) {
+  font-size:max(12px,.75rem);
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.app .payroll-cycle-order .payroll-cycle-order-status { grid-column:auto; }
+@media(min-width:1800px) {
+  .app .payroll-cycle-order { grid-template-columns:minmax(90px,1fr) minmax(78px,1fr) minmax(84px,1fr) minmax(104px,1.2fr); }
+}
+@media(max-width:800px) {
+  .app [data-panel=settings] :is(.grid2,.grid4,.access-grid) > .field > label,
+  .app .filters > .field > label { min-height:0; }
+}.app .section :is(.grid2,.grid3,.grid4,.access-grid,.filters) > * { min-width:0; }
+.app .section :is(.grid2,.grid3,.grid4,.access-grid,.filters) :is(.input,.select,.textarea) {
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.app [data-panel=settings] .access-grid {
+  grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));
+}
+.app [data-panel=settings] .card .grid2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media(max-width:600px) { .app [data-panel=settings] .card .grid2 { grid-template-columns:minmax(0,1fr); } }
