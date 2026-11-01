@@ -79,3 +79,7 @@ test('server failure is visible and monitor cleanup clears the panel',async()=>{
  monitor.destroy();assert.equal(panel.children.length,0);
 });
 
+
+test('linked duplicate retains a manual saved-payroll warning without operational noise',()=>{const duplicate=order({orderId:'B',_duplicateOf:'A',phone:'',name:''});const result=analyze({orders:[order(),duplicate],shiftReports:[{id:'r',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A','B']}]});assert.ok(result.issues.some(x=>x.code==='paid_linked_duplicate'));assert.ok(!result.issues.some(x=>x.code==='duplicate_link_invalid'));const bad=analyze({orders:[duplicate]});assert.ok(bad.issues.some(x=>x.code==='duplicate_link_invalid'))});
+
+test('missing surrender date remains visible but does not claim saved payroll is unassigned',()=>{const r=analyze({orders:[order({closeDate:''})],shiftReports:[{id:'s',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A']}]});const issue=r.issues.find(x=>x.code==='closed_date');assert.equal(issue.severity,'warning');assert.match(issue.message,/уже учтена/)});

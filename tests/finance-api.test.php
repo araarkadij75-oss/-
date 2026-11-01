@@ -68,10 +68,14 @@ foreach(['masterAmount','total','parts','cleanCheck','pp'] as $field){
     $valid=fin_reconciliation_patch($moneyPatch);
     fin_check(fin_reconciliation_matches(['orderId'=>$patch['orderId'],'_id'=>$patch['_id'],$field=>'100'],$valid),'Money exact before matches: '.$field);
     fin_check(!fin_reconciliation_matches(['orderId'=>$patch['orderId'],'_id'=>$patch['_id'],$field=>'101'],$valid),'Money concurrent change rejected: '.$field);
-    foreach(['-1','1.234','1e3','1000000001','',true,null] as $invalid){$bad=$moneyPatch;$bad['after'][$field]=$invalid;fin_reject(fn()=>fin_reconciliation_patch($bad),'Invalid money rejected: '.$field);}
+    foreach(['-1','1.234','1e3','1000000001',true,null] as $invalid){$bad=$moneyPatch;$bad['after'][$field]=$invalid;fin_reject(fn()=>fin_reconciliation_patch($bad),'Invalid money rejected: '.$field);}
 }
 $financialAfter=['masterAmount'=>'1000','total'=>'2500','parts'=>'500','cleanCheck'=>'2000','pp'=>'0'];
 $projected=fin_reconciliation_projection(['orderId'=>'261031-001'],$financialAfter,'orderCloseData','stamp');
 fin_check($projected['total']==='2500'&&$projected['parts']==='500','Close projection receives corrected editable financial values');
 foreach(['masterAmount','cleanCheck','pp'] as $key)fin_check(!array_key_exists($key,$projected),'Owner-only money remains private: '.$key);
 foreach(['dispatcherOrders','masterAssignments'] as $collection){$projected=fin_reconciliation_projection(['orderId'=>'261031-001','_reportLockId'=>'saved-report'],$financialAfter,$collection,'stamp');foreach(array_keys($financialAfter) as $key)fin_check(!array_key_exists($key,$projected),'No new money disclosure: '.$collection.' '.$key);fin_check($projected['_reportLockId']==='saved-report','Saved report lock preserved');}
+
+$clear=$patch;$clear['before']=['companyShare'=>'755'];$clear['after']=['companyShare'=>''];fin_check(fin_reconciliation_patch($clear)['after']['companyShare']==='','Verified empty source preserves absence, not zero');
+$link=$patch;$link['before']=['_duplicateOf'=>null];$link['after']=['_duplicateOf'=>'261011-003'];fin_check(fin_reconciliation_patch($link)['after']['_duplicateOf']==='261011-003','Duplicate linkage accepted');$link['after']['_duplicateOf']=$patch['orderId'];fin_reject(fn()=>fin_reconciliation_patch($link),'Self duplicate rejected');
+$receipt=$patch;$receipt['before']=['_cashClosedOn'=>null];$receipt['after']=['_cashClosedOn'=>'2026-11-01'];fin_check(fin_reconciliation_patch($receipt)['after']['_cashClosedOn']==='2026-11-01','Verified receipt date accepted');$receipt['after']['_cashClosedOn']='2026-02-31';fin_reject(fn()=>fin_reconciliation_patch($receipt),'Invalid receipt date rejected');
