@@ -62,3 +62,16 @@ $closeProjection=fin_reconciliation_projection(['orderId'=>'261031-001','total'=
 fin_check($closeProjection['companyShare']==='1250.50'&&$closeProjection['closeDate']==='2026-10-31','Close data no longer overlays stale cash/date');
 fin_check($closeProjection['total']==='2501'&&!isset($closeProjection['dispatcher'])&&!isset($closeProjection['_status']),'Close data projection scope preserved');
 foreach(['dispatcherOrders','masterAssignments'] as $collection){$projection=fin_reconciliation_projection(['orderId'=>'261031-001'],$after,$collection,'stamp');fin_check(!array_key_exists('companyShare',$projection),'No new financial disclosure in role projections');fin_check($projection['closeDate']==='2026-10-31'&&$projection['_status']==='Выполнен','Role operational fields updated');}
+
+foreach(['masterAmount','total','parts','cleanCheck','pp'] as $field){
+    $moneyPatch=$patch;$moneyPatch['before']=[$field=>'100'];$moneyPatch['after']=[$field=>'1250.50'];
+    $valid=fin_reconciliation_patch($moneyPatch);
+    fin_check(fin_reconciliation_matches(['orderId'=>$patch['orderId'],'_id'=>$patch['_id'],$field=>'100'],$valid),'Money exact before matches: '.$field);
+    fin_check(!fin_reconciliation_matches(['orderId'=>$patch['orderId'],'_id'=>$patch['_id'],$field=>'101'],$valid),'Money concurrent change rejected: '.$field);
+    foreach(['-1','1.234','1e3','1000000001','',true,null] as $invalid){$bad=$moneyPatch;$bad['after'][$field]=$invalid;fin_reject(fn()=>fin_reconciliation_patch($bad),'Invalid money rejected: '.$field);}
+}
+$financialAfter=['masterAmount'=>'1000','total'=>'2500','parts'=>'500','cleanCheck'=>'2000','pp'=>'0'];
+$projected=fin_reconciliation_projection(['orderId'=>'261031-001'],$financialAfter,'orderCloseData','stamp');
+fin_check($projected['total']==='2500'&&$projected['parts']==='500','Close projection receives corrected editable financial values');
+foreach(['masterAmount','cleanCheck','pp'] as $key)fin_check(!array_key_exists($key,$projected),'Owner-only money remains private: '.$key);
+foreach(['dispatcherOrders','masterAssignments'] as $collection){$projected=fin_reconciliation_projection(['orderId'=>'261031-001','_reportLockId'=>'saved-report'],$financialAfter,$collection,'stamp');foreach(array_keys($financialAfter) as $key)fin_check(!array_key_exists($key,$projected),'No new money disclosure: '.$collection.' '.$key);fin_check($projected['_reportLockId']==='saved-report','Saved report lock preserved');}

@@ -150,7 +150,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
 }
 
 function fin_reconciliation_patch(array $patch): array {
-    $allowed=['closeDate','companyShare','dispatcher','_status'];
+    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp'];
     $id=fin_text($patch['orderId']??'',128);
     if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$id))throw new InvalidArgumentException('invalid_order_id');
     $before=$patch['before']??null;$after=$patch['after']??null;
@@ -159,7 +159,7 @@ function fin_reconciliation_patch(array $patch): array {
     if($bk!==$ak||array_diff($ak,$allowed))throw new InvalidArgumentException('invalid_patch_fields');
     foreach($before as $v)if(!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v))throw new InvalidArgumentException('invalid_before');
     foreach($after as $key=>$value){
-        if($key==='companyShare'){
+        if(in_array($key,['companyShare','masterAmount','total','parts','cleanCheck','pp'],true)){
             if(!is_string($value)&&!is_int($value)&&!is_float($value))throw new InvalidArgumentException('invalid_cash');
             if(!preg_match('/^\d+(?:\.\d{1,2})?$/',(string)$value)||(float)$value>1000000000)throw new InvalidArgumentException('invalid_cash');
         }else{
@@ -185,7 +185,7 @@ function fin_reconciliation_matches(array $order,array $patch): bool {
     return true;
 }
 function fin_reconciliation_projection(array $projection,array $after,string $collection,string $stamp): array {
-    $allowed=$collection==='orderCloseData'?['companyShare','closeDate']:['closeDate','dispatcher','_status'];
+    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts']:['closeDate','dispatcher','_status'];
     foreach($after as $key=>$value)if(in_array($key,$allowed,true))$projection[$key]=$value;
     $projection['_updatedAt']=$stamp;
     return $projection;
