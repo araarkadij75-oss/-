@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.75-payroll-paid-guard-v1';
+const CACHE='eliteservice-18.17.76-live-quality-v1';
 const SHELL=[
   './',
   './index.html',
@@ -15,7 +15,8 @@ const SHELL=[
   './profit-accounting.js?v=20261031-profit2',
   './profit-bridge.js?v=20261101-source2',
   './profit-ui.js?v=20261101-source2',
-  './visual-refinement.css?v=20261101-fields1',
+  './visual-refinement.css?v=20261101-quality1',
+  './quality-monitor.js?v=20261101-quality1',
   './premium-v181721.css',
 ];
 
