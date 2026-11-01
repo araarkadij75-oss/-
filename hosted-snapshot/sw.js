@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.78-linked-duplicates-v1';
+const CACHE='eliteservice-18.17.79-source-finance-lock-v1';
 const SHELL=[
   './',
   './index.html',
@@ -14,7 +14,7 @@ const SHELL=[
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261101-source4',
   './profit-bridge.js?v=20261101-source4',
-  './profit-ui.js?v=20261101-source4',
+  './profit-ui.js?v=20261101-source5',
   './visual-refinement.css?v=20261101-quality1',
   './quality-monitor.js?v=20261101-quality2',
   './premium-v181721.css',
