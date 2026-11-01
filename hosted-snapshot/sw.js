@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.73-shift-role-parity-v1';
+const CACHE='eliteservice-18.17.74-shift-drill-scope-v1';
 const SHELL=[
   './',
   './index.html',
