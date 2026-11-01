@@ -9,7 +9,7 @@ const renderers = ['refillFilters','renderDrillBanner','renderOrders','renderDas
   'renderShiftClose','renderPayrollCycleRegister','renderMasterShifts','renderTeamPerformance',
   'renderShiftReports','renderQuality','renderAI','renderFinance','renderSettings','renderSchema','renderColorAudit'];
 
-function harness(role, {profitLoaded = false} = {}) {
+function harness(role, {profitLoaded = false, failing = ''} = {}) {
   const html = fs.readFileSync(new URL('../hosted-snapshot/'+pages[role],import.meta.url),'utf8');
   const script = [...html.matchAll(/<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/g)]
     .map(x=>x[1]).find(x=>x.includes('function switchTab('));
@@ -29,7 +29,7 @@ function harness(role, {profitLoaded = false} = {}) {
     filterRows:()=>[], refreshLiveQuality(){},
     console:{error:(...args)=>errors.push(args)},
   };
-  for(const name of renderers)context[name]=()=>calls.push(name);
+  for(const name of renderers)context[name]=()=>{calls.push(name);if(name===failing)throw new Error('Injected '+name)};
   vm.createContext(context);
   vm.runInContext(selected.map(n=>script.slice(n.start,n.end)).join('\n')+'\nglobalThis.allowed=ROLE_META['+JSON.stringify(role)+'].tabs;',context);
   context.roleMeta=()=>({tabs:context.allowed});
@@ -44,6 +44,23 @@ const expected = {
 };
 
 for(const role of Object.keys(pages)) {
+  test(role+': every allowed renderer failure stays contained without interrupting navigation',()=>{
+    const allowed=harness(role).allowed;
+    for(const [route,renderer] of Object.entries(expected)){
+      if(!allowed.includes(route))continue;
+      const h=harness(role,{failing:renderer});
+      assert.doesNotThrow(()=>h.switchTab(route));
+      assert.ok(h.errors.length>0,route+': error must be observable');
+      const next=allowed.includes('dashboard')&&route==='orders'?'dashboard':'orders';
+      const before=h.calls.length;
+      assert.doesNotThrow(()=>h.switchTab(next));
+      assert.ok(h.calls.slice(before).includes(expected[next]));
+    }
+    for(const helper of ['refillFilters','renderDrillBanner']){
+      const h=harness(role,{failing:helper});h.switchTab('orders');
+      assert.ok(h.calls.includes('renderOrders'));assert.ok(h.errors.length>0);
+    }
+  });
   for(const [route,renderer] of Object.entries(expected)) {
     const h = harness(role);
     if(!h.allowed.includes(route)) continue;
