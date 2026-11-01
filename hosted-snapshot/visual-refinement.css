@@ -272,6 +272,6 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 /* Larger user font settings expand the scrollable table instead of crushing labels. */
 .app .orders-table-wrap .table { min-width:calc(1340px * var(--font-scale,1)); }
 .app .orders-table-wrap .table th { overflow-wrap:normal; word-break:normal; }
-.app .orders-table-wrap .table :is(th,td):nth-child(6) { width:calc(100px * var(--font-scale,1)); }
-.app .orders-table-wrap .table :is(th,td):nth-child(12) { width:calc(100px * var(--font-scale,1)); }
-.app .orders-table-wrap .table :is(th,td):last-child { width:calc(106px * var(--font-scale,1)); }
+.app .orders-table-wrap .table :is(th,td):nth-child(6) { width:calc(94px * var(--font-scale,1)); }
+.app .orders-table-wrap .table :is(th,td):nth-child(12) { width:calc(94px * var(--font-scale,1)); }
+.app .orders-table-wrap .table :is(th,td):last-child { width:calc(96px * var(--font-scale,1)); }
