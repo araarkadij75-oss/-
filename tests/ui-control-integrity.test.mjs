@@ -31,3 +31,15 @@ for(const page of ['index','master','dispatcher-logistic'])test(`${page}: cleari
  assert.equal(nodes.get('fileInput').value,'','Native file input must reset for a same-file change event');
  assert.equal(state.importRows.length,0);assert.equal(state.importName,'');assert.equal(rendered,1);assert.equal(nodes.get('mergeImport').disabled,true);
 });
+for(const page of ['index','master','dispatcher-logistic'])test(`${page}: performance combines equivalent profiles, exposes logins and counts both assignees once`,()=>{
+ const html=fs.readFileSync(new URL(`../hosted-snapshot/${page}.html`,import.meta.url),'utf8');
+ const helper=html.match(/^function performanceStaffGroups\(staff\).*$/m)[0];
+ const start=html.indexOf('function renderTeamPerformance('),end=html.indexOf('\nfunction ',start+10),render=html.slice(start,end);
+ const staff=[{id:'artem',name:'Артём',login:'artem',role:'dispatcher_logistic',shift:'artem'},{id:'tematop',name:'Артем',login:'tematop',role:'dispatcher_logistic',shift:'artem'},{id:'s',name:'Сергей',login:'seregatop',role:'dispatcher_logistic',shift:'sergey'},{id:'other',name:'Другой сотрудник',login:'other',role:'dispatcher_logistic',shift:'artem'}];
+ const rows=[{orderId:'A',dispatcher:'artem',_assignedBy:'artem'},{orderId:'B',dispatcher:'artem',_assignedBy:'tematop'}];
+ const nodes={staffPerf:{innerHTML:''}},norm=v=>String(v||'').toLowerCase().replace(/ё/g,'е');
+ const ctx={state:{settings:{staff}},norm,clean:v=>String(v||'').trim(),payrollShiftKey:r=>r.shift||({'артем':'artem','сергей':'sergey'}[norm(r.approvedForName)]||''),num:Number,$:s=>nodes[s.slice(1)]||null,$$:()=>[],filterRows:()=>rows,orderMatchesDispatcher:(r,p)=>r.dispatcher===p.shift,derivedStage:()=> 'В работе',isServiceMaster:()=>false,minutesBetween:()=>null,median:()=>0,sum:(rs,f)=>rs.reduce((a,r)=>a+f(r),0),orderPayrollShift:r=>r.dispatcher,shiftName:x=>x,esc:v=>String(v),pct:v=>String(v),money:v=>String(v),roleLabel:x=>x};
+ vm.runInNewContext(helper+';'+render+';globalThis.groups=performanceStaffGroups(state.settings.staff);renderTeamPerformance()',ctx);
+ assert.equal(ctx.groups.length,3);assert.deepEqual(Array.from(ctx.groups[0]._memberIds),['artem','tematop']);
+ const table=nodes.staffPerf.innerHTML;assert.equal((table.match(/data-staff-drill=/g)||[]).length,3);assert.ok(table.includes('artem · tematop'));assert.ok(table.includes('seregatop'));assert.match(table,/data-staff-drill="artem"[^]*?<td class="num">2<\/td><td class="num">2<\/td>/);
+});
