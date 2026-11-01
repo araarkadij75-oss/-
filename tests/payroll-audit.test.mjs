@@ -97,12 +97,12 @@ for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatch
  sync('dashboardShift');assert.equal(disp.value,'Сергей');disp.value='Артём';sync('dispFilter');assert.equal(shift.value,'artem');disp.value='Другой';sync('dispFilter');assert.equal(shift.value,'');
 });
 
-for(const role of ['index','dispatcher-logistic'])test(role+': editing an imported order preserves its dispatcher and creation identity',async()=>{
+for(const role of ['index','dispatcher-logistic','master'])test(role+': editing an imported order preserves its dispatcher and creation identity',async()=>{
  const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
  const body=src.slice(src.indexOf('async function upsertOne(')).split('\n')[0];
  const writes=[],cloud={profile:{id:'a',name:'Артём',shift:'artem'},versions:new Map([['old','v1']])};
  const batch={set:(ref,data)=>writes.push({ref,data}),commit:async()=>{}};
- const save=new Function('cloud','fs','db','orderDoc','dispatchDoc','stripUndefined','dispatcherEditable','dispatchSafe',body+';return upsertOne')(cloud,{writeBatch:()=>batch},{},id=>'order/'+id,id=>'dispatch/'+id,x=>x,x=>x,x=>x);
+ const save=new Function('cloud','fs','db','orderDoc','dispatchDoc','stripUndefined','dispatcherEditable','dispatchSafe',body+';return upsertOne')(cloud,{writeBatch:()=>batch,setDoc:async(ref,data)=>writes.push({ref,data})},{},id=>'order/'+id,id=>'dispatch/'+id,x=>x,x=>x,x=>x);
  await save({orderId:'old',dispatcher:'Сергей'},'dispatcher');
  assert.equal(writes[0].data.dispatcher,'Сергей');assert.equal(writes[0].data._createdBy,undefined);assert.equal(writes[0].data._updatedBy,'a');
  writes.length=0;await save({orderId:'new'},'dispatcher');assert.equal(writes[0].data.dispatcher,'Артём');assert.equal(writes[0].data._createdBy,'a');
@@ -116,4 +116,10 @@ for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatch
  const filter=new Function('$','parseDate','numMaybe','state','roleVisibleOrders','orderDate','canonicalKey','canonicalDispatcherSelection','orderDispatcherName','matchesDrill',body+';return filterRows')(
  id=>({value:id==='#dispFilter'?'Сергей':''}),()=>null,()=>null,{orders:rows},x=>x,()=>null,norm,x=>{lookups++;return x},r=>r.dispatcher,()=>true);
  assert.equal(filter().length,816);assert.equal(lookups,1);
+});
+
+test('dispatcher late pickup queue uses the same responsible dispatcher as its payout',()=>{
+ const src=fs.readFileSync(new URL('../hosted-snapshot/dispatcher-logistic.html',import.meta.url),'utf8');
+ const queue=src.slice(src.indexOf('function renderPendingPayroll(')).split('\n')[0];
+ assert.ok(queue);assert.match(queue,/orderMatchesDispatcher\(r,p\)/);assert.doesNotMatch(queue,/_createdByShift|_createdBy===/);
 });
