@@ -30,6 +30,7 @@ function quality_number(mixed $v): ?float {
     return is_numeric($s) && is_finite((float)$s) ? (float)$s : null;
 }
 function quality_date(mixed $v, ?int $year = null): string {
+    if ((is_int($v) || is_float($v)) && is_finite((float)$v) && $v > 1000 && $v < 90000) return gmdate('Y-m-d', gmmktime(0,0,0,12,30,1899) + (int)floor($v)*86400);
     $s = trim((string)$v);
     if (preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/', $s, $m)) { $y=(int)$m[1]; $mo=(int)$m[2]; $d=(int)$m[3]; }
     elseif (preg_match('/^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](\d{2,4}))?$/', $s, $m)) { $d=(int)$m[1]; $mo=(int)$m[2]; $y=isset($m[3])?(int)$m[3]:($year??0); if(isset($m[3])&&$y<100)$y+=2000; }

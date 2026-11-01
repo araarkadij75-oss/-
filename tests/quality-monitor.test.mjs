@@ -18,6 +18,12 @@ test('date validation rejects impossible calendar dates, allows partial surrende
  assert.equal(analyze({orders:[order({closeDate:'24.10'})]}).issues.length,0);
  assert.ok(analyze({orders:[order({visitDate:'2026-02-31'})]}).issues.some(x=>x.code==='invalid_visitDate'));
 });
+test('numeric Excel dates match CRM imports and fractional serials use the day',()=>{
+ const expected=new Date(Date.UTC(1899,11,30)+46326*86400000).toISOString().slice(0,10);
+ assert.equal(dateKey(46326),expected);assert.equal(dateKey(46326.75),expected);
+ assert.equal(analyze({orders:[order({closeDate:46326})]}).issues.length,0);
+ assert.equal(dateKey('46326'),'');assert.equal(dateKey(90000),'');
+});
 test('closed orders need a cash date and responsible dispatcher; active fields are separate',()=>{
  const issues=analyze({orders:[order({closeDate:'',dispatcher:''})]}).issues;
  assert.ok(issues.some(x=>x.code==='closed_date'));assert.ok(issues.some(x=>x.code==='closed_dispatcher'));
