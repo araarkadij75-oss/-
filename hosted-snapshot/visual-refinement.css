@@ -275,3 +275,5 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 .app .orders-table-wrap .table :is(th,td):nth-child(6) { width:calc(94px * var(--font-scale,1)); }
 .app .orders-table-wrap .table :is(th,td):nth-child(12) { width:calc(94px * var(--font-scale,1)); }
 .app .orders-table-wrap .table :is(th,td):last-child { width:calc(96px * var(--font-scale,1)); }
+/* Keep visually hidden checkboxes inside their scrollable day cells. */
+.app .master-week-check { position:relative; }
