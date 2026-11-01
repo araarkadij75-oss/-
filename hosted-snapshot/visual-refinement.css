@@ -390,3 +390,7 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 .quality-server-status { padding:12px 14px; border:1px solid #b7d7c8; background:#edf9f3; border-radius:10px; font-size:14px; line-height:1.5; }
 .quality-server-status[data-state=stale],.quality-server-status[data-state=error] { background:#fff2df; border-color:#e5bd83; color:#794a0a; }
 @media(max-width:600px) { .quality-monitor-item { grid-template-columns:minmax(0,1fr); } .quality-monitor-item .btn { justify-self:start; } }
+/* Override older cached theme font declarations, including form controls. */
+:root { --font-ui:"Segoe UI",Arial,sans-serif; }
+html body,.app,.modal,.app :is(button,input,select,textarea),.modal :is(button,input,select,textarea),.app :is(.chart-title,.kpi .v,.mini .v),.modal :is(.chart-title,.modal-title) { font-family:"Segoe UI",Arial,sans-serif!important; font-variation-settings:normal; }
+.modal .field label { font-variation-settings:normal; }
