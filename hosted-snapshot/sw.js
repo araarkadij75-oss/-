@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.69-column-alignment-v1';
+const CACHE='eliteservice-18.17.70-section-field-fit-v1';
 const SHELL=[
   './',
   './index.html',
@@ -15,7 +15,7 @@ const SHELL=[
   './profit-accounting.js?v=20261031-profit2',
   './profit-bridge.js?v=20261101-source2',
   './profit-ui.js?v=20261101-source2',
-  './visual-refinement.css?v=20261101-align1',
+  './visual-refinement.css?v=20261101-fields1',
   './premium-v181721.css',
 ];
 
