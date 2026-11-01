@@ -67,3 +67,43 @@ test('weekly save rejects duplicate dates before performing any database write',
 
 
 test('owner history compares saved allocation for the subject, with current cash and salary consistently',()=>{const own=order('own','2026-10-23',28900);own.visitDate='2026-10-23';const late=order('late','2026-10-23',2800);const m=model([own,late]),profile={id:'sergey',name:'Сергей',shift:'sergey'};m.state.settings.staff=[profile,{id:'owner',name:'Владелец',shift:''}];const snapshot=snapshotModel(m),report={...snapshot('2026-10-23',profile),id:'2026-10-23-sergey',ownerConfirmed:true,subjectMemberId:'sergey',closedBy:'owner'};m.state.shiftReports=[report];const compare=new Function('state','shiftSnapshot',line('shiftReportComparison')+';return shiftReportComparison')(m.state,snapshot);const before=JSON.stringify(report);let current=compare(report);assert.equal(current.shiftCash,28900);assert.equal(current.deferredCash,2800);assert.equal(current.salary,3170);own.companyShare=30000;late.companyShare=4000;current=compare(report);assert.equal(current.shiftCash,30000);assert.equal(current.deferredCash,4000);assert.equal(current.salary,3400);assert.equal(JSON.stringify(report),before);const box={innerHTML:''};const body=html.split('\n').find(x=>x.includes("$('#shiftReportHistory').innerHTML=rows.length?"));const render=new Function('state','uniqueShiftReports','$','$$','role','shiftIntegrity','shiftReportComparison','esc','shiftName','money','integer','pct',body.replace(/}\s*$/,''));render(m.state,x=>x,()=>box,()=>[],'owner',()=>false,compare,String,String,String,String,String);assert.match(box.innerHTML,/Своя касса <b>30000/);assert.match(box.innerHTML,/Поздние закрытия <b>4000/);assert.match(box.innerHTML,/Зарплата <b>3400/);assert.match(box.innerHTML,/Сохранено: 3170/);assert.equal(JSON.stringify(report),before)});
+
+for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatcher ownership is shared by filters, drilldown and shifts',()=>{
+ const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
+ const fn=name=>src.slice(src.indexOf('function '+name+'(')).split('\n')[0];
+ const norm=x=>String(x||'').trim().toLowerCase().replaceAll('ё','е');
+ const state={settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher',shift:'artem'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'sergey'}]},orders:[]};
+ const helpers=['payrollShiftKey','orderPayrollShift','orderDispatcherName','orderMatchesDispatcher'].map(fn).join('\n');
+ const m=new Function('state','norm',helpers+';return {orderPayrollShift,orderMatchesDispatcher,orderDispatcherName}')(state,norm);
+ const sergey={dispatcher:'Сергей',_createdBy:'a',_createdByShift:'artem',_assignedBy:'a',_cashClosedBy:'a'};
+ assert.equal(m.orderPayrollShift(sergey),'sergey');assert.equal(m.orderPayrollShift({dispatcher:'  Сергей  '}),'sergey');assert.equal(m.orderPayrollShift({dispatcher:' Артём '}),'artem');
+ assert.equal(m.orderMatchesDispatcher(sergey,state.settings.staff[0]),true);
+ assert.equal(m.orderMatchesDispatcher(sergey,state.settings.staff[1]),false);
+ assert.equal(m.orderPayrollShift({_createdBy:'a'}),'artem');
+ assert.equal(m.orderPayrollShift({_createdByName:'Сергей',_createdByShift:'artem'}),'sergey');
+ assert.equal(m.orderMatchesDispatcher({dispatcher:'Другой',_createdBy:'s'},state.settings.staff[0]),false);
+ assert.equal(m.orderDispatcherName({_createdBy:'a'}),'Артём');
+ assert.match(fn('filterRows'),/orderPayrollShift\(r\)/);
+ assert.doesNotMatch(fn('filterRows'),/r\._createdByShift/);
+ assert.match(fn('matchesDrill'),/orderPayrollShift\(r\)/);
+ assert.match(fn('shiftOrders'),/orderMatchesDispatcher\(r,profile\)/);
+ assert.match(fn('group'),/orderDispatcherName\(r\)/);
+ assert.doesNotMatch(fn('setForm'),/shiftName\(r\._createdByShift\)/);
+ assert.match(fn('formRecord'),/!existing&&\['dispatcher','dispatcher_logistic'\]\.includes\(currentRole\(\)\)/);
+ const perf=src.slice(src.indexOf('function renderTeamPerformance('),src.indexOf('function aiEligibleMasters('));
+ assert.match(perf,/cr=rows\.filter\(r=>orderPayrollShift\(r\)===sh\)/);assert.doesNotMatch(perf,/ids\.has\(r\._cashClosedBy\)/);
+ const shift={value:'sergey'},disp={value:'Артём',options:[{value:''},{value:'Сергей'},{value:'Артём'}]};
+ const sync=new Function('$','norm',fn('payrollShiftKey')+'\n'+fn('syncDispatcherShiftFilter')+';return syncDispatcherShiftFilter')(id=>id==='#dashboardShift'?shift:disp,norm);
+ sync('dashboardShift');assert.equal(disp.value,'Сергей');disp.value='Артём';sync('dispFilter');assert.equal(shift.value,'artem');disp.value='Другой';sync('dispFilter');assert.equal(shift.value,'');
+});
+
+for(const role of ['index','dispatcher-logistic'])test(role+': editing an imported order preserves its dispatcher and creation identity',async()=>{
+ const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
+ const body=src.slice(src.indexOf('async function upsertOne(')).split('\n')[0];
+ const writes=[],cloud={profile:{id:'a',name:'Артём',shift:'artem'},versions:new Map([['old','v1']])};
+ const batch={set:(ref,data)=>writes.push({ref,data}),commit:async()=>{}};
+ const save=new Function('cloud','fs','db','orderDoc','dispatchDoc','stripUndefined','dispatcherEditable','dispatchSafe',body+';return upsertOne')(cloud,{writeBatch:()=>batch},{},id=>'order/'+id,id=>'dispatch/'+id,x=>x,x=>x,x=>x);
+ await save({orderId:'old',dispatcher:'Сергей'},'dispatcher');
+ assert.equal(writes[0].data.dispatcher,'Сергей');assert.equal(writes[0].data._createdBy,undefined);assert.equal(writes[0].data._updatedBy,'a');
+ writes.length=0;await save({orderId:'new'},'dispatcher');assert.equal(writes[0].data.dispatcher,'Артём');assert.equal(writes[0].data._createdBy,'a');
+});
