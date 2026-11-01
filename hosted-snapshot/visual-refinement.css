@@ -263,7 +263,7 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 .app .orders-table-wrap .table tbody td:nth-child(11) .inline-master-input,
 .app .orders-table-wrap .table tbody td .order-value-chip { font-size:max(12px,.75rem); line-height:1.35; }
 .app .orders-table-wrap .table .action-cell .btn { font-size:max(12px,.75rem); min-height:30px; line-height:1.3; }
-.app [data-panel=ai] .ai-live-metrics .kpi { border:1px solid #c9aceb; border-radius:12px; background:linear-gradient(120deg,#faf7ff,#eee3ff); }
+.app [data-panel=ai] .kpis .kpi { border:1px solid #c9aceb; border-radius:12px; background:linear-gradient(120deg,#faf7ff,#eee3ff); }
 .app [data-panel=mastershifts] { --section-accent:#076f83; }
 .app .card.master-shift-hero,.app .card.hero { background:linear-gradient(125deg,#173b77,#255fc0 70%,#286bc4); }
 .app .master-shift-hero .shift-today-count { background:#102c5a50; border:1px solid #ffffff60; color:#fff; }
