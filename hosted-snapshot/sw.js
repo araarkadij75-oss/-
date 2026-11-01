@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.71-dispatcher-shift-v1';
+const CACHE='eliteservice-18.17.72-shift-filter-speed-v1';
 const SHELL=[
   './',
   './index.html',

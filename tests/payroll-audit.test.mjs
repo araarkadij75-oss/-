@@ -107,3 +107,13 @@ for(const role of ['index','dispatcher-logistic'])test(role+': editing an import
  assert.equal(writes[0].data.dispatcher,'Сергей');assert.equal(writes[0].data._createdBy,undefined);assert.equal(writes[0].data._updatedBy,'a');
  writes.length=0;await save({orderId:'new'},'dispatcher');assert.equal(writes[0].data.dispatcher,'Артём');assert.equal(writes[0].data._createdBy,'a');
 });
+
+for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatcher filter resolves the selected name once, not once per order',()=>{
+ const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
+ const body=src.slice(src.indexOf('function filterRows(')).split('\n')[0];
+ let lookups=0;const rows=Array.from({length:1632},(_,i)=>({dispatcher:i%2?' Сергей ':'Артём'}));
+ const norm=x=>String(x||'').trim().toLowerCase().replaceAll('ё','е');
+ const filter=new Function('$','parseDate','numMaybe','state','roleVisibleOrders','orderDate','canonicalKey','canonicalDispatcherSelection','orderDispatcherName','matchesDrill',body+';return filterRows')(
+ id=>({value:id==='#dispFilter'?'Сергей':''}),()=>null,()=>null,{orders:rows},x=>x,()=>null,norm,x=>{lookups++;return x},r=>r.dispatcher,()=>true);
+ assert.equal(filter().length,816);assert.equal(lookups,1);
+});
