@@ -149,3 +149,5 @@ test('a paid order cannot become payable again after its dispatcher changes',()=
  assert.equal(m.shiftSettlementOrders('2026-10-19',{shift:'sergey'}).length,0);assert.equal(m.payrollDailyEstimate('sergey','2026-10-24').salary,0);
  assert.equal(report.salary,2000);assert.equal(report.cash,1500);
 });
+
+test('linked duplicate is excluded from current ledger while frozen report stays unchanged',()=>{const a=order('canonical','2026-10-19',2400),b={...order('duplicate','2026-10-19',2400),_duplicateOf:'canonical'},report={date:'2026-10-19',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['canonical','duplicate'],salary:2480};const m=model([a,b],[report]);assert.deepEqual(m.payrollSettlementLedger().map(x=>x.id),['canonical']);assert.equal(report.salary,2480);assert.deepEqual(report.paidOrderIds,['canonical','duplicate']);const sum=new Function('return ('+line('sum')+')')();assert.equal(sum([a,b],r=>r.companyShare),2400);b._duplicateOf='';assert.equal(sum([a,b],r=>r.companyShare),4800)});

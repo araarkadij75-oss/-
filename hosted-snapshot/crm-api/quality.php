@@ -49,9 +49,11 @@ function quality_analyze(array $orders, array $reports): array {
         $counts[$code]=($counts[$code]??0)+1;
         if(count($issues)<500)$issues[]=['code'=>$code,'orderId'=>$id,'severity'=>$severity,'reportId'=>$reportId];
     };
+    $allById=[];foreach($orders as $row)$allById[(string)($row['orderId']??'')]=$row;
     foreach($orders as $r){
         $id=trim((string)($r['orderId']??$r['_id']??''));
         if(isset($byId[$id]))$add('duplicate_order',$id,'error');else $byId[$id]=$r;
+        if(!empty($r['_duplicateOf'])){$target=$allById[(string)$r['_duplicateOf']]??null;if(!$target||$r['_duplicateOf']===$id||!empty($target['_duplicateOf']))$add('duplicate_link_invalid',$id,'error');continue;}
         $status=trim((string)($r['_status']??'')); $closed=in_array($status,['Выполнен','Закрыт','Закрыто'],true);
         if($status!==''&&!$closed&&!in_array($status,['Отказ','Отмена'],true)){
             foreach(['name','phone','request','visitDate'] as $field)if(trim((string)($r[$field]??''))===''){$add('active_required',$id);break;}
@@ -76,9 +78,10 @@ function quality_analyze(array $orders, array $reports): array {
     $paid=[];foreach($unique as $r){if(!empty($r['closureOnly'])||!empty($r['draft'])||!empty($r['voided'])||!((!empty($r['ownerConfirmed'])&&!empty($r['subjectMemberId']))||(!empty($r['dataHash'])&&!empty($r['closedBy']))))continue;
         $ids=is_array($r['paidOrderIds']??null)?$r['paidOrderIds']:(is_array($r['orderIds']??null)?$r['orderIds']:[]);
         foreach($ids as $raw){$id=(string)$raw;$reportId=(string)($r['id']??'');if(isset($paid[$id]))$add('paid_duplicate',$id,'error',$reportId);else $paid[$id]=$reportId;
-            if(!isset($byId[$id]))$add('paid_order_missing',$id,'warning',$reportId);else{$owner=quality_who(['dispatcher'=>$byId[$id]['dispatcher']??'']);if($owner!==''&&quality_who($r)!==''&&$owner!==quality_who($r))$add('paid_owner_conflict',$id,'warning',$reportId);}
+            if(!isset($byId[$id]))$add('paid_order_missing',$id,'warning',$reportId);else{if(!empty($byId[$id]['_duplicateOf']))$add('paid_linked_duplicate',$id,'warning',$reportId);$owner=quality_who(['dispatcher'=>$byId[$id]['dispatcher']??'']);if($owner!==''&&quality_who($r)!==''&&$owner!==quality_who($r))$add('paid_owner_conflict',$id,'warning',$reportId);}
         }
     }
+    foreach($issues as &$issue)if($issue['code']==='closed_date'&&isset($paid[$issue['orderId']])){$issue['severity']='warning';$issue['message']='Дата сдачи не заполнена; зарплата уже учтена в сохранённом отчёте, повторно не начислять';}unset($issue);
     return ['orderCount'=>count($orders),'reportCount'=>count($reports),'issueCount'=>array_sum($counts),'counts'=>$counts,'issues'=>$issues,'issuesTruncated'=>array_sum($counts)>count($issues)];
 }
 function quality_load(PDO $pdo,string $collection,int $limit): array {

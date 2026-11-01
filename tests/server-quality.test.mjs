@@ -34,10 +34,11 @@ test('PHP rules validate dates, empty versus zero cash, duplicate accounting and
  $r=['id'=>'r','date'=>'2026-10-24','shift'=>'sergey','ownerConfirmed'=>true,'subjectMemberId'=>'s','paidOrderIds'=>['A']];
  $ok=quality_analyze([$o],[$r]);$o['companyShare']='';$empty=quality_analyze([$o],[]);$o['companyShare']=0;$r2=$r;$r2['id']='other';$r2['date']='2026-10-25';$r2['shift']='artem';
  $owner=$o;$owner['dispatcher']='';$owner['_createdBy']='owner';$owner['_createdByName']='Владелец';
+ $dup=$o;$dup['orderId']='B';$dup['_duplicateOf']='A';$linkedReport=$r;$linkedReport['paidOrderIds']=['A','B'];$undated=$o;$undated['closeDate']='';
  $active=$o;$active['_status']='В работе';$active['visitDate']='2030-01-01';
- echo json_encode(['ok'=>$ok,'empty'=>$empty,'conflict'=>quality_analyze([$o],[$r,$r2]),'owner'=>quality_analyze([$owner],[]),'active'=>quality_analyze([$active],[]),'excel'=>quality_date(46326.75),'excelString'=>quality_date('46326'),'invalid'=>quality_date('31.02.2026'),'valid'=>quality_date('29.02.2024')],JSON_THROW_ON_ERROR);`;
+ echo json_encode(['linked'=>quality_analyze([$o,$dup],[$linkedReport]),'badLink'=>quality_analyze([$dup],[]),'undated'=>quality_analyze([$undated],[$r]),'ok'=>$ok,'empty'=>$empty,'conflict'=>quality_analyze([$o],[$r,$r2]),'owner'=>quality_analyze([$owner],[]),'active'=>quality_analyze([$active],[]),'excel'=>quality_date(46326.75),'excelString'=>quality_date('46326'),'invalid'=>quality_date('31.02.2026'),'valid'=>quality_date('29.02.2024')],JSON_THROW_ON_ERROR);`;
  const run=spawnSync(php,['-r',code],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);
- const result=JSON.parse(run.stdout);assert.equal(result.ok.issueCount,0);assert.equal(result.empty.counts.closed_cash,1);
+ const result=JSON.parse(run.stdout);assert.equal(result.linked.counts.paid_linked_duplicate,1);assert.equal(result.badLink.counts.duplicate_link_invalid,1);assert.equal(result.undated.issues.find(x=>x.code==='closed_date').severity,'warning');assert.equal(result.ok.issueCount,0);assert.equal(result.empty.counts.closed_cash,1);
  assert.equal(result.conflict.counts.paid_duplicate,1);assert.equal(result.conflict.counts.paid_owner_conflict,1);
  assert.equal(result.owner.counts.closed_dispatcher,1);assert.equal(result.active.counts.active_required,1);assert.equal(result.active.counts.active_master,1);assert.equal(result.active.counts.invalid_visitDate,undefined);
  assert.equal(result.invalid,'');assert.equal(result.valid,'2024-02-29');

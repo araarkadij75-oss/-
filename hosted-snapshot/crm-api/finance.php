@@ -150,7 +150,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
 }
 
 function fin_reconciliation_patch(array $patch): array {
-    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp'];
+    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn'];
     $id=fin_text($patch['orderId']??'',128);
     if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$id))throw new InvalidArgumentException('invalid_order_id');
     $before=$patch['before']??null;$after=$patch['after']??null;
@@ -161,12 +161,13 @@ function fin_reconciliation_patch(array $patch): array {
     foreach($after as $key=>$value){
         if(in_array($key,['companyShare','masterAmount','total','parts','cleanCheck','pp'],true)){
             if(!is_string($value)&&!is_int($value)&&!is_float($value))throw new InvalidArgumentException('invalid_cash');
-            if(!preg_match('/^\d+(?:\.\d{1,2})?$/',(string)$value)||(float)$value>1000000000)throw new InvalidArgumentException('invalid_cash');
+            if($value!==''&&!preg_match('/^\d+(?:\.\d{1,2})?$/',(string)$value)||(float)$value>1000000000)throw new InvalidArgumentException('invalid_cash');
         }else{
             if(!is_string($value)||strlen($value)>200)throw new InvalidArgumentException('invalid_patch_value');
-            if($key==='closeDate'&&$value!==''){
+            if(in_array($key,['closeDate','_cashClosedOn'],true)&&$value!==''){
                 if(!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/',$value,$m)||!checkdate((int)$m[2],(int)$m[3],(int)$m[1]))throw new InvalidArgumentException('invalid_close_date');
             }
+            if($key==='_duplicateOf'&&$value!==''&&(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$value)||$value===$id))throw new InvalidArgumentException('invalid_duplicate_target');
             if($key==='_status'&&!in_array($value,['В работе','Забор / техника у мастера','Будущая дата','На проверке','Выполнен','Отказ','Отмена'],true))throw new InvalidArgumentException('invalid_status');
         }
     }
@@ -185,7 +186,7 @@ function fin_reconciliation_matches(array $order,array $patch): bool {
     return true;
 }
 function fin_reconciliation_projection(array $projection,array $after,string $collection,string $stamp): array {
-    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts']:['closeDate','dispatcher','_status'];
+    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts','_cashClosedOn','_duplicateOf']:['closeDate','dispatcher','_status','_duplicateOf'];
     foreach($after as $key=>$value)if(in_array($key,$allowed,true))$projection[$key]=$value;
     $projection['_updatedAt']=$stamp;
     return $projection;
@@ -202,6 +203,7 @@ function fin_reconcile(PDO $pdo,array $actor,array $body): array {
         try{
             $path=tg_path('orders',$patch['orderId']);$order=tg_read($pdo,$path,true);
             if(!$order||!fin_reconciliation_matches($order,$patch)){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>$order?'before_mismatch':'not_found'];continue;}
+            if(!empty($patch['after']['_duplicateOf'])){$target=tg_read($pdo,tg_path('orders',$patch['after']['_duplicateOf']),true);if(!$target||!empty($target['_duplicateOf'])){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>'invalid_duplicate_target'];continue;}}
             $stamp=gmdate('c');$auditId=bin2hex(random_bytes(16));
             $audit=$patch+['id'=>$auditId,'actorUid'=>(string)$actor['uid'],'appliedAt'=>$stamp];
             foreach($patch['after'] as $key=>$value)$order[$key]=$value;
