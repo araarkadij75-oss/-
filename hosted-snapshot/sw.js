@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.89-report-clarity-v1';
+const CACHE='eliteservice-18.17.90-cash-consistency-v1';
 const SHELL=[
   './',
   './index.html',
@@ -12,7 +12,7 @@ const SHELL=[
   './firestore-regru.js',
   './telegram-ui.js?v=20261031-telegram9',
   './avito-profit.js?v=20261031-profit2',
-  './profit-accounting.js?v=20261101-source4',
+  './profit-accounting.js?v=20261103-cash1',
   './profit-bridge.js?v=20261103-audit1',
   './payroll-intake-accounting.js?v=20261103-audit1',
   './profit-ui.js?v=20261103-audit1',

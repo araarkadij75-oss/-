@@ -621,6 +621,10 @@
             {
               "symbol": "parseDate",
               "domain": "core"
+            },
+            {
+              "symbol": "shiftCashRecordedDate",
+              "domain": "payroll"
             }
           ]
         },
@@ -3022,18 +3026,48 @@
         },
         "hasRecordedCashSurrenderOn-437f4036f0a7": {
           "globals": [],
+          "crossDomain": []
+        },
+        "analyticsCashCents-shared-v1": {
+          "globals": [],
+          "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            }
+          ]
+        },
+        "collectRecordedCash-shared-v1": {
+          "globals": [
+            "Math",
+            "Number",
+            "Set",
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "derivedStage",
               "domain": "orders"
             },
             {
-              "symbol": "num",
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "numMaybe",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
               "domain": "core"
             },
             {
               "symbol": "shiftCashRecordedDate",
               "domain": "payroll"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             }
           ]
         },
@@ -3049,12 +3083,12 @@
               "domain": "ui"
             },
             {
-              "symbol": "esc",
-              "domain": "core"
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
-              "symbol": "hasRecordedCashSurrenderOn",
-              "domain": "finance"
+              "symbol": "esc",
+              "domain": "core"
             },
             {
               "symbol": "iso",
@@ -3105,6 +3139,10 @@
             "String"
           ],
           "crossDomain": [
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "canonicalKey",
               "domain": "orders"
@@ -3197,7 +3235,10 @@
           ]
         },
         "filterRows-260239d24127": {
-          "globals": [],
+          "globals": [
+            "Set",
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -3360,11 +3401,29 @@
           ]
         },
         "handleKpiDrill-57b4d54e0de8": {
-          "globals": [],
+          "globals": [
+            "Boolean"
+          ],
           "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "orderDate",
+              "domain": "orders"
+            },
             {
               "symbol": "renderOrders",
               "domain": "orders"
+            },
+            {
+              "symbol": "roleVisibleOrders",
+              "domain": "staff"
             },
             {
               "symbol": "state",
@@ -3373,6 +3432,10 @@
             {
               "symbol": "switchTab",
               "domain": "ui"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             }
           ]
         },
@@ -3401,6 +3464,10 @@
             {
               "symbol": "$",
               "domain": "ui"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "currentExpenses",
@@ -3469,9 +3536,19 @@
         "group-6b61418b25b1": {
           "globals": [
             "Map",
+            "Math",
+            "Set",
             "undefined"
           ],
           "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "canonicalDispatcherSelection",
               "domain": "staff"
@@ -3487,6 +3564,10 @@
             {
               "symbol": "clean",
               "domain": "core"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "norm",
@@ -4920,6 +5001,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "derivedStage",
               "domain": "orders"
             },
@@ -4981,10 +5066,6 @@
             },
             {
               "symbol": "state",
-              "domain": "core"
-            },
-            {
-              "symbol": "sum",
               "domain": "core"
             }
           ]
@@ -5467,6 +5548,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
               "symbol": "fmtDate",
               "domain": "core"
             },
@@ -5498,7 +5583,9 @@
         },
         "renderDashboard-40a515c112f2": {
           "globals": [
-            "Map"
+            "Map",
+            "Math",
+            "Set"
           ],
           "crossDomain": [
             {
@@ -5510,8 +5597,16 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "bindBarsToFilter",
               "domain": "integrations"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "currentUser",
@@ -5595,6 +5690,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "bindBarsToFilter",
               "domain": "integrations"
             },
@@ -5645,10 +5744,6 @@
             {
               "symbol": "setCanonicalFilter",
               "domain": "orders"
-            },
-            {
-              "symbol": "sum",
-              "domain": "core"
             },
             {
               "symbol": "timeHour",
@@ -8314,6 +8409,10 @@
           ],
           "crossDomain": [
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
               "symbol": "currentRole",
               "domain": "staff"
             },
@@ -9082,6 +9181,10 @@
             {
               "symbol": "parseDate",
               "domain": "core"
+            },
+            {
+              "symbol": "shiftCashRecordedDate",
+              "domain": "payroll"
             }
           ]
         },
@@ -11439,18 +11542,48 @@
         },
         "hasRecordedCashSurrenderOn-437f4036f0a7": {
           "globals": [],
+          "crossDomain": []
+        },
+        "analyticsCashCents-shared-v1": {
+          "globals": [],
+          "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            }
+          ]
+        },
+        "collectRecordedCash-shared-v1": {
+          "globals": [
+            "Math",
+            "Number",
+            "Set",
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "derivedStage",
               "domain": "orders"
             },
             {
-              "symbol": "num",
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "numMaybe",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
               "domain": "core"
             },
             {
               "symbol": "shiftCashRecordedDate",
               "domain": "payroll"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             }
           ]
         },
@@ -11466,12 +11599,12 @@
               "domain": "ui"
             },
             {
-              "symbol": "esc",
-              "domain": "core"
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
-              "symbol": "hasRecordedCashSurrenderOn",
-              "domain": "finance"
+              "symbol": "esc",
+              "domain": "core"
             },
             {
               "symbol": "iso",
@@ -11522,6 +11655,10 @@
             "String"
           ],
           "crossDomain": [
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "canonicalKey",
               "domain": "orders"
@@ -11614,7 +11751,10 @@
           ]
         },
         "filterRows-260239d24127": {
-          "globals": [],
+          "globals": [
+            "Set",
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -11777,11 +11917,29 @@
           ]
         },
         "handleKpiDrill-57b4d54e0de8": {
-          "globals": [],
+          "globals": [
+            "Boolean"
+          ],
           "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "orderDate",
+              "domain": "orders"
+            },
             {
               "symbol": "renderOrders",
               "domain": "orders"
+            },
+            {
+              "symbol": "roleVisibleOrders",
+              "domain": "staff"
             },
             {
               "symbol": "state",
@@ -11790,6 +11948,10 @@
             {
               "symbol": "switchTab",
               "domain": "ui"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             }
           ]
         },
@@ -11818,6 +11980,10 @@
             {
               "symbol": "$",
               "domain": "ui"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "currentExpenses",
@@ -11886,9 +12052,19 @@
         "group-6b61418b25b1": {
           "globals": [
             "Map",
+            "Math",
+            "Set",
             "undefined"
           ],
           "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "canonicalDispatcherSelection",
               "domain": "staff"
@@ -11904,6 +12080,10 @@
             {
               "symbol": "clean",
               "domain": "core"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "norm",
@@ -12921,6 +13101,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "derivedStage",
               "domain": "orders"
             },
@@ -12982,10 +13166,6 @@
             },
             {
               "symbol": "state",
-              "domain": "core"
-            },
-            {
-              "symbol": "sum",
               "domain": "core"
             }
           ]
@@ -13135,6 +13315,10 @@
         "dayStats-752202cfd647": {
           "globals": [],
           "crossDomain": [
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "derivedStage",
               "domain": "orders"
@@ -13577,6 +13761,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
               "symbol": "fmtDate",
               "domain": "core"
             },
@@ -13608,7 +13796,9 @@
         },
         "renderDashboard-40a515c112f2": {
           "globals": [
-            "Map"
+            "Map",
+            "Math",
+            "Set"
           ],
           "crossDomain": [
             {
@@ -13620,8 +13810,16 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "bindBarsToFilter",
               "domain": "integrations"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "currentUser",
@@ -13705,6 +13903,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "bindBarsToFilter",
               "domain": "integrations"
             },
@@ -13755,10 +13957,6 @@
             {
               "symbol": "setCanonicalFilter",
               "domain": "orders"
-            },
-            {
-              "symbol": "sum",
-              "domain": "core"
             },
             {
               "symbol": "timeHour",
@@ -16377,6 +16575,10 @@
           ],
           "crossDomain": [
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
               "symbol": "currentRole",
               "domain": "staff"
             },
@@ -17115,7 +17317,9 @@
           ]
         },
         "orderDate-adaab4c6e88d": {
-          "globals": [],
+          "globals": [
+            "shiftCashRecordedDate"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -19322,7 +19526,24 @@
           ]
         },
         "hasRecordedCashSurrenderOn-437f4036f0a7": {
+          "globals": [],
+          "crossDomain": []
+        },
+        "analyticsCashCents-shared-v1": {
+          "globals": [],
+          "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            }
+          ]
+        },
+        "collectRecordedCash-shared-v1": {
           "globals": [
+            "Math",
+            "Number",
+            "Set",
+            "String",
             "shiftCashRecordedDate"
           ],
           "crossDomain": [
@@ -19331,7 +19552,19 @@
               "domain": "orders"
             },
             {
-              "symbol": "num",
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "numMaybe",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
               "domain": "core"
             }
           ]
@@ -19348,12 +19581,12 @@
               "domain": "ui"
             },
             {
-              "symbol": "esc",
-              "domain": "core"
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
-              "symbol": "hasRecordedCashSurrenderOn",
-              "domain": "finance"
+              "symbol": "esc",
+              "domain": "core"
             },
             {
               "symbol": "iso",
@@ -19404,6 +19637,10 @@
             "String"
           ],
           "crossDomain": [
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "canonicalKey",
               "domain": "orders"
@@ -19496,7 +19733,10 @@
           ]
         },
         "filterRows-260239d24127": {
-          "globals": [],
+          "globals": [
+            "Set",
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -19659,11 +19899,29 @@
           ]
         },
         "handleKpiDrill-57b4d54e0de8": {
-          "globals": [],
+          "globals": [
+            "Boolean"
+          ],
           "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "orderDate",
+              "domain": "orders"
+            },
             {
               "symbol": "renderOrders",
               "domain": "orders"
+            },
+            {
+              "symbol": "roleVisibleOrders",
+              "domain": "staff"
             },
             {
               "symbol": "state",
@@ -19672,6 +19930,10 @@
             {
               "symbol": "switchTab",
               "domain": "ui"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             }
           ]
         },
@@ -19700,6 +19962,10 @@
             {
               "symbol": "$",
               "domain": "ui"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "currentExpenses",
@@ -19768,9 +20034,19 @@
         "group-6b61418b25b1": {
           "globals": [
             "Map",
+            "Math",
+            "Set",
             "undefined"
           ],
           "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "canonicalDispatcherSelection",
               "domain": "staff"
@@ -19786,6 +20062,10 @@
             {
               "symbol": "clean",
               "domain": "core"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "norm",
@@ -20375,6 +20655,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "derivedStage",
               "domain": "orders"
             },
@@ -20436,10 +20720,6 @@
             },
             {
               "symbol": "state",
-              "domain": "core"
-            },
-            {
-              "symbol": "sum",
               "domain": "core"
             }
           ]
@@ -20589,6 +20869,10 @@
         "dayStats-752202cfd647": {
           "globals": [],
           "crossDomain": [
+            {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
             {
               "symbol": "derivedStage",
               "domain": "orders"
@@ -21031,6 +21315,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
               "symbol": "fmtDate",
               "domain": "core"
             },
@@ -21062,7 +21350,9 @@
         },
         "renderDashboard-40a515c112f2": {
           "globals": [
-            "Map"
+            "Map",
+            "Math",
+            "Set"
           ],
           "crossDomain": [
             {
@@ -21074,8 +21364,16 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "bindBarsToFilter",
               "domain": "integrations"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
             },
             {
               "symbol": "currentUser",
@@ -21159,6 +21457,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "analyticsCashCents",
+              "domain": "finance"
+            },
+            {
               "symbol": "bindBarsToFilter",
               "domain": "integrations"
             },
@@ -21209,10 +21511,6 @@
             {
               "symbol": "setCanonicalFilter",
               "domain": "orders"
-            },
-            {
-              "symbol": "sum",
-              "domain": "core"
             },
             {
               "symbol": "timeHour",
@@ -23746,6 +24044,10 @@
             "window"
           ],
           "crossDomain": [
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
             {
               "symbol": "currentRole",
               "domain": "staff"

@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+const financeSource=fs.readFileSync(new URL('../src/crm/finance/shared.js',import.meta.url),'utf8');
+const cashSource=['collectRecordedCash','analyticsCashCents'].map(name=>{const start=financeSource.indexOf('function '+name+'(');return financeSource.slice(start,financeSource.indexOf('/* CRM_END:',start))}).join('\n');
 for(const page of ['index','master','dispatcher-logistic']){
  const html=fs.readFileSync(new URL(`../hosted-snapshot/${page}.html`,import.meta.url),'utf8');
  const markup=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<!--[^]*?-->/g,'');
@@ -38,8 +40,8 @@ for(const page of ['index','master','dispatcher-logistic'])test(`${page}: perfor
  const staff=[{id:'artem',name:'Артём',login:'artem',role:'dispatcher_logistic',shift:'artem'},{id:'tematop',name:'Артем',login:'tematop',role:'dispatcher_logistic',shift:'artem'},{id:'s',name:'Сергей',login:'seregatop',role:'dispatcher_logistic',shift:'sergey'},{id:'other',name:'Другой сотрудник',login:'other',role:'dispatcher_logistic',shift:'artem'}];
  const rows=[{orderId:'A',dispatcher:'artem',_assignedBy:'artem'},{orderId:'B',dispatcher:'artem',_assignedBy:'tematop'}];
  const nodes={staffPerf:{innerHTML:''}},norm=v=>String(v||'').toLowerCase().replace(/ё/g,'е');
- const ctx={state:{settings:{staff}},norm,clean:v=>String(v||'').trim(),payrollShiftKey:r=>r.shift||({'артем':'artem','сергей':'sergey'}[norm(r.approvedForName)]||''),num:Number,$:s=>nodes[s.slice(1)]||null,$$:()=>[],filterRows:()=>rows,orderMatchesDispatcher:(r,p)=>r.dispatcher===p.shift,derivedStage:()=> 'В работе',isServiceMaster:()=>false,minutesBetween:()=>null,median:()=>0,sum:(rs,f)=>rs.reduce((a,r)=>a+f(r),0),orderPayrollShift:r=>r.dispatcher,shiftName:x=>x,esc:v=>String(v),pct:v=>String(v),money:v=>String(v),roleLabel:x=>x};
- vm.runInNewContext(helper+';'+render+';globalThis.groups=performanceStaffGroups(state.settings.staff);renderTeamPerformance()',ctx);
+ const ctx={today:()=>'2026-11-03',parseDate:v=>v?new Date(v):null,iso:d=>d?d.toISOString().slice(0,10):'',numMaybe:v=>v==null?null:Number(v),shiftCashRecordedDate:r=>r.closeDate||'',state:{settings:{staff}},norm,clean:v=>String(v||'').trim(),payrollShiftKey:r=>r.shift||({'артем':'artem','сергей':'sergey'}[norm(r.approvedForName)]||''),num:Number,$:s=>nodes[s.slice(1)]||null,$$:()=>[],filterRows:()=>rows,orderMatchesDispatcher:(r,p)=>r.dispatcher===p.shift,derivedStage:()=> 'В работе',isServiceMaster:()=>false,minutesBetween:()=>null,median:()=>0,sum:(rs,f)=>rs.reduce((a,r)=>a+f(r),0),orderPayrollShift:r=>r.dispatcher,shiftName:x=>x,esc:v=>String(v),pct:v=>String(v),money:v=>String(v),roleLabel:x=>x};
+ vm.runInNewContext(cashSource+';'+helper+';'+render+';globalThis.groups=performanceStaffGroups(state.settings.staff);renderTeamPerformance()',ctx);
  assert.equal(ctx.groups.length,3);assert.deepEqual(Array.from(ctx.groups[0]._memberIds),['artem','tematop']);
  const table=nodes.staffPerf.innerHTML;assert.equal((table.match(/data-staff-drill=/g)||[]).length,3);assert.ok(table.includes('artem · tematop'));assert.ok(table.includes('seregatop'));assert.match(table,/data-staff-drill="artem"[^]*?<td class="num">2<\/td><td class="num">2<\/td>/);
 });

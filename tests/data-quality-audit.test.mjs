@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+const financeSource=fs.readFileSync(new URL('../src/crm/finance/shared.js',import.meta.url),'utf8');
+const cashSource=['collectRecordedCash','analyticsCashCents'].map(name=>{const start=financeSource.indexOf('function '+name+'(');return financeSource.slice(start,financeSource.indexOf('/* CRM_END:',start))}).join('\n');
 
 for (const page of ['index.html','master.html','dispatcher-logistic.html']) {
   const html=fs.readFileSync(new URL('../hosted-snapshot/'+page,import.meta.url),'utf8');
@@ -37,11 +39,12 @@ for (const page of ['index.html','master.html','dispatcher-logistic.html']) {
   test(page+': long cash calendars include the newest date',()=>{
     const source=html.slice(html.indexOf('function renderDailyCash('),html.indexOf('\n',html.indexOf('function renderDailyCash(')));
     const elements={'#dailyCash':{innerHTML:''},'#dailyCashPeriod':{textContent:''},'#fromDate':{value:'2025-01-01'},'#toDate':{value:'2026-10-31'}};
-    const env=vm.createContext({$:id=>elements[id],orderDate:r=>new Date(r.date),parseDate:v=>v?new Date(v):null,sum:(a,f)=>a.reduce((s,x)=>s+f(x),0),num:Number,money:String,integer:String,fmtDate:String});
-    vm.runInContext(source,env);
-    env.renderDailyCash([{date:'2026-10-31',total:5000,companyShare:2500}]);
+    const env=vm.createContext({today:()=>'2026-11-03',iso:d=>d?d.toISOString().slice(0,10):'',numMaybe:v=>v==null?null:Number(v),derivedStage:()=>'Выполнен',shiftCashRecordedDate:()=>'2026-10-31',$:id=>elements[id],orderDate:r=>new Date(r.date),parseDate:v=>v?new Date(v):null,sum:(a,f)=>a.reduce((s,x)=>s+f(x),0),num:Number,money:String,integer:String,fmtDate:String});
+    vm.runInContext(cashSource+'\n'+source,env);
+    env.renderDailyCash([{orderId:'latest',callDate:'2026-10-31',date:'2026-10-31',total:5000,companyShare:2500}]);
     assert.match(elements['#dailyCash'].innerHTML,/2026-10-31/);
     assert.doesNotMatch(elements['#dailyCash'].innerHTML,/2025-01-01/);
     assert.match(elements['#dailyCashPeriod'].textContent,/Последние 366/);
+    assert.match(elements['#dailyCash'].innerHTML,/<b>2500<\/b>/);
   });
 }
