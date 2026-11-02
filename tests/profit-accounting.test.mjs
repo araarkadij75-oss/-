@@ -9,6 +9,37 @@ test('intake cohort and settlement cash are distinct periods; undated cash is no
 });
 import fs from 'node:fs';
 function fsBridge(){return fs.readFileSync(new URL('../hosted-snapshot/profit-bridge.js',import.meta.url),'utf8')}
+test('accrual profit ignores missing or invalid payments but still exposes order-data errors',()=>{
+ const state={orders:[{orderId:'o',callDate:'2026-10-01',closeDate:'2026-10-02',companyShare:25000}],shiftReports:[],settings:{}};
+ let warningCodes=[];
+ const window={MasterAICloud:{connected:true},addEventListener(){},ProfitAccounting:globalThis.ProfitAccounting};new Function('window',fsBridge())(window);
+ window.installMasterAIProfitBridge({state,currentRole:()=> 'owner',ownerPreviewActive:()=>false,parseDate:v=>new Date(v+'T00:00:00Z'),iso:d=>d.toISOString().slice(0,10),today:()=> '2026-11-03',uniqueShiftReports:x=>x,payrollAccountingReport:()=>true,payrollShiftKey:()=> 'sergey',payrollIntakeSnapshot:()=>({days:[{date:'2026-10-01',person:'sergey',entitlementCents:250000}],events:[{date:'2026-10-01',person:'sergey',amountCents:250000}],warnings:warningCodes.map(code=>({code})),incomplete:warningCodes.length>0}),shiftCashRecordedDate:r=>r.closeDate,derivedStage:()=> 'Выполнен',numMaybe:Number,orderPayrollShift:()=> 'sergey'});
+ const b=window.MasterAIProfitBridge;b.setReports([]);
+ for(const basis of ['intake','cash']){
+  warningCodes=[];const expected=b.calculate('2026-10-01','2026-10-31',[],basis);
+  for(const code of ['payments_not_loaded','invalid_payment','conflicting_payment_id','payment_overflow']){warningCodes=[code];assert.deepEqual(b.calculate('2026-10-01','2026-10-31',[],basis),expected,code+' must not alter accrual profit');}
+  warningCodes=['payments_not_loaded','invalid_order'];const invalid=b.calculate('2026-10-01','2026-10-31',[],basis);assert.equal(invalid.profit,22500);assert.equal(invalid.salaryEstimated,2500);assert.match(invalid.warnings.join(' '),/неизвестным ответственным/);
+ }
+});
+test('profit payroll labels distinguish recalculated completed days from confirmed payments',()=>{
+ const ui=fs.readFileSync(new URL('../hosted-snapshot/profit-ui.js',import.meta.url),'utf8');
+ assert.match(ui,/Расчёт завершённых дней/);assert.match(ui,/не подтверждение отчёта и не факт выплаты/);assert.match(ui,/Выплаченные зарплаты повторно из прибыли не вычитаются/);
+ assert.doesNotMatch(ui,/Подтверждённые смены и предварительные начисления/);
+ const legacy=fs.readFileSync(new URL('../src/crm/ui/screens/owner-dispatcher.html',import.meta.url),'utf8');assert.doesNotMatch(legacy,/Автоматические выплаты по закрытым сменам|Выплаченные ID исключаются/);assert.match(legacy,/Подтверждённые оплаты вычитаются один раз/);
+});
+test('profit cohort excludes future and contradictory receipts like payroll and ignores unrelated provisional days',()=>{
+ const state={orders:[
+  {orderId:'valid-late',callDate:'2026-10-01',closeDate:'2026-11-01',companyShare:25000},
+  {orderId:'future',callDate:'2026-10-01',closeDate:'2026-11-04',companyShare:50000},
+  {orderId:'backwards',callDate:'2026-10-10',closeDate:'2026-10-01',companyShare:40000},
+  {orderId:'invalid',callDate:'2026-10-01',closeDate:'invalid',companyShare:30000}
+ ],shiftReports:[],settings:{}};
+ const window={MasterAICloud:{connected:true},addEventListener(){},ProfitAccounting:globalThis.ProfitAccounting};new Function('window',fsBridge())(window);
+ window.installMasterAIProfitBridge({state,currentRole:()=> 'owner',ownerPreviewActive:()=>false,parseDate:v=>/^\d{4}-\d{2}-\d{2}$/.test(v||'')?new Date(v+'T00:00:00Z'):null,iso:d=>d?d.toISOString().slice(0,10):'',today:()=> '2026-11-03',uniqueShiftReports:x=>x,payrollAccountingReport:()=>true,payrollShiftKey:()=> 'sergey',payrollIntakeSnapshot:()=>({days:[{date:'2026-10-01',person:'sergey',entitlementCents:250000},{date:'2026-11-03',person:'artem',entitlementCents:200000}],events:[],incomplete:false}),payrollSettlementLedger(){throw Error('legacy ledger must not be evaluated')},shiftCashRecordedDate:r=>r.closeDate,derivedStage:()=> 'Выполнен',numMaybe:Number,orderPayrollShift:()=> 'sergey'});
+ const bridge=window.MasterAIProfitBridge;bridge.setReports([]);const r=bridge.calculate('2026-10-01','2026-10-31',[],'intake');
+ assert.equal(r.cash,25000);assert.equal(r.salary,2500);assert.equal(r.profit,22500);assert.equal(r.orders,1);
+ assert.match(r.warnings.join(' '),/противоречивой датой сдачи исключено: 2/);assert.match(r.warnings.join(' '),/Будущая сдача.*1/);assert.doesNotMatch(r.warnings.join(' '),/Текущий день/);
+});
 test('net cash deducts salaries and expenses once, not master pay again',()=>{const r=calc({from:'2026-10-01',to:'2026-10-31',orders:[{id:'1',date:'2026-10-02',closed:true,cash:7000,master:3000},{id:'2',date:'2026-10-02',closed:false,cash:9000}],salaries:[{date:'2026-10-02',person:'s',amount:2000,confirmed:true}],expenses:[{date:'2026-10-02',source:'avito',amountCents:100000,kind:'expense'}]});assert.equal(r.profit,4000);assert.equal(r.cashCount,1)});
 test('period, refunds, voids, provisional salaries and kopeks reconcile',()=>{const r=calc({from:'2026-10-01',to:'2026-10-31',orders:[{id:'1',date:'2026-10-02',closed:true,cash:10000.01}],salaries:[{date:'2026-10-02',person:'s',amount:2500.10,confirmed:false}],expenses:[{date:'2026-10-02',source:'avito',amountCents:100099,kind:'expense'},{date:'2026-10-02',source:'avito',amountCents:20000,kind:'refund'},{date:'2026-09-02',amountCents:900000,kind:'expense'},{date:'2026-10-02',amountCents:900000,active:false}]});assert.equal(r.ads,800.99);assert.equal(r.profit,6698.92);assert.equal(r.days[0].profit,r.profit);assert.equal(r.salaryConfirmed,0);assert.equal(r.salaryEstimated,2500.10)});
 test('duplicate orders never inflate cash and missing date never joins a period',()=>{const r=calc({from:'2026-10-01',to:'2026-10-31',orders:[{id:'1',date:'2026-10-02',closed:true,cash:100},{id:'1',date:'2026-10-02',closed:true,cash:100},{id:'3',date:'',closed:true,cash:300}]});assert.equal(r.cash,100);assert.ok(r.issues.length)});
@@ -21,6 +52,6 @@ test('staff totals use accepted period days and separate confirmed and estimated
 test('monthly expenses require whole period and do not invent daily distribution',()=>{const e={id:'month',date:'2026-10-31',periodFrom:'2026-10-01',periodTo:'2026-10-31',source:'avito',amountCents:1000050};const full=calc({from:'2026-10-01',to:'2026-10-31',expenses:[e]});assert.equal(full.ads,10000.50);assert.equal(full.days[0].date,'2026-10-31');const partial=calc({from:'2026-10-15',to:'2026-10-31',expenses:[e]});assert.equal(partial.ads,0);assert.match(partial.warnings[0],/распределение по дням неизвестно/);assert.equal(calc({from:'2026-11-01',to:'2026-11-30',expenses:[e]}).warnings.length,0);assert.equal(calc({from:'2026-10-31',to:'2026-10-31',expenses:[{...e,periodFrom:undefined,periodTo:undefined}]}).ads,10000.50)});
 
 
-test('each role installs profit bridge with module-local dependencies rather than classic global access',async()=>{const fs=await import('node:fs');for(const name of ['index.html','dispatcher-logistic.html','master.html']){const html=fs.readFileSync(new URL('../hosted-snapshot/'+name,import.meta.url),'utf8');const modules=[...html.matchAll(/<script\b[^>]*type=["']module["'][^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);const main=modules.find(x=>x.includes('installMasterAIProfitBridge'));assert.ok(main,name+': installer must be called in module scope');assert.match(main,/loadOptionalFeature\('Финансы',\(\)=>import\('\.\/profit-bridge\.js\?v=20261102-intake1'\)\)/);assert.match(main,/window\.installMasterAIProfitBridge\(\{/);assert.match(main,/currentRole/);assert.match(main,/payrollSettlementLedger/);assert.doesNotMatch(html,/<script\b[^>]*\bsrc=["'][^"']*profit-bridge\.js[^"']*["'][^>]*>/);}});
+test('each role installs profit bridge with module-local dependencies rather than classic global access',async()=>{const fs=await import('node:fs');for(const name of ['index.html','dispatcher-logistic.html','master.html']){const html=fs.readFileSync(new URL('../hosted-snapshot/'+name,import.meta.url),'utf8');const modules=[...html.matchAll(/<script\b[^>]*type=["']module["'][^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);const main=modules.find(x=>x.includes('installMasterAIProfitBridge'));assert.ok(main,name+': installer must be called in module scope');assert.match(main,/loadOptionalFeature\('Финансы',\(\)=>import\('\.\/profit-bridge\.js\?v=20261103-audit1'\)\)/);assert.match(main,/window\.installMasterAIProfitBridge\(\{/);assert.match(main,/currentRole/);assert.match(main,/payrollSettlementLedger/);assert.doesNotMatch(html,/<script\b[^>]*\bsrc=["'][^"']*profit-bridge\.js[^"']*["'][^>]*>/);}});
 
 test('linked duplicate cash is excluded without clawing back confirmed salary',()=>{const r=calc({from:'2026-10-01',to:'2026-10-31',orders:[{id:'a',date:'2026-10-11',closed:true,cash:2400},{id:'b',date:'2026-10-11',closed:true,cash:2400,_duplicateOf:'a'}],salaries:[{person:'sergey',date:'2026-10-11',amount:2480,confirmed:true}]});assert.equal(r.cash,2400);assert.equal(r.salaryConfirmed,2480);assert.equal(r.orders,1)});

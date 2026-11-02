@@ -4533,6 +4533,7 @@
         "shiftSnapshot-8356621c5670": {
           "globals": [
             "Boolean",
+            "Error",
             "JSON",
             "Set",
             "String"
@@ -5686,7 +5687,18 @@
           ]
         },
         "renderPendingPayroll-f2027e1b0761": {
-          "globals": [],
+          "globals": [
+            "Array",
+            "Error",
+            "FormData",
+            "JSON",
+            "Math",
+            "Number",
+            "String",
+            "crypto",
+            "fetch",
+            "window"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -5706,6 +5718,10 @@
             },
             {
               "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "state",
               "domain": "core"
             },
             {
@@ -8424,7 +8440,6 @@
         },
         "payrollIntakeSnapshot-v2": {
           "globals": [
-            "Date",
             "Error",
             "Math",
             "String",
@@ -12613,6 +12628,7 @@
         "shiftSnapshot-8356621c5670": {
           "globals": [
             "Boolean",
+            "Error",
             "JSON",
             "Set",
             "String"
@@ -12815,11 +12831,17 @@
         },
         "closeCurrentShift-1be40ec4dc2f": {
           "globals": [
+            "Set",
+            "confirm",
             "window"
           ],
           "crossDomain": [
             {
               "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentUser",
               "domain": "staff"
             },
             {
@@ -12837,6 +12859,10 @@
             {
               "symbol": "toast",
               "domain": "ui"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             }
           ]
         },
@@ -16483,7 +16509,6 @@
         },
         "payrollIntakeSnapshot-v2": {
           "globals": [
-            "Date",
             "Error",
             "Math",
             "String",

@@ -149,6 +149,60 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
     }
 }
 
+function fin_payment_normalize(array $body): array {
+    if (($body['legacyExcluded'] ?? null) !== true) throw new InvalidArgumentException('legacy_exclusion_required');
+    foreach (['reportId','shiftReportId','legacyReportId','reportIds','paidOrderIds','orderIds'] as $key) if (array_key_exists($key, $body)) throw new InvalidArgumentException('legacy_payment_binding_forbidden');
+    $date = fin_text($body['date'] ?? '', 10);
+    $today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Moscow')))->format('Y-m-d');
+    if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $m) || !checkdate((int)$m[2], (int)$m[3], (int)$m[1]) || $date < '2026-11-02' || $date > $today) throw new InvalidArgumentException('invalid_payment_date');
+    $amount = $body['amountCents'] ?? null;
+    if (!is_int($amount) || $amount <= 0 || $amount > 100000000000) throw new InvalidArgumentException('invalid_amount_cents');
+    $person = $body['person'] ?? null;
+    if (!in_array($person, ['sergey','artem'], true)) throw new InvalidArgumentException('invalid_payment_person');
+    $key = fin_text($body['idempotencyKey'] ?? '', 128);
+    if (!preg_match('/^[A-Za-z0-9_-]{16,128}$/', $key)) throw new InvalidArgumentException('invalid_idempotency_key');
+    $reference = fin_text($body['reference'] ?? '', 200);
+    if ($reference === '') throw new InvalidArgumentException('payment_reference_required');
+    // Reference is an immutable receipt/transfer identifier, not a legacy shift ID.
+    return ['date'=>$date,'person'=>$person,'amountCents'=>$amount,'reference'=>$reference,'note'=>fin_text($body['note'] ?? '',4000),'idempotencyKey'=>$key,'legacyExcluded'=>true];
+}
+function fin_payment_plan(array $existing, array $actor, array $body, string $now): array {
+    fin_owner($actor);
+    $op=$body['op']??'';$map=[];
+    foreach($existing as $row)$map[$row['id']]=$row;
+    if($op==='payroll_payments_add'){
+        $row=fin_payment_normalize($body);$id=hash('sha256','payroll-payment:'.$row['idempotencyKey']);
+        if(isset($map[$id])){
+            $prior=$map[$id];foreach($row as $key=>$value)if(($prior[$key]??null)!==$value)throw new UnexpectedValueException('payment_conflict');
+            return ['payment'=>$prior,'changed'=>false,'duplicate'=>true];
+        }
+        // Case folding prevents a retry with a new request ID from reusing the same receipt.
+        $reference=function(string $value):string{return function_exists('mb_strtolower')?mb_strtolower($value,'UTF-8'):strtolower($value);};
+        foreach($map as $prior)if(($prior['person']??'')===$row['person']&&$reference((string)($prior['reference']??''))===$reference($row['reference']))throw new UnexpectedValueException('payment_reference_exists');
+        if(count($map)>=20000)throw new LengthException('payment_capacity');
+        return ['payment'=>$row+['id'=>$id,'active'=>true,'createdAt'=>$now,'updatedAt'=>$now,'createdBy'=>$actor['uid'],'updatedBy'=>$actor['uid']],'changed'=>true,'duplicate'=>false];
+    }
+    if($op!=='payroll_payments_void')throw new InvalidArgumentException('invalid_operation');
+    $id=$body['id']??null;$reason=fin_text($body['reason']??'',1000);
+    if(!is_string($id)||!preg_match('/^[a-f0-9]{64}$/',$id)||$reason==='')throw new InvalidArgumentException('invalid_payment_void');
+    if(!isset($map[$id]))throw new OutOfBoundsException('payment_not_found');
+    $payment=$map[$id];if(($payment['active']??true)===false)return ['payment'=>$payment,'changed'=>false,'duplicate'=>true];
+    $payment['active']=false;$payment['voidReason']=$reason;$payment['voidedAt']=$now;$payment['voidedBy']=$actor['uid'];$payment['updatedAt']=$now;$payment['updatedBy']=$actor['uid'];
+    return ['payment'=>$payment,'changed'=>true,'duplicate'=>false];
+}
+function fin_payments_list(PDO $pdo,array $actor):array{
+    fin_owner($actor);$q=$pdo->prepare('SELECT document_id,data_json FROM crm_documents WHERE workspace_id=? AND collection_path=? ORDER BY document_id LIMIT 20001');
+    $q->execute([tg_workspace(),'workspaces/'.tg_workspace().'/payrollPayments']);$rows=$q->fetchAll();if(count($rows)>20000)throw new LengthException('payment_capacity');$result=[];
+    foreach($rows as $row){$data=json_decode((string)$row['data_json'],true);if(!is_array($data))throw new RuntimeException('invalid_stored_payment');$data['id']=(string)$row['document_id'];$result[]=$data;}return $result;
+}
+function fin_payments_mutate(PDO $pdo,array $actor,array $body):array{
+    fin_owner($actor);$lockName='payroll:'.substr(hash('sha256',tg_workspace()),0,48);$lock=$pdo->prepare('SELECT GET_LOCK(?,10)');$lock->execute([$lockName]);if((int)$lock->fetchColumn()!==1)throw new RuntimeException('payroll_busy');
+    try{$pdo->beginTransaction();$existing=fin_payments_list($pdo,$actor);$plan=fin_payment_plan($existing,$actor,$body,gmdate('c'));
+        if($plan['changed'])tg_write_many($pdo,[tg_path('payrollPayments',$plan['payment']['id'])=>$plan['payment']],(string)$actor['uid'],'owner',$body['op']==='payroll_payments_add'?'payroll_payment_recorded':'payroll_payment_voided');
+        $pdo->commit();return ['ok'=>true,'payment'=>$plan['payment'],'duplicate'=>$plan['duplicate'],'payments'=>fin_payments_list($pdo,$actor)];
+    }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}finally{$unlock=$pdo->prepare('SELECT RELEASE_LOCK(?)');$unlock->execute([$lockName]);}
+}
+
 function fin_reconciliation_patch(array $patch): array {
     $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn','_autoFinance'];
     $id=fin_text($patch['orderId']??'',128);
@@ -240,12 +294,14 @@ try {
     $pdo = tg_db();
     $actor = tg_jwt_actor($pdo);
     fin_owner($actor);
+    if (($body['op'] ?? '') === 'payroll_payments_list') tg_reply(200,['ok'=>true,'payments'=>fin_payments_list($pdo,$actor)]);
+    if (in_array($body['op'] ?? '', ['payroll_payments_add','payroll_payments_void'], true)) tg_reply(200,fin_payments_mutate($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'reconcile') tg_reply(200,fin_reconcile($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'list') tg_reply(200, ['ok' => true, 'expenses' => fin_list($pdo, $actor)] + fin_reports($pdo, $actor));
     tg_reply(200, fin_mutate($pdo, $actor, $body));
 } catch (InvalidArgumentException $e) { tg_reply(400, ['ok' => false, 'error' => $e->getMessage()]);
 } catch (DomainException $e) { tg_reply(403, ['ok' => false, 'error' => $e->getMessage()]);
-} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => $e->getMessage() === 'expense_overlap' ? 'expense_overlap' : 'expense_conflict']);
-} catch (OutOfBoundsException $e) { tg_reply(404, ['ok' => false, 'error' => 'expense_not_found']);
+} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => in_array($e->getMessage(),['expense_overlap','payment_conflict','payment_reference_exists'],true) ? $e->getMessage() : 'expense_conflict']);
+} catch (OutOfBoundsException $e) { tg_reply(404, ['ok' => false, 'error' => $e->getMessage()==='payment_not_found'?'payment_not_found':'expense_not_found']);
 } catch (LengthException $e) { tg_reply(413, ['ok' => false, 'error' => 'expense_capacity']);
 } catch (Throwable $e) { tg_reply(503, ['ok' => false, 'error' => 'finance_service_unavailable']); }
