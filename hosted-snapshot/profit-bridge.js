@@ -26,9 +26,9 @@ window.installMasterAIProfitBridge = (dependencies) => {
    const accruals=basis==='intake'?payroll.days.map(d=>({date:d.date,person:d.person,amountCents:d.entitlementCents})):payroll.events;
    for(const entry of accruals){const key=entry.person+'|'+entry.date;salaryDays.set(key,{date:entry.date,person:entry.person,amountCents:(salaryDays.get(key)?.amountCents||0)+entry.amountCents})}
    for(const entry of salaryDays.values())salaries.push({date:entry.date,person:entry.person,amount:entry.amountCents/100,confirmed:!payroll.incomplete&&entry.date<today()});
-   if(payroll.incomplete)warnings.push('Зарплата: есть заказы с неподтверждёнными датами или суммами; они не включены.');
+   if(payroll.warnings?.some(w=>w.code!=='missingcashdate'))warnings.push('Зарплата: заказы с неизвестным ответственным или некорректными данными требуют отдельной сверки.');
    for(const r of reports){if(r.date>=from&&r.date<=limit&&!['sergey','artem'].includes(payrollShiftKey(r)))warnings.push('Отчёт без распознанной смены '+r.date+' — зарплата требует сверки.')}
-   if(undated)warnings.push('Заявок этого периода с кассой, но без даты сдачи: '+undated+'. Касса заявок учитывается по дате звонка; распределение зарплаты по сменам требует даты сдачи.');if(unknown)warnings.push('Заказов с кассой без распознанного диспетчера: '+unknown+'. Зарплата по ним требует сверки.');if(invalid)warnings.push('Заказов без суммы кассы: '+invalid+'.');
+   if(undated)warnings.push('Заявок этого периода с кассой, но без даты сдачи: '+undated+'. Подтверждённая касса включена в зарплату исходного дня приёма; точная дата возникновения доплаты неизвестна.');if(unknown)warnings.push('Заказов с кассой без распознанного диспетчера: '+unknown+'. Зарплата по ним требует сверки.');if(invalid)warnings.push('Заказов без суммы кассы: '+invalid+'.');
    if(salaries.some(s=>!s.confirmed))warnings.push('Текущий день и строки с замечаниями требуют сверки. Зарплата считается по дню приёма, выплаты повторно не вычитаются из прибыли.');
    return {...window.ProfitAccounting.calculate({from,to:limit,orders,salaries,expenses,warnings}),basis};
   }
