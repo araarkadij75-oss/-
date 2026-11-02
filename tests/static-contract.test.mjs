@@ -949,3 +949,5 @@ test('credential controls expose only new PIN to owner and deny staff mutations 
  const denied=new Function('currentUser','ownerRolePreview','$',get('toggleNewStaffPin')+';return toggleNewStaffPin')(()=>({role:'master'}),()=>false,()=>{throw new Error('must not read PIN fields')});denied();
  }
 });
+
+test('deployment and release builder use the same ordered asset list',()=>{const python=read('scripts/deploy-regru-ftps.py'),assets=python.match(/NEW_ASSETS = \(([^\n]+)\)/)[1],tail=python.match(/ALLOWLIST = NEW_ASSETS \+ \(([^\n]+)\)/)[1],names=text=>[...text.matchAll(/["']([^"']+)["']/g)].map(x=>x[1]),builder=read('scripts/prepare-regru-release.mjs').match(/productionReplaceAllowlist: \[([^\]]+)\]/)[1];assert.deepEqual([...names(assets),...names(tail)],names(builder));assert.ok(names(assets).includes('payroll-intake-accounting.js'));});

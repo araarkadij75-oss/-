@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-NEW_ASSETS = ("avito-profit.js", "profit-accounting.js", "profit-bridge.js", "profit-ui.js", "visual-refinement.css", "quality-monitor.js", "crm-api/quality.php", "crm-api/finance.php")
+NEW_ASSETS = ("payroll-intake-accounting.js", "avito-profit.js", "profit-accounting.js", "profit-bridge.js", "profit-ui.js", "visual-refinement.css", "quality-monitor.js", "crm-api/quality.php", "crm-api/finance.php")
 ALLOWLIST = NEW_ASSETS + ("crm-api/telegram.php", "telegram-ui.js", "index.html", "dispatcher-logistic.html", "master.html", "sw.js")
 TARGET_PATH = "/var/www/u3680049/data/www/crm.remontpkspb.ru/candidate"
 
@@ -355,3 +355,4 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"::error::{exc}", file=sys.stderr)
         raise
+
