@@ -4594,7 +4594,9 @@
           ]
         },
         "shiftReportText-018ca82c90ef": {
-          "globals": [],
+          "globals": [
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "currentUser",
@@ -4602,10 +4604,6 @@
             },
             {
               "symbol": "money",
-              "domain": "core"
-            },
-            {
-              "symbol": "num",
               "domain": "core"
             },
             {
@@ -12689,7 +12687,9 @@
           ]
         },
         "shiftReportText-5df0194eaeef": {
-          "globals": [],
+          "globals": [
+            "String"
+          ],
           "crossDomain": [
             {
               "symbol": "currentUser",
@@ -12697,10 +12697,6 @@
             },
             {
               "symbol": "money",
-              "domain": "core"
-            },
-            {
-              "symbol": "num",
               "domain": "core"
             },
             {

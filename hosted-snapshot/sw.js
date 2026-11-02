@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.88-payment-audit-v1';
+const CACHE='eliteservice-18.17.89-report-clarity-v1';
 const SHELL=[
   './',
   './index.html',
