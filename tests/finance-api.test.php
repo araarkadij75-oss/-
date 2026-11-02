@@ -25,6 +25,25 @@ fin_check(str_contains($source,'GET_LOCK(?,10)') && str_contains($source,'$pdo->
 fin_check(str_contains($source,"'reportsTruncated' => \$truncated"),'Incomplete report read flagged');
 echo "finance API validation and authorization contracts passed\n";
 
+$payment=['op'=>'payroll_payments_add','idempotencyKey'=>'payment-request-000001','person'=>'sergey','date'=>'2026-11-02','amountCents'=>123450,'reference'=>'BANK-00001','note'=>'Actual new payment','legacyExcluded'=>true];
+$owner=['role'=>'owner','uid'=>'owner-test'];$stamp='2026-11-03T10:00:00Z';
+$plan=fin_payment_plan([],$owner,$payment,$stamp);$record=$plan['payment'];
+fin_check($plan['changed'] && $record['active'] && $record['amountCents']===123450 && $record['createdBy']==='owner-test','Explicit new payment recorded');
+$retry=fin_payment_plan([$record],$owner,$payment,$stamp);fin_check(!$retry['changed'] && $retry['duplicate'],'Same request retry is idempotent');
+try{fin_payment_plan([$record],$owner,array_replace($payment,['amountCents'=>123451]),$stamp);throw new RuntimeException('Changed retry accepted');}catch(UnexpectedValueException $e){fin_check($e->getMessage()==='payment_conflict','Changed retry conflict');}
+try{fin_payment_plan([$record],$owner,array_replace($payment,['idempotencyKey'=>'payment-request-000002','reference'=>'bank-00001']),$stamp);throw new RuntimeException('Same receipt doubled');}catch(UnexpectedValueException $e){fin_check($e->getMessage()==='payment_reference_exists','Semantic duplicate rejected');}
+$void=fin_payment_plan([$record],$owner,['op'=>'payroll_payments_void','id'=>$record['id'],'reason'=>'Receipt cancelled'],$stamp);
+fin_check($void['changed'] && !$void['payment']['active'] && $void['payment']['voidedBy']==='owner-test' && $void['payment']['amountCents']===123450,'Void preserves amount and audit');
+$retryVoid=fin_payment_plan([$void['payment']],$owner,$payment,$stamp);fin_check(!$retryVoid['changed']&&!$retryVoid['payment']['active'],'Add retry never reactivates void');
+$voidTwice=fin_payment_plan([$void['payment']],$owner,['op'=>'payroll_payments_void','id'=>$record['id'],'reason'=>'Retry'],$stamp);fin_check(!$voidTwice['changed']&&$voidTwice['payment']['voidReason']==='Receipt cancelled','Void retry preserves first audit');
+foreach(['master','dispatcher_logistic','logistic',''] as $role)fin_reject(fn()=>fin_payment_plan([],['role'=>$role,'uid'=>'other'],$payment,$stamp),'Nonowner payment accepted');
+foreach([['date'=>'2026-11-01'],['date'=>'2100-01-01'],['date'=>'2026-02-30'],['person'=>'unknown'],['amountCents'=>0],['amountCents'=>-1],['amountCents'=>1.5],['amountCents'=>'100'],['reference'=>''],['idempotencyKey'=>'short'],['legacyExcluded'=>false],['reportId'=>'legacy-paid'],['paidOrderIds'=>[]]] as $bad)fin_reject(fn()=>fin_payment_normalize(array_replace($payment,$bad)),'Invalid payment accepted');
+fin_reject(fn()=>fin_payment_plan([$record],$owner,['op'=>'payroll_payments_void','id'=>$record['id'],'reason'=>''],$stamp),'Unexplained void accepted');
+fin_check(str_contains($source,"'payroll_payment_recorded'")&&str_contains($source,"'payroll_payment_voided'"),'Payment mutations audited');
+fin_check(str_contains($source,"'payroll:'.substr(hash('sha256',tg_workspace())")&&str_contains($source,'$existing=fin_payments_list($pdo,$actor);$plan=fin_payment_plan('),'Payment idempotency checked under workspace lock and transaction');
+fin_check(str_contains($source,"'payroll_payments_list'")&&str_contains($source,"'payrollPayments'"),'Dedicated collection and endpoint');
+echo "payroll payment API behavior passed\n";
+
 $monthly=$row;$monthly['periodFrom']='2026-10-01';$monthly['periodTo']='2026-10-31';
 fin_check(fin_normalize($monthly)['periodFrom']==='2026-10-01','Monthly period accepted');
 fin_check(!array_key_exists('periodFrom',fin_normalize($row)),'Legacy rows remain unchanged');

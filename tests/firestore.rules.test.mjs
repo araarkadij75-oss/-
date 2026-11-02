@@ -29,6 +29,16 @@ let env;
 const dbFor = uid => env.authenticatedContext(uid).firestore();
 const anonDb = () => env.unauthenticatedContext().firestore();
 
+test('payroll payments are server-only even for owner and cannot bypass finance audit',async()=>{
+ for(const uid of ['owner-uid','ops-uid','dispatch-uid','logistic-uid','master-uid','inactive-uid']){
+  const db=dbFor(uid),ref=doc(db,'workspaces',ws,'payrollPayments','payment');
+  await assertFails(getDoc(ref));await assertFails(getDocs(collection(db,'workspaces',ws,'payrollPayments')));
+  await assertFails(setDoc(ref,{person:'sergey',amountCents:100,date:'2026-11-02',active:true}));
+  await assertFails(updateDoc(ref,{active:false}));await assertFails(deleteDoc(ref));
+ }
+ await assertFails(getDoc(doc(anonDb(),'workspaces',ws,'payrollPayments','payment')));
+});
+
 before(async () => {
   env = await initializeTestEnvironment({
     projectId,

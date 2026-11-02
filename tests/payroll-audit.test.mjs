@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 const html=fs.readFileSync(new URL('../hosted-snapshot/index.html',import.meta.url),'utf8');
-const line=name=>html.slice(html.indexOf('function '+name+'(')).split('\n')[0];
+const snapshotSource=fs.readFileSync(new URL('../src/crm/payroll/owner-dispatcher.js',import.meta.url),'utf8');
+const line=name=>name==='shiftSnapshot'?snapshotSource.slice(snapshotSource.indexOf('function shiftSnapshot(')).split('/* CRM_END:')[0]:html.slice(html.indexOf('function '+name+'(')).split('\n')[0];
 const num=x=>Number(x)||0;
 const iso=d=>d?d.toISOString().slice(0,10):'';
 const parseDate=x=>/^\d{4}-\d\d-\d\d$/.test(x||'')?new Date(x+'T12:00:00Z'):null;
@@ -154,3 +155,41 @@ test('manual form preview shows stored sums without invented percentages or revi
 test('logistics save preserves existing manual amounts but calculates new automatic orders',async()=>{for(const role of ['index','dispatcher-logistic']){const source=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8'),start=source.indexOf('async function saveOrder('),end=source.indexOf('r.direction=normalizeKnown',start),body=source.slice(start,end)+'return r;}';for(const existing of [true,false]){const record={_id:existing?'old':'new',_autoFinance:false,total:'8000',parts:'0',cleanCheck:'8000',masterAmount:'4000',companyShare:'4000',_status:'В работе'};let calculations=0;const save=new Function('can','toast','currentRole','formRecord','isMeaningful','state','numMaybe','clean','calcAuto',body+';return saveOrder')(()=>true,()=>{},()=> 'dispatcher_logistic',()=>({...record}),()=>true,{orders:existing?[{_id:'old',_autoFinance:false}]:[]},Number,String,()=>{calculations++;return{clean:8000,master:4400,company:3600}});const result=await save();assert.equal(result._autoFinance,!existing);assert.equal(result.masterAmount,existing?'4000':'4400');assert.equal(result.companyShare,existing?'4000':'3600');assert.equal(calculations,existing?0:1)}}});
 
 test('dashboard money flow labels its unchanged subtotal before payroll on every role',()=>{for(const role of ['index','dispatcher-logistic','master']){const source=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');assert.ok(source.includes('Касса и расходы до вычета зарплат за выбранный период'));const start=source.indexOf("$('#moneyFlow').innerHTML=barsHTML("),end=source.indexOf(');',start);const expression=source.slice(start+"$('#moneyFlow').innerHTML=barsHTML(".length,end);const rows=new Function('k','return '+expression)({total:100,parts:10,cleanS:90,masterS:40,share:50,ext:5,profit:45});assert.equal(rows.at(-1).key,'Остаток до зарплат');assert.equal(rows.at(-1).value,45);assert.ok(!source.includes('От оборота до чистой прибыли за выбранный период'));}});
+
+test('intake report validates its own intake-date allocation and excludes duplicate cash',()=>{
+ const a={...order('a','2026-10-23',25000),callDate:'2026-10-19',visitDate:'2026-10-22'};
+ const m=model([a,{...a},{...a,orderId:'copy',_duplicateOf:'a'}]),snap=snapshotModel(m),profile={id:'sergey',shift:'sergey'};
+ const report=snap('2026-10-19',profile);assert.equal(report.cash,25000);assert.equal(report.shiftCash,25000);assert.equal(report.deferredCash,0);assert.equal(report.salary,2500);assert.deepEqual(report.paidOrderIds,['a']);assert.match(report.dataHash,/^intake-v2:/);
+ const before=JSON.stringify(report);m.state.shiftReports.push({...report,ownerConfirmed:true,subjectMemberId:'sergey'});
+ const verified=snap('2026-10-19',profile,new Set(),report);assert.equal(verified.dataHash,report.dataHash);assert.equal(verified.salary,report.salary);assert.equal(JSON.stringify(report),before);
+ a.companyShare=30000;assert.notEqual(snap('2026-10-19',profile,new Set(),report).dataHash,report.dataHash);
+});
+
+test('dispatcher weekly summary retains immutable owner-confirmed salaries despite later order edits',()=>{
+ const src=fs.readFileSync(new URL('../src/crm/payroll/dispatcher.js',import.meta.url),'utf8'),body=src.slice(src.indexOf('function weeklySnapshot(')).split('/* CRM_END:')[0];
+ const deps={state:{},weekRange:()=>({start:'2026-10-19',end:'2026-10-25'}),uniqueShiftReports:r=>r,shiftIntegrity:()=>false,sum:(r,f)=>r.reduce((n,x)=>n+f(x),0),num,pinHash:x=>x,payrollAccountedIds:r=>r.paidOrderIds||[]};
+ const run=new Function(...Object.keys(deps),body+';return weeklySnapshot')(...Object.values(deps));
+ const paid={id:'saved',date:'2026-10-19',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',salary:2500,cash:25000,paidOrderIds:['a']},draft={id:'draft',date:'2026-10-20',shift:'sergey',salary:9000};const before=JSON.stringify(paid);
+ assert.equal(run('',[paid,draft]).salary,2500);assert.equal(run('',[paid,draft]).closedShifts,1);assert.equal(JSON.stringify(paid),before);
+});
+
+test('owner and dispatcher recognize explicit source surrender date before audit timestamps',()=>{for(const role of ['owner','dispatcher']){const source=fs.readFileSync(new URL('../src/crm/payroll/'+role+'.js',import.meta.url),'utf8'),fn=source.slice(source.indexOf('function shiftCashRecordedDate(')).split('/* CRM_END:')[0],run=new Function('iso','parseDate','clean',fn+';return shiftCashRecordedDate')(iso,parseDate,x=>String(x||''));assert.equal(run({closeDate:'2026-11-01',_cashClosedOn:'2026-11-02',_cashClosedAt:'2026-11-03T12:00:00Z'}),'2026-11-01');assert.equal(run({closeDate:'01.11',callDate:'2026-10-19',_cashClosedOn:'2026-11-02'}),'2026-11-01');assert.equal(run({_cashClosedAt:'2026-11-02T12:00:00Z'}),'2026-11-02')}});
+
+test('intake adapter subtracts explicit new payments once, never treats new confirmation as paid',()=>{
+ const source=fs.readFileSync(new URL('../src/crm/payroll/intake.js',import.meta.url),'utf8').split('/* CRM_END:')[0];
+ const legacy={id:'old',date:'2026-11-02',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',closedAt:'2026-11-02T09:00:00.000Z',salary:2000},fresh={...legacy,id:'new',closedAt:'2026-11-03T09:00:00.000Z',salary:2500};
+ const state={orders:[{orderId:'a',callDate:'2026-11-02',closeDate:'2026-11-03',companyShare:30000,dispatcher:'sergey'}],shiftReports:[legacy,fresh],payrollPaymentsOwner:'owner',payrollPaymentsStatus:'loaded',payrollPayments:[{id:'receipt',date:'2026-11-03',person:'sergey',amountCents:50000,active:true},{id:'receipt',date:'2026-11-03',person:'sergey',amountCents:50000,active:true},{id:'void',date:'2026-11-03',person:'sergey',amountCents:90000,active:false}]};
+ const window={PayrollIntakeAccounting:globalThis.PayrollIntakeAccounting,MasterAICloud:{profile:{id:'owner'}}};
+ const deps={state,window,today:()=> '2026-11-03',payrollSchedule:()=>({anchor:'2026-11-02',first:'sergey'}),uniqueShiftReports:r=>r,payrollAccountingReport:()=>true,payrollScheduledShift:d=>d==='2026-11-02'?'sergey':'artem',payrollShiftKey:r=>r.shift,orderPayrollShift:r=>r.dispatcher,iso,parseDate,shiftCashRecordedDate:r=>r.closeDate,num,payrollOrderCashRecorded:()=>true};
+ const calculate=new Function(...Object.keys(deps),source+';return payrollIntakeSnapshot')(...Object.values(deps)),before=JSON.stringify(state.shiftReports);let result=calculate(),person=result.people.find(p=>p.person==='sergey');assert.equal(person.earnedCents,300000);assert.equal(person.paidCents,250000);assert.equal(person.dueCents,50000);assert.equal(result.paymentsLoaded,true);assert.equal(result.days.some(d=>d.date==='2026-11-03'),false);assert.equal(JSON.stringify(state.shiftReports),before);
+ state.payrollPaymentsStatus='error';result=calculate();assert.equal(result.people.find(p=>p.person==='sergey').dueCents,null);assert.equal(result.paymentsLoaded,false);assert.ok(result.warnings.some(w=>w.code==='payments_not_loaded'));
+ state.payrollPaymentsStatus='loaded';window.MasterAICloud.profile.id='different-owner';assert.equal(calculate().paymentsLoaded,false);
+});
+
+test('payment ledger fetch failure cannot display a zero balance or write payments',async()=>{
+ const src=fs.readFileSync(new URL('../src/crm/payroll/owner.js',import.meta.url),'utf8'),fn=src.slice(src.indexOf('function renderPendingPayroll(){')).split('/* CRM_END:')[0],box={innerHTML:''},retry={},state={};let writes=0;
+ const deps={$:id=>id==='#payrollAccrualTable'?box:retry,currentUser:()=>({role:'owner'}),state,window:{MasterAICloud:{connected:true,profile:{id:'owner'},getIdToken:async()=> 'test-token'}},fetch:async(url,request)=>{assert.equal(JSON.parse(request.body).op,'payroll_payments_list');writes++;throw new Error('offline')},esc:String};
+ const run=new Function(...Object.keys(deps),fn+';return renderPendingPayroll')(...Object.values(deps));run();await new Promise(resolve=>setImmediate(resolve));assert.match(box.innerHTML,/Остаток к выплате пока неизвестен/);assert.equal(state.payrollPaymentsStatus,'error');assert.equal(writes,1);assert.equal(typeof retry.onclick,'function');
+});
+
+test('explicit worked empty day earns minimum only on action and survives saved integrity roundtrip',()=>{const m=model(),snap=snapshotModel(m),profile={id:'sergey',shift:'sergey'};assert.equal(snap('2026-10-19',profile).salary,0);const report=snap('2026-10-19',profile,new Set(),null,true);assert.equal(report.salary,2000);assert.equal(report.cash,0);assert.deepEqual(report.paidOrderIds,[]);const before=JSON.stringify(report);const saved={...report,ownerConfirmed:true,subjectMemberId:'sergey'};m.state.shiftReports.push(saved);const recomputed=snap('2026-10-19',profile,new Set(),saved);assert.equal(recomputed.salary,2000);assert.equal(recomputed.dataHash,report.dataHash);assert.equal(JSON.stringify(report),before);assert.equal(snap('2026-11-01',profile,new Set(),null,true).salary,0)});
