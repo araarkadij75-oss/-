@@ -381,7 +381,8 @@
           "IfStatement-371-ee539c55841f",
           "EmptyStatement-187-41b805ea7ac0",
           "ExpressionStatement-373-39bbde244107",
-          "trailing-space-7eb70257593d"
+          "trailing-space-7eb70257593d",
+          "payrollIntakeSnapshot-v2"
         ],
         "cloud": [
           "cloud-adapter-ded3948fd37c"
@@ -748,7 +749,8 @@
           "IfStatement-371-ee539c55841f",
           "EmptyStatement-187-41b805ea7ac0",
           "ExpressionStatement-373-39bbde244107",
-          "trailing-space-7eb70257593d"
+          "trailing-space-7eb70257593d",
+          "payrollIntakeSnapshot-v2"
         ],
         "cloud": [
           "cloud-adapter-dc0ed02d327b"
@@ -6738,6 +6740,17 @@
       "symbols": [],
       "roles": [
         "master"
+      ]
+    },
+    "payrollIntakeSnapshot-v2": {
+      "domain": "payroll",
+      "file": "payroll/intake.js",
+      "symbols": [
+        "payrollIntakeSnapshot"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher"
       ]
     }
   },

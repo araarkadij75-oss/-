@@ -4258,9 +4258,7 @@
         },
         "renderDailyPayrollReconciliation-4d6a5baa9ddd": {
           "globals": [
-            "Date",
-            "Number",
-            "String"
+            "Set"
           ],
           "crossDomain": [
             {
@@ -4276,23 +4274,7 @@
               "domain": "core"
             },
             {
-              "symbol": "integer",
-              "domain": "core"
-            },
-            {
               "symbol": "money",
-              "domain": "core"
-            },
-            {
-              "symbol": "num",
-              "domain": "core"
-            },
-            {
-              "symbol": "state",
-              "domain": "core"
-            },
-            {
-              "symbol": "sum",
               "domain": "core"
             },
             {
@@ -4308,9 +4290,7 @@
         "renderPayrollCycleRegister-5260983879c4": {
           "globals": [
             "Date",
-            "Number",
-            "String",
-            "document"
+            "Map"
           ],
           "crossDomain": [
             {
@@ -4320,10 +4300,6 @@
             {
               "symbol": "currentUser",
               "domain": "staff"
-            },
-            {
-              "symbol": "derivedStage",
-              "domain": "orders"
             },
             {
               "symbol": "esc",
@@ -4342,20 +4318,8 @@
               "domain": "core"
             },
             {
-              "symbol": "num",
-              "domain": "core"
-            },
-            {
               "symbol": "ownerPreviewActive",
               "domain": "staff"
-            },
-            {
-              "symbol": "parseDate",
-              "domain": "core"
-            },
-            {
-              "symbol": "state",
-              "domain": "core"
             },
             {
               "symbol": "today",
@@ -4583,6 +4547,10 @@
               "domain": "orders"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isPickupOrder",
               "domain": "orders"
             },
@@ -4597,6 +4565,10 @@
             {
               "symbol": "orderMatchesDispatcher",
               "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
             },
             {
               "symbol": "pinHash",
@@ -5714,10 +5686,7 @@
           ]
         },
         "renderPendingPayroll-f2027e1b0761": {
-          "globals": [
-            "Set",
-            "String"
-          ],
+          "globals": [],
           "crossDomain": [
             {
               "symbol": "$",
@@ -5740,27 +5709,13 @@
               "domain": "core"
             },
             {
-              "symbol": "num",
-              "domain": "core"
-            },
-            {
-              "symbol": "state",
-              "domain": "core"
-            },
-            {
-              "symbol": "sum",
-              "domain": "core"
-            },
-            {
               "symbol": "today",
               "domain": "core"
             }
           ]
         },
         "renderPayrollFinance-b7274f246ed3": {
-          "globals": [
-            "Map"
-          ],
+          "globals": [],
           "crossDomain": [
             {
               "symbol": "$",
@@ -5769,10 +5724,6 @@
             {
               "symbol": "currentUser",
               "domain": "staff"
-            },
-            {
-              "symbol": "esc",
-              "domain": "core"
             },
             {
               "symbol": "filterRows",
@@ -5800,6 +5751,10 @@
             },
             {
               "symbol": "sum",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
               "domain": "core"
             }
           ]
@@ -8385,6 +8340,10 @@
               "domain": "payroll"
             },
             {
+              "symbol": "payrollIntakeSnapshot",
+              "domain": "payroll"
+            },
+            {
               "symbol": "payrollSchedule",
               "domain": "payroll"
             },
@@ -8462,6 +8421,37 @@
         "trailing-space-7eb70257593d": {
           "globals": [],
           "crossDomain": []
+        },
+        "payrollIntakeSnapshot-v2": {
+          "globals": [
+            "Date",
+            "Error",
+            "Math",
+            "String",
+            "window"
+          ],
+          "crossDomain": [
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
+              "symbol": "state",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
+            }
+          ]
         }
       },
       "cloud": {
@@ -12637,6 +12627,10 @@
               "domain": "orders"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isPickupOrder",
               "domain": "orders"
             },
@@ -12651,6 +12645,10 @@
             {
               "symbol": "orderMatchesDispatcher",
               "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
             },
             {
               "symbol": "pinHash",
@@ -16397,6 +16395,10 @@
               "domain": "payroll"
             },
             {
+              "symbol": "payrollIntakeSnapshot",
+              "domain": "payroll"
+            },
+            {
               "symbol": "payrollSchedule",
               "domain": "payroll"
             },
@@ -16478,6 +16480,37 @@
         "trailing-space-7eb70257593d": {
           "globals": [],
           "crossDomain": []
+        },
+        "payrollIntakeSnapshot-v2": {
+          "globals": [
+            "Date",
+            "Error",
+            "Math",
+            "String",
+            "window"
+          ],
+          "crossDomain": [
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
+              "symbol": "state",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
+            }
+          ]
         }
       },
       "cloud": {
@@ -23682,6 +23715,7 @@
         "ExpressionStatement-370-c2c95b78cf7e": {
           "globals": [
             "payrollAccountingReport",
+            "payrollIntakeSnapshot",
             "payrollSchedule",
             "payrollScheduledShift",
             "payrollSettlementLedger",

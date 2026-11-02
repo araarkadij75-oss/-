@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {parse} from 'acorn';
 const html=fs.readFileSync(new URL('../hosted-snapshot/index.html',import.meta.url),'utf8');
 const source=html.match(/function payrollCycleUiStatus\(c\)\{[^\n]+\}/)[0];
 const status=vm.runInNewContext('('+source+')');
@@ -22,11 +23,40 @@ test('payroll navigation separates daily verification and two-day totals',()=>{
 test('cycle details retain order actions and mark missing settlement date as unresolved',()=>{
  const body=html.slice(html.indexOf('function renderPayrollCycleRegister(){'),html.indexOf('function ',html.indexOf('function renderPayrollCycleRegister(){')+20));
  assert.match(body,/<details><summary>Заказы:/);
- assert.match(body,/· поздние:/);
+ assert.match(body,/payrollIntakeSnapshot\(\)/);
  assert.match(body,/data-owner-shift-order/);
- assert.match(body,/Учтён в отчёте/);
- assert.match(body,/Требует проверки: нет даты сдачи/);
- assert.match(body,/c.saved===null\?c.salary:c.saved/);
+ assert.match(body,/<th>Принят<\/th><th>Сдан<\/th>/);
+ assert.match(body,/o.cashDate\|\|'Нет даты'/);
+ assert.match(body,/Ожидает подтверждённой сдачи/);
+ assert.match(body,/остаток по отдельным циклам не распределяется/);
+ assert.match(body,/p\.paidCents\/100/);
+ assert.match(body,/p\.dueCents\/100/);
+});
+
+function renderHarness(month='2026-10',person='all'){
+ const names=['renderDailyPayrollReconciliation','renderPayrollCycleRegister','renderPendingPayroll'];
+ const script=[...html.matchAll(/<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes('function renderPayrollCycleRegister('));
+ const ast=parse(script,{ecmaVersion:'latest',sourceType:'module'});
+ const functions=names.map(n=>{const node=ast.body.find(x=>x.type==='FunctionDeclaration'&&x.id.name===n);assert.ok(node,n);return script.slice(node.start,node.end)}).join('\n');
+ const days=[{date:'2026-10-31',person:'sergey',cashCents:2500000,earnedCents:250000},{date:'2026-11-01',person:'sergey',cashCents:1500000,earnedCents:200000},{date:'2026-10-29',person:'artem',cashCents:3000000,earnedCents:300000}];
+ const snapshot={days,people:[{person:'sergey',earnedCents:450000,paidCents:400000,dueCents:50000,overpaidCents:0},{person:'artem',earnedCents:300000,paidCents:350000,dueCents:0,overpaidCents:50000}],orders:[{id:'late-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-02',cashCents:2500000,closed:true},{id:'undated-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'',cashCents:100000,closed:true},{id:'duplicate-order',duplicateOf:'late-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-02',cashCents:2500000,closed:true},{id:'artem-order',person:'artem',intakeDate:'2026-10-29',cashDate:'2026-10-29',cashCents:3000000,closed:true}],warnings:[]};
+ const nodes={};const before=JSON.stringify(snapshot);const context={$:id=>nodes[id]||(nodes[id]={value:id.includes('Month')?month:id.includes('Person')?person:'',innerHTML:''}),currentUser:()=>({role:'owner'}),ownerPreviewActive:()=>false,today:()=> '2026-11-02',payrollIntakeSnapshot:()=>snapshot,renderHistoricalPayroll(){},bindBackfill(){},payrollSchedule:()=>({anchor:'2026-10-31',first:'sergey'}),payrollScheduledShift:d=>['2026-10-31','2026-11-01'].includes(d)?'sergey':'artem',iso:d=>d.toISOString().slice(0,10),money:n=>Number(n).toFixed(2),integer:String,esc:String};
+ vm.runInNewContext(functions+';renderDailyPayrollReconciliation();renderPayrollCycleRegister();renderPendingPayroll();',context);assert.equal(JSON.stringify(snapshot),before,'render must not change accounting data');return nodes;
+}
+test('late order stays in intake cycle with both dates; duplicates excluded and missing cash date unresolved',()=>{
+ const nodes=renderHarness('2026-10','sergey'),body=nodes['#payrollCycleRegisterTable'].innerHTML;
+ assert.match(body,/2026-10-31 — 2026-11-01/);assert.match(body,/data-owner-shift-order="late-order"/);assert.match(body,/2026-11-02/);
+ assert.match(body,/Нет даты/);assert.match(body,/Ожидает подтверждённой сдачи/);assert.doesNotMatch(body,/duplicate-order|artem-order/);
+ assert.match(body,/Уже выплачено/);assert.match(body,/4000\.00/);assert.match(body,/<b>500\.00<\/b>/);
+ assert.match(nodes['#latePayrollQueue'].innerHTML,/late-order/);assert.doesNotMatch(nodes['#latePayrollQueue'].innerHTML,/undated-order|duplicate-order/);
+});
+test('month changes daily accrual but never subtracts all-time payments from a monthly subtotal',()=>{
+ const oct=renderHarness('2026-10','sergey'),nov=renderHarness('2026-11','sergey');
+ assert.match(oct['#dailyPayrollReconciliationTable'].innerHTML,/2500\.00/);assert.doesNotMatch(oct['#dailyPayrollReconciliationTable'].innerHTML,/2026-11-01/);
+ assert.match(nov['#dailyPayrollReconciliationTable'].innerHTML,/2000\.00/);assert.doesNotMatch(nov['#dailyPayrollReconciliationTable'].innerHTML,/2026-10-31/);
+ assert.equal(oct['#payrollCyclePayoutTable'].innerHTML,nov['#payrollCyclePayoutTable'].innerHTML);
+ assert.equal(oct['#payrollAccrualTable'].innerHTML,nov['#payrollAccrualTable'].innerHTML);
+ assert.match(nov['#payrollCyclePayoutTable'].innerHTML,/Переплата/);assert.match(nov['#payrollCyclePayoutTable'].innerHTML,/<b>0\.00<\/b>/);
 });
 
 test("owner shift heading describes verification rather than personal shift",()=>{

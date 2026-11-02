@@ -2873,6 +2873,14 @@
       "symbols": [
         "betaResetLocal"
       ]
+    },
+    {
+      "id": "payrollIntakeSnapshot-v2",
+      "domain": "payroll",
+      "file": "payroll/intake.js",
+      "symbols": [
+        "payrollIntakeSnapshot"
+      ]
     }
   ],
   "dispatcher": [
@@ -5604,6 +5612,14 @@
       "file": "settings/shared.js",
       "symbols": [
         "betaResetLocal"
+      ]
+    },
+    {
+      "id": "payrollIntakeSnapshot-v2",
+      "domain": "payroll",
+      "file": "payroll/intake.js",
+      "symbols": [
+        "payrollIntakeSnapshot"
       ]
     }
   ],
