@@ -4,7 +4,7 @@ function truthReview(v){const n=numMaybe(v);if(n!=null)return n!==0;const s=norm
 /* CRM_UNIT:recalcOpenReviewBonusOrders-05db837eebc2 */
 function recalcOpenReviewBonusOrders(rows){let count=0;const now=new Date().toISOString(),u=currentUser();const orders=(rows||[]).map(r=>{if(!r._autoFinance||r._cashClosedAt||derivedStage(r)==='Выполнен'||!truthReview(r.review))return r;const x=calcAuto(r);if(Math.abs(num(r.cleanCheck)-x.clean)<.005&&Math.abs(num(r.masterAmount)-x.master)<.005&&Math.abs(num(r.companyShare)-x.company)<.005)return r;count++;return {...r,cleanCheck:x.clean,masterAmount:x.master,companyShare:x.company,_updatedAt:now,_updatedBy:u.id||'',_updatedByName:u.name||'',_updatedByShift:u.shift||''}});return {orders,count}}/* CRM_END:recalcOpenReviewBonusOrders-05db837eebc2 */
 /* CRM_UNIT:financeMetric-8eb47db63944 */
-function financeMetric(x,key){if(key==='avg')return x.finN?x.total/x.finN:0;if(key==='median')return median(x.checks||[]);if(key==='avgShare')return x.finN?x.share/x.finN:0;if(key==='avgMaster')return x.finN?x.master/x.finN:0;if(key==='margin')return x.clean?x.share/x.clean*100:0;if(key==='revenueMargin')return x.total?x.share/x.total*100:0;if(key==='masterRate')return x.clean?x.master/x.clean*100:0;if(key==='coverage')return x.n?x.finN/x.n*100:0;if(key==='reviewRate')return x.n?x.reviewN/x.n*100:0;if(key==='fixedShare')return x.n?x.fixedN/x.n*100:0;return Number(x[key])||0}/* CRM_END:financeMetric-8eb47db63944 */
+function financeMetric(x,key){if(key==='avg')return x.finN?x.total/x.finN:0;if(key==='median')return median(x.checks||[]);if(key==='avgShare')return x.cashN?x.share/x.cashN:0;if(key==='avgMaster')return x.finN?x.master/x.finN:0;if(key==='margin')return x.clean?x.share/x.clean*100:0;if(key==='revenueMargin')return x.total?x.share/x.total*100:0;if(key==='masterRate')return x.clean?x.master/x.clean*100:0;if(key==='coverage')return x.n?x.finN/x.n*100:0;if(key==='reviewRate')return x.n?x.reviewN/x.n*100:0;if(key==='fixedShare')return x.n?x.fixedN/x.n*100:0;return Number(x[key])||0}/* CRM_END:financeMetric-8eb47db63944 */
 /* CRM_UNIT:syncFinanceMode-25edc8187ab0 */
 function syncFinanceMode(recalculate=true){const auto=!!$('#f_autoFinance').checked;$$('.finance-result').forEach(e=>{e.readOnly=auto;e.classList.toggle('readonly-auto',auto)});$('#financeModeHint').className=auto?'notice ok':'notice warn';$('#financeModeHint').textContent=auto?'Авторасчёт включён: поля обновляются сразу.':'Ручной режим: финансовые поля можно менять вручную.';if(auto&&recalculate)recalculateFinance()}/* CRM_END:syncFinanceMode-25edc8187ab0 */
 /* CRM_UNIT:recalculateFinance-b07b9f4393b6 */
@@ -13,7 +13,21 @@ function recalculateFinance(){if(!$('#f_autoFinance')?.checked)return;const r=fo
 function applyFinanceHint(){recalculateFinance()}/* CRM_END:applyFinanceHint-45058b1cab01 */
 /* CRM_UNIT:hasRecordedCashSurrenderOn-437f4036f0a7 */
 
-function hasRecordedCashSurrenderOn(r,date){if(r._duplicateOf)return false;const recorded=!!(r._cashClosedAt||r._cashClosedOn||derivedStage(r)==='Выполнен');return recorded&&shiftCashRecordedDate(r)===date&&num(r.companyShare)>0}/* CRM_END:hasRecordedCashSurrenderOn-437f4036f0a7 */
+function hasRecordedCashSurrenderOn(r,date){return collectRecordedCash([r],{basis:'closeDate'}).some(x=>x.date===date)}/* CRM_END:hasRecordedCashSurrenderOn-437f4036f0a7 */
+/* CRM_UNIT:collectRecordedCash-shared-v1 */
+function collectRecordedCash(rows,{basis='callDate',cutoff=today()}={}){
+ const result=[],seen=new Set(),date=v=>{const d=parseDate(v||'');return d?iso(d):''};
+ for(const r of rows||[]){const id=String(r.orderId||'').trim();if(!id||r._duplicateOf||seen.has(id))continue;seen.add(id);
+  if(!(derivedStage(r)==='Выполнен'||r._cashClosedAt||r._cashClosedOn))continue;
+  const raw=numMaybe(r.companyShare),cashCents=Math.round(raw*100);if(raw==null||!Number.isFinite(raw)||raw<=0||!Number.isSafeInteger(cashCents)||cashCents<=0)continue;
+  const intakeDate=date(r.callDate),cashDate=shiftCashRecordedDate(r),explicit=String(r.closeDate||'').trim();
+  if(cashDate&&(!date(cashDate)||date(cashDate)!==cashDate||cashDate>cutoff||(intakeDate&&cashDate<intakeDate)))continue;
+  const selected=basis==='closeDate'?cashDate:basis==='callDate'?intakeDate:date(r[basis]);if(!selected||selected>cutoff)continue;
+  result.push({order:r,id,date:selected,intakeDate,cashDate,cashCents});
+ }return result;
+}/* CRM_END:collectRecordedCash-shared-v1 */
+/* CRM_UNIT:analyticsCashCents-shared-v1 */
+function analyticsCashCents(rows){return collectRecordedCash(rows,{basis:$('#dateBasis')?.value||'callDate'}).reduce((n,x)=>n+x.cashCents,0)}/* CRM_END:analyticsCashCents-shared-v1 */
 /* CRM_UNIT:currentExpenses-c1b1b8a1c565 */
 function currentExpenses(){const fd=parseDate($('#fromDate')?.value),td=parseDate($('#toDate')?.value);return state.expenses.filter(x=>{const d=parseDate(x.date);return (!fd||!d||d>=fd)&&(!td||!d||d<=td)})}/* CRM_END:currentExpenses-c1b1b8a1c565 */
 /* CRM_UNIT:collectionsLag-66288b43b81e */

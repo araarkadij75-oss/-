@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {parse} from 'acorn';
 
 for(const role of ['index','dispatcher-logistic','master']){
  const html=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
@@ -19,12 +20,12 @@ for(const role of ['index','dispatcher-logistic','master']){
   for(const b of buttons)b.onclick();
   assert.deepEqual(calls.map(x=>x.type),['grid','fixed','unknown','review','cash']);
  });
- test(role+': cash details include cash-only rows and corrections, exclude zero and missing cash',()=>{
+ test(role+': cash details include closed cash-only rows, exclude negative, zero, missing and open cash',()=>{
   const source=html.match(/^function matchesDrill\(r\).*$/m)[0],state={drill:{type:'cash'}};
-  const ctx={state,num:v=>Number(v)||0};vm.runInNewContext(source,ctx);
-  const rows=[{companyShare:2500,total:null},{companyShare:-500,total:0},{companyShare:0,total:3000},{total:1000}];
-  assert.deepEqual(rows.map(r=>ctx.matchesDrill(r)),[true,true,false,false]);
-  assert.equal(rows.filter(r=>ctx.matchesDrill(r)).reduce((s,r)=>s+r.companyShare,0),2000);
+  const ctx={state,$:()=>({value:'callDate'}),today:()=> '2026-11-03',parseDate:v=>v?new Date(v+'T00:00:00Z'):null,iso:d=>d?d.toISOString().slice(0,10):'',derivedStage:r=>r.stage||'Выполнен',shiftCashRecordedDate:r=>r.closeDate||'',numMaybe:v=>v==null?null:Number(v)};const finance=fs.readFileSync(new URL('../src/crm/finance/shared.js',import.meta.url),'utf8'),ast=parse(finance,{ecmaVersion:'latest'});const helpers=['collectRecordedCash','analyticsCashCents'].map(name=>{const n=ast.body.find(n=>n.type==='FunctionDeclaration'&&n.id.name===name);return finance.slice(n.start,n.end)}).join('\n');vm.runInNewContext(helpers+'\n'+source,ctx);
+  const rows=[{companyShare:2500,total:null},{companyShare:-500,total:0},{companyShare:0,total:3000},{total:1000},{companyShare:500,stage:'В работе'}].map((r,i)=>({...r,orderId:String(i),callDate:'2026-10-01'}));
+  assert.deepEqual(rows.map(r=>ctx.matchesDrill(r)),[true,false,false,false,false]);
+  assert.equal(rows.filter(r=>ctx.matchesDrill(r)).reduce((s,r)=>s+r.companyShare,0),2500);
   assert.match(html,/money\(k\.avgShare\)\+' \/ заказ','cash','green'/);
  });
 }

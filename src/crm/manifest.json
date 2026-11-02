@@ -202,6 +202,8 @@
           "renderOrderPagination-cd604dc059e7",
           "renderOrders-e4044ce1a8b6",
           "hasRecordedCashSurrenderOn-437f4036f0a7",
+          "analyticsCashCents-shared-v1",
+          "collectRecordedCash-shared-v1",
           "renderToday-f276d10a7135",
           "matchesDrill-d5b8a7801f0d",
           "spbArea-a4bbc7d86fbb",
@@ -584,6 +586,8 @@
           "dispatcherTotalChip-3ebceb3ebc15",
           "renderOrders-4a614bc9b2fb",
           "hasRecordedCashSurrenderOn-437f4036f0a7",
+          "analyticsCashCents-shared-v1",
+          "collectRecordedCash-shared-v1",
           "renderToday-f276d10a7135",
           "matchesDrill-d5b8a7801f0d",
           "spbArea-a4bbc7d86fbb",
@@ -942,6 +946,8 @@
           "renderOrderPagination-cd604dc059e7",
           "renderOrders-dc71cc4037d9",
           "hasRecordedCashSurrenderOn-437f4036f0a7",
+          "analyticsCashCents-shared-v1",
+          "collectRecordedCash-shared-v1",
           "renderToday-f276d10a7135",
           "matchesDrill-d5b8a7801f0d",
           "spbArea-a4bbc7d86fbb",
@@ -6751,6 +6757,30 @@
       "roles": [
         "owner",
         "dispatcher"
+      ]
+    },
+    "collectRecordedCash-shared-v1": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "collectRecordedCash"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
+      ]
+    },
+    "analyticsCashCents-shared-v1": {
+      "file": "finance/shared.js",
+      "domain": "finance",
+      "symbols": [
+        "analyticsCashCents"
+      ],
+      "roles": [
+        "owner",
+        "dispatcher",
+        "master"
       ]
     }
   },

@@ -2881,6 +2881,22 @@
       "symbols": [
         "payrollIntakeSnapshot"
       ]
+    },
+    {
+      "id": "collectRecordedCash-shared-v1",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "collectRecordedCash"
+      ]
+    },
+    {
+      "id": "analyticsCashCents-shared-v1",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "analyticsCashCents"
+      ]
     }
   ],
   "dispatcher": [
@@ -5621,6 +5637,22 @@
       "symbols": [
         "payrollIntakeSnapshot"
       ]
+    },
+    {
+      "id": "collectRecordedCash-shared-v1",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "collectRecordedCash"
+      ]
+    },
+    {
+      "id": "analyticsCashCents-shared-v1",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "analyticsCashCents"
+      ]
     }
   ],
   "master": [
@@ -8091,6 +8123,22 @@
       "file": "settings/shared.js",
       "symbols": [
         "betaResetLocal"
+      ]
+    },
+    {
+      "id": "collectRecordedCash-shared-v1",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "collectRecordedCash"
+      ]
+    },
+    {
+      "id": "analyticsCashCents-shared-v1",
+      "domain": "finance",
+      "file": "finance/shared.js",
+      "symbols": [
+        "analyticsCashCents"
       ]
     }
   ]
