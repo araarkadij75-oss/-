@@ -1,5 +1,5 @@
 window.installMasterAIProfitBridge = (dependencies) => {
- const {state,currentRole,ownerPreviewActive,ensureXLSX,switchTab,parseDate,iso,today,uniqueShiftReports,payrollAccountingReport,payrollShiftKey,payrollSchedule,payrollSettlementLedger,payrollScheduledShift,shiftPayroll,shiftCashRecordedDate,derivedStage,numMaybe,num,orderPayrollShift}=dependencies;
+ const {state,payrollIntakeSnapshot,currentRole,ownerPreviewActive,ensureXLSX,switchTab,parseDate,iso,today,uniqueShiftReports,payrollAccountingReport,payrollShiftKey,payrollSchedule,payrollSettlementLedger,payrollScheduledShift,shiftPayroll,shiftCashRecordedDate,derivedStage,numMaybe,num,orderPayrollShift}=dependencies;
  'use strict';
  let completeReports=null,reportsTruncated=false;
  const owner=()=>currentRole()==='owner'&&!ownerPreviewActive()&&!!window.MasterAICloud?.connected;
@@ -21,11 +21,15 @@ window.installMasterAIProfitBridge = (dependencies) => {
    const limit=to<today()?to:today(),reports=uniqueShiftReports(completeReports||state.shiftReports).filter(payrollAccountingReport),schedule=payrollSchedule(),ledger=payrollSettlementLedger(schedule.anchor,schedule.first),salaries=[];
    if(!['intake','cash'].includes(basis))throw new Error('Неизвестное основание периода');
    let unknown=0,undated=0,invalid=0;const orders=state.orders.filter(r=>!r._duplicateOf).map(r=>{const stage=derivedStage(r),closed=stage==='Выполнен'||!!(r._cashClosedAt||r._cashClosedOn),cashDate=shiftCashRecordedDate(r),intakeDate=iso(parseDate(r.callDate||'')),date=basis==='intake'?intakeDate:cashDate,raw=numMaybe(r.companyShare),inside=date>=from&&date<=limit;if(closed&&!cashDate&&intakeDate>=from&&intakeDate<=limit&&raw>0)undated++;if(closed&&inside&&raw>0&&!orderPayrollShift(r))unknown++;if(closed&&inside&&raw===null)invalid++;return{id:String(r.orderId||''),date,cash:raw===null?NaN:raw,closed}});
-   const byDay=new Map();for(const entry of ledger){if(entry.used)continue;const key=entry.who+'|'+entry.assignedDate;byDay.set(key,(byDay.get(key)||0)+Math.round(entry.cash*100))}
-   for(const d=new Date(start);iso(d)<=limit;d.setUTCDate(d.getUTCDate()+1)){const date=iso(d),person=payrollScheduledShift(date,schedule.anchor,schedule.first);for(const who of ['sergey','artem']){const saved=reports.find(r=>r.date===date&&payrollShiftKey(r)===who);if(saved)salaries.push({date,person:who,amount:num(saved.salary),confirmed:true});else if(person===who)salaries.push({date,person:who,amount:shiftPayroll((byDay.get(who+'|'+date)||0)/100),confirmed:false})}}
+   if(typeof payrollIntakeSnapshot!=='function')throw new Error('Модуль зарплаты не загружен — прибыль не рассчитана');
+   const payroll=payrollIntakeSnapshot(today()),salaryDays=new Map();
+   const accruals=basis==='intake'?payroll.days.map(d=>({date:d.date,person:d.person,amountCents:d.entitlementCents})):payroll.events;
+   for(const entry of accruals){const key=entry.person+'|'+entry.date;salaryDays.set(key,{date:entry.date,person:entry.person,amountCents:(salaryDays.get(key)?.amountCents||0)+entry.amountCents})}
+   for(const entry of salaryDays.values())salaries.push({date:entry.date,person:entry.person,amount:entry.amountCents/100,confirmed:!payroll.incomplete&&entry.date<today()});
+   if(payroll.incomplete)warnings.push('Зарплата: есть заказы с неподтверждёнными датами или суммами; они не включены.');
    for(const r of reports){if(r.date>=from&&r.date<=limit&&!['sergey','artem'].includes(payrollShiftKey(r)))warnings.push('Отчёт без распознанной смены '+r.date+' — зарплата требует сверки.')}
    if(undated)warnings.push('Заявок этого периода с кассой, но без даты сдачи: '+undated+'. Касса заявок учитывается по дате звонка; распределение зарплаты по сменам требует даты сдачи.');if(unknown)warnings.push('Заказов с кассой без распознанного диспетчера: '+unknown+'. Зарплата по ним требует сверки.');if(invalid)warnings.push('Заказов без суммы кассы: '+invalid+'.');
-   if(salaries.some(s=>!s.confirmed))warnings.push('Незакрытые дни рассчитаны предварительно по графику 2/2, включая минимум за рабочий день.');
+   if(salaries.some(s=>!s.confirmed))warnings.push('Текущий день и строки с замечаниями требуют сверки. Зарплата считается по дню приёма, выплаты повторно не вычитаются из прибыли.');
    return {...window.ProfitAccounting.calculate({from,to:limit,orders,salaries,expenses,warnings}),basis};
   }
  };

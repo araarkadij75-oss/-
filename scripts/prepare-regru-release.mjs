@@ -19,6 +19,7 @@ const files = [
   'sw.js',
   'avito-profit.js',
   'profit-accounting.js',
+  'payroll-intake-accounting.js',
   'profit-bridge.js',
   'profit-ui.js',
   'visual-refinement.css',
@@ -50,7 +51,7 @@ const manifest = {
   source: 'hosted-snapshot',
   createdAt: new Date().toISOString(),
   productionTarget: '/var/www/u3680049/data/www/crm.remontpkspb.ru/candidate',
-  productionReplaceAllowlist: ['avito-profit.js', 'profit-accounting.js', 'profit-bridge.js', 'profit-ui.js', 'visual-refinement.css', 'quality-monitor.js', 'crm-api/quality.php', 'crm-api/finance.php', 'crm-api/telegram.php', 'telegram-ui.js', 'index.html', 'dispatcher-logistic.html', 'master.html', 'sw.js'],
+  productionReplaceAllowlist: ['payroll-intake-accounting.js', 'avito-profit.js', 'profit-accounting.js', 'profit-bridge.js', 'profit-ui.js', 'visual-refinement.css', 'quality-monitor.js', 'crm-api/quality.php', 'crm-api/finance.php', 'crm-api/telegram.php', 'telegram-ui.js', 'index.html', 'dispatcher-logistic.html', 'master.html', 'sw.js'],
   protectedPaths: ['cloud-config.js', 'firestore-regru.js', 'premium-v181721.css', 'quota-safe-v181719.js', 'icon.svg', 'manifest.json', 'manifest-dispatcher-logistic.json', 'manifest-master.json'],
   files: {},
 };
