@@ -571,3 +571,38 @@ html body { background:linear-gradient(180deg,#112738 0,#17364a 210px,#e9eef2 52
 /* Keep legacy relative navigation layout: no sticky overlap on wrapped toolbars. */
 .app .tabs { position:relative!important; top:auto!important; }
 @media(max-width:800px) { .app .top .brand h1 { font-size:23px; } }
+/* Desktop audit at 1440px: keep navigation complete and columns legible.
+   Below 1300px the existing order cards remain the responsive presentation. */
+.app nav.tabs { display:flex; flex-wrap:wrap; overflow:visible; }
+.app nav.tabs .tab { flex:0 0 auto; max-width:100%; white-space:normal; }
+@media(min-width:1300px) {
+ .app .section .orders-table-wrap { max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
+ .app .section .orders-table-wrap .table { width:100%!important; min-width:calc(1600px * var(--font-scale,1))!important; max-width:none; table-layout:fixed; }
+ .app .section .orders-table-wrap .table :is(th,td) { box-sizing:border-box; padding-inline:5px; word-break:normal; overflow-wrap:normal; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(1) { width:30px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(2) { width:80px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(3) { width:110px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(4) { width:82px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(5) { width:100px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(6) { width:50px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(7) { width:45px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(8) { width:90px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(9) { width:100px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(10) { width:200px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(11) { width:130px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(12) { width:90px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(n+13):nth-child(-n+15) { width:80px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(16) { width:95px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(17) { width:110px!important; }
+ .app .section .orders-table-wrap .inline-master-input { min-width:120px; width:100%; }
+ .app .section #orderBody td:nth-child(8)>b { overflow-wrap:normal; word-break:normal; white-space:normal; }
+ .app .section .orders-table-wrap :is(.status-pill,.stage,.status-chip,.status-badge) { overflow-wrap:normal; word-break:normal; white-space:normal; max-width:100%; }
+ .app .section .orders-table-wrap .table th { overflow-wrap:normal!important; word-break:normal; }
+}
+/* Payroll drill-downs: wide registers scroll within their module, never the page. */
+.app #payrollCycleRegister { min-width:0; max-width:100%; }
+.app #payrollCycleRegisterTable,
+.app #payrollCycleRegisterTable > .table-wrap,
+.app #payrollAccrualTable { min-width:0; max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
+.app #payrollAccrualTable > details { min-width:0; }
+.app #payrollAccrualTable > details > summary { white-space:normal; overflow-wrap:break-word; }
