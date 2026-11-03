@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.94-immersive-themes-v1';
+const CACHE='eliteservice-18.17.95-cinematic-workspace-v1';
 const SHELL=[
   './',
   './index.html',
@@ -16,11 +16,11 @@ const SHELL=[
   './profit-bridge.js?v=20261103-cash1',
   './payroll-intake-accounting.js?v=20261103-audit1',
   './profit-ui.js?v=20261103-audit1',
-  './visual-refinement.css?v=20261103-atmosphere1',
+  './visual-refinement.css?v=20261103-cinematic1',
   './rain-courtyard.png',
   './space-panorama.png',
   './mountain-panorama.png',
-  './workspace-atmosphere.js?v=20261103-atmosphere1',
+  './workspace-atmosphere.js?v=20261103-cinematic1',
   './quality-monitor.js?v=20261101-quality2',
   './premium-v181721.css',
 ];
