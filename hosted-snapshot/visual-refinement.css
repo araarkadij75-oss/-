@@ -470,9 +470,9 @@ body::before { background:none; }
  background:#fff; border:1px solid #c6d2dc; border-top:3px solid #477e96; border-radius:11px;
  box-shadow:0 2px 7px #112b430b; text-align:left;
 }
-.app .kpi.tone-green { border-top-color:#327c66; }
-.app .kpi.tone-amber { border-top-color:#b78d37; }
-.app .kpi.tone-red { border-top-color:#b75b66; }
+.app .kpi.tone-green { background:linear-gradient(135deg,#effaf5,#c9e9d9); border-color:#83bda3; border-top-color:#147252; }
+.app .kpi.tone-amber { background:linear-gradient(135deg,#fffbef,#f5e3b3); border-color:#d2b56d; border-top-color:#9c6d16; }
+.app .kpi.tone-red { background:linear-gradient(135deg,#fff6f6,#f2d6dc); border-color:#d2a0ac; border-top-color:#a13c53; }
 .app .kpi::before,.app .kpi::after { display:none; }
 .app .kpi-icon { width:7px; height:7px; border-radius:2px; box-shadow:none; background:#648b9e; }
 .app .kpi .l { text-transform:none; letter-spacing:0; padding-right:0; color:#526a7a; font-weight:600; }
@@ -556,8 +556,8 @@ body::before { background:none; }
 }
 /* Resolve legacy !important chrome declarations in premium-v181721.css.
    Both foreground and background are owned here as one contrast contract. */
-html body { background:linear-gradient(180deg,#112738 0,#17364a 210px,#e9eef2 520px,#e9eef2 100%)!important; background-attachment:fixed; }
-.app .top { background:linear-gradient(115deg,#17384c,#102738 70%)!important; box-shadow:inset 0 1px 0 #ffffff0d,0 8px 24px #06142024!important; }
+html body { background:radial-gradient(ellipse at 5% 0,#1c55772b,transparent 55%),linear-gradient(180deg,#d4e1ee,#e9eff5 480px)!important; background-attachment:fixed; }
+.app .top { background:linear-gradient(110deg,#15364e,#0b1c30 72%)!important; box-shadow:inset 0 1px 0 #ffffff12,0 12px 30px #0b233126!important; }
 .app .top .brand h1 { color:#f2f7fa; font-size:24px; }
 .app .top .brand p { color:#b9ceda; }
 .app .tabs { background:#102738!important; box-shadow:0 5px 14px #0717241c!important; }
@@ -606,3 +606,66 @@ html body { background:linear-gradient(180deg,#112738 0,#17364a 210px,#e9eef2 52
 .app #payrollAccrualTable { min-width:0; max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
 .app #payrollAccrualTable > details { min-width:0; }
 .app #payrollAccrualTable > details > summary { white-space:normal; overflow-wrap:break-word; }
+/* EliteService precision surfaces: geometry, hierarchy and quiet depth. */
+.app .btn,.modal .btn { min-height:34px; padding:7px 12px; line-height:1.3; border-radius:7px; border-color:#a9bed0; background-image:linear-gradient(180deg,#ffffff22,transparent); }
+.app .btn.small,.modal .btn.small { min-height:30px; padding:5px 9px; }
+.app .btn:not(.primary):not(.danger):not(:disabled):active,.modal .btn:active { box-shadow:inset 0 2px 4px #10243b18; }
+.app .btn:disabled,.modal .btn:disabled { opacity:.55; box-shadow:none; }
+.app .tabs .tab { min-height:38px; padding:8px 13px; letter-spacing:.005em; }
+.app .tabs .tab.active { box-shadow:inset 0 1px 0 #fff4d1,0 2px 8px #0002; }
+.app :is(.card,.executive-summary),.app .section .card:not(.kpi):not(.hero):not(.master-shift-hero) { border-color:#b7c9d9; box-shadow:0 2px 3px #16314d06,0 8px 22px #16314d0d; }
+.app .card:hover { transform:none; box-shadow:0 2px 3px #16314d06,0 8px 22px #16314d0d; }
+.app .section .section-head { background:linear-gradient(110deg,#173c56,#10283f); color:#eaf4fb; border-color:#355c77; box-shadow:inset 3px 0 0 #34b3c7; padding:16px 18px; }
+.app .section .section-head :is(.chart-title,.chart-sub,.order-dashboard-heading,.help,.muted,label) { color:#eaf4fb; }
+.app .section .section-head .chart-sub { color:#bdd3e3; max-width:85ch; }
+.app .section .section-head .chart-title { font-size:18px; line-height:1.35; }
+.app .section .section-head .field>label { color:#d0e1ed; }
+.app .section .filters { background:#e8f0f7; border-color:#b4cbdd; box-shadow:inset 0 1px 0 #fff; }
+.app .section label,.modal label { font-weight:600; color:#3f5870; }
+.app .section :is(.input,.select),.modal :is(.input,.select) { min-height:38px; border-radius:7px; border-color:#aebfd0; background-color:#fff; color:#172c43; box-shadow:inset 0 1px 2px #10243b08; }
+.app .section .form-section { background:linear-gradient(105deg,#dcecf7,#eff5fa); border-color:#a7c4d9; color:#163f5c; }
+.app :is(.kpi.tone-blue,.kpi.tone-violet),.app [data-panel=ai] .kpis .kpi { background:linear-gradient(135deg,#f5fbff,#d8eaf7); border-color:#8db5d1; border-top-color:#16749a; }
+.app .kpi { box-shadow:inset 0 1px 0 #ffffffb3,0 5px 14px #10243b0d; }
+.app .orders-head :is(.orders-status-card,.orders-today-card) { background:linear-gradient(135deg,#fff,#edf4fa)!important; border-color:#a9c1d5!important; }
+.app #todayBox .mini { background:#edf4fa; border-color:#adc5d8; }
+.app #todayBox [data-today=cash-new] { background:#d9f0e5; border-color:#78b79a; }
+.app #todayBox [data-today=cash-total] { background:#c2e7d5; border-color:#4f9a77; }
+.app #todayBox .mini .v { font-weight:750; letter-spacing:-.025em; }
+.app #colorAudit .color-audit-item { border-width:1px; border-style:solid; border-color:#0002; padding:10px 12px; transition:box-shadow .15s,border-color .15s; }
+.app #colorAudit .color-audit-item:hover { border-color:#4c829e; box-shadow:0 3px 10px #15344d18; }
+.app #colorAudit .color-audit-item.active { outline:2px solid #176c8e; outline-offset:2px; }
+.app .orders-table-wrap .table thead th { border-radius:0!important; padding-block:12px; font-weight:650; background:#15384f!important; }
+.app .orders-table-wrap .table thead th:first-child { border-radius:7px 0 0 7px!important; }
+.app .orders-table-wrap .table thead th:last-child { border-radius:0 7px 7px 0!important; }
+.app .orders-table-wrap .table thead th:nth-child(n+13):nth-child(-n+16) { background:#155347!important; color:#edfff4!important; }
+.app .orders-table-wrap :is(.order-value-chip,.inline-master-input) { min-height:30px; line-height:1.35; padding:5px 7px; font-weight:600; border-radius:6px; }
+.app .orders-table-wrap .order-id { border-radius:5px; border:1px solid #a3bfd5; background:#f5faff; color:#1e4c70; font-weight:650; }
+.app .orders-table-wrap .order-cash-chip { background:#c5e8d5; border-color:#599c78; color:#104b32; }
+.app .orders-table-wrap .copy-master-btn { background:#e7f0f8; border-color:#8eaec5; color:#1b4b6b; }
+.app .section .table tbody tr:not(.order-status-row):hover { background:#e8f2fa; }
+.app .section .table :is(th,td) { font-variant-numeric:tabular-nums; }
+.app .section .table th { line-height:1.4; }
+.app .section .table td { line-height:1.5; }
+.app #payrollCycleRegisterTable>.table-wrap:first-child .table { font-size:14px; }
+.app #payrollCycleRegisterTable>.table-wrap:first-child .table :is(th,td):nth-child(n+2) { text-align:right; }
+.app #payrollCycleRegisterTable>.table-wrap:first-child .table td:nth-child(4) { background:#ddf2e7; color:#105a3d; font-size:17px; font-weight:750; }
+.app #payrollCycleRegisterTable>.table-wrap:first-child .table th:nth-child(4) { background:#cbe8da; color:#164f3a; }
+.app .payroll-intake-register-table { font-size:13px; }
+.app .payroll-intake-register-table>tbody>tr>td:is(:nth-child(3),:nth-child(4)) { text-align:right; font-variant-numeric:tabular-nums; }
+.app :is(.payroll-cycle-order,.shift-report-card,.payroll-history-card) { box-shadow:0 1px 4px #10243b0a; }
+.app .payroll-cycle-register-table details summary { background:#e1edf8; border-color:#9cbdd6; }
+.app .payroll-cycle-register-table details[open] summary { background:#d1e5f4; border-color:#5d96bb; }
+.app .section .import-zone { border-style:dashed; background:linear-gradient(135deg,#edf7fd,#e5eef8); }
+#profitPanel .profit-head { background:linear-gradient(110deg,#173c56,#10283f); color:#eaf4fb; padding:18px; border:1px solid #355c77; border-radius:10px; box-shadow:inset 3px 0 0 #34b3c7; }
+#profitPanel .profit-head :is(h2,p,label) { color:#eaf4fb; }
+#profitPanel .profit-metric { background:linear-gradient(135deg,#f5fbff,#d8eaf7); border-color:#91b6d0; border-top-color:#16749a; box-shadow:inset 0 1px 0 #ffffffb3,0 5px 14px #10243b0d; }
+#profitPanel .profit-metric:is(.blue,.violet) { background:linear-gradient(135deg,#f5fbff,#d8eaf7); border-color:#91b6d0; border-top-color:#16749a; }
+#profitPanel .profit-metric.amber { background:linear-gradient(135deg,#fffbef,#f5e3b3); border-color:#d2b56d; border-top-color:#9c6d16; }
+#profitPanel .profit-metric.green { background:linear-gradient(135deg,#effaf5,#c9e9d9); border-color:#83bda3; border-top-color:#147252; }
+#profitPanel .profit-metric.red { background:linear-gradient(135deg,#fff6f6,#f2d6dc); border-color:#d2a0ac; border-top-color:#a13c53; }
+#profitPanel .profit-metric strong { font-weight:750; }
+.app .quality-monitor-summary { background:#dfeef7; border-bottom:1px solid #afc9dc; }
+.modal .modal-head { background:linear-gradient(110deg,#15364e,#0b1c30); border-bottom-color:#47758e; }
+.modal .modal-footer { background:#e3edf5; border-top-color:#a6bfd3; }
+@media(max-width:600px) { .app .section .section-head { padding:13px; } .app #payrollCycleRegisterTable>.table-wrap:first-child .table { font-size:13px; } }
+@media(prefers-reduced-motion:reduce) { .app #colorAudit .color-audit-item { transition:none; } }
