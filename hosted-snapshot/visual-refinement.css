@@ -953,7 +953,7 @@ html[data-atmosphere=classic] .workspace-appearance summary,html[data-atmosphere
 @media(max-width:800px) { .app .top,.app .tabs,.app .section .card { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; } }
 @media(prefers-reduced-motion:reduce) { .app *,.modal * { scroll-behavior:auto!important; } }
 @media(forced-colors:active) { html body { background:Canvas!important; } #workspaceAtmosphereStage { display:none!important; } .app .top,.app .tabs,.app .card,.modal .modal-card { background:Canvas!important; color:CanvasText!important; border:1px solid CanvasText!important; } }
-/* Scenery crosses panel whitespace. Canvas clears text/control geometry before presentation. */
+/* Scenery crosses panel whitespace. Discrete particles avoid readable content. */
 #workspaceAtmosphereStage[data-renderer=canvas] { z-index:2; opacity:.72; }
 body.modal-open #workspaceAtmosphereStage,body.auth-locked #workspaceAtmosphereStage,
 html[data-atmosphere-paused=true] #workspaceAtmosphereStage,
@@ -968,3 +968,12 @@ html[data-atmosphere-reduced=true] #workspaceAtmosphereStage { visibility:hidden
 .app .section :is(.help,.chart-sub,.source-note),.modal :is(.help,.chart-sub) { line-height:1.5; }
 .app .section .kpi .v,#profitPanel .profit-metric strong { overflow-wrap:anywhere; line-height:1.25; }
 @media(forced-colors:active) { #workspaceAtmosphereStage[data-renderer=canvas] { display:none!important; } }
+/* Keep the complete action group inside its own column, including at larger text scales. */
+@media(min-width:1300px) {
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(17) { width:calc(138px * var(--font-scale,1))!important; }
+ .app .orders-table-wrap .table .action-cell { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) 26px; gap:4px; width:100%; min-width:0; box-sizing:border-box; }
+ .app .orders-table-wrap .table .action-cell .copy-master-btn { grid-column:1 / -1; width:100%; }
+ .app .orders-table-wrap .table .action-cell .btn { width:100%; min-width:0; padding:4px 2px; min-height:30px; box-sizing:border-box; }
+ .app .orders-table-wrap .table .action-cell .pill { grid-column:1 / -1; white-space:normal; }
+ .app .orders-table-wrap .table td:last-child { padding-right:8px; }
+}
