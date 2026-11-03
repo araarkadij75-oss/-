@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.98-theme-performance-v1';
+const CACHE='eliteservice-18.17.99-expanded-cards-v1';
 const SHELL=[
   './',
   './index.html',
@@ -16,8 +16,8 @@ const SHELL=[
   './profit-bridge.js?v=20261103-cash1',
   './payroll-intake-accounting.js?v=20261103-audit1',
   './profit-ui.js?v=20261103-audit1',
-  './visual-refinement.css?v=20261104-theme-performance1',
-  './workspace-atmosphere.js?v=20261104-theme-performance1',
+  './visual-refinement.css?v=20261104-expanded-cards1',
+  './workspace-atmosphere.js?v=20261104-expanded-cards1',
   './quality-monitor.js?v=20261101-quality2',
   './premium-v181721.css',
 ];
