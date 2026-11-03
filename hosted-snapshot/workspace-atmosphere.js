@@ -25,23 +25,35 @@
     let width=1, height=1, scale=1, frame=0, last=0, clock=0, scene=theme;
     let beads=[], drops=[], stars=[], ridges=[];
     let running=false, failed=false;
-    // Foreground scenery is visible through the workspace, but never over readable content.
+    // Discrete particles avoid readable content; continuous light remains subtle.
     // Cache geometry only; no order values, credentials or application state are read.
-    let protectedRects=[], geometryDirty=true;
+    let geometryDirty=true, buckets=new Map();
+    const cellSize=128;
     function refreshProtection(){
       if(!document.createTreeWalker||!document.createRange)return;
       const app=document.querySelector('.app');if(!app)return;
       const rects=[], range=document.createRange();
-      const walker=document.createTreeWalker(app,4);
+      // Reject hidden panels and offscreen rows before visiting their descendants.
+      const walker=document.createTreeWalker(app,5,{acceptNode(node){
+        if(node.nodeType===3)return 1;
+        if(node.hidden)return 2;
+        const r=node.getBoundingClientRect();
+        if(!r.width&&!r.height&&window.getComputedStyle(node).display!=='contents')return 2;
+        if(node.matches('tr,.mobile-order-card,.kpi,.profit-metric')&&(r.bottom<0||r.top>height))return 2;
+        return 3;
+      }});
       const keep=r=>{if(r.width&&r.height&&r.bottom>0&&r.top<height&&r.right>0&&r.left<width)rects.push([r.left-4,r.top-3,r.width+8,r.height+6]);};
       let node;
       while((node=walker.nextNode())){range.selectNodeContents(node);for(const r of range.getClientRects())keep(r);}
       for(const el of app.querySelectorAll('input,select,textarea,button,svg,canvas,img,[role="img"]'))keep(el.getBoundingClientRect());
-      protectedRects=rects;geometryDirty=false;
+      buckets=new Map();
+      for(const r of rects){for(let y=Math.floor(Math.max(0,r[1])/cellSize);y<=Math.floor(Math.min(height,r[1]+r[3])/cellSize);y++)for(let x=Math.floor(Math.max(0,r[0])/cellSize);x<=Math.floor(Math.min(width,r[0]+r[2])/cellSize);x++){const key=x+','+y;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(r);}}
+      geometryDirty=false;
     }
     // Skip entire particles near content instead of cutting rectangular holes out of mist/light.
     function overlapsContent(x,y,w,h){
-      return protectedRects.some(r=>x<r[0]+r[2]&&x+w>r[0]&&y<r[1]+r[3]&&y+h>r[1]);
+      for(let row=Math.floor(Math.max(0,y)/cellSize);row<=Math.floor(Math.min(height,y+h)/cellSize);row++)for(let col=Math.floor(Math.max(0,x)/cellSize);col<=Math.floor(Math.min(width,x+w)/cellSize);col++)if((buckets.get(col+','+row)||[]).some(r=>x<r[0]+r[2]&&x+w>r[0]&&y<r[1]+r[3]&&y+h>r[1]))return true;
+      return false;
     }
     function invalidateGeometry(){geometryDirty=true;}
     document.addEventListener('scroll',invalidateGeometry,{passive:true,capture:true});
@@ -50,6 +62,7 @@
     if(typeof MutationObserver!=='undefined'){
       const app=document.querySelector('.app');
       if(app)new MutationObserver(invalidateGeometry).observe(app,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','style','open','hidden']});
+      if(document.body)new MutationObserver(()=>{invalidateGeometry();sync();}).observe(document.body,{attributes:true,attributeFilter:['class']});
     }
     const random=(a,b)=>a+Math.random()*(b-a);
     const image = new Image();
@@ -82,6 +95,7 @@
     }
     function dropPath(x,y,r,stretch=1){ctx.beginPath();ctx.moveTo(x,y-r*stretch);ctx.bezierCurveTo(x+r*.72,y-r*.65*stretch,x+r*1.02,y+r*.5,x+r*.52,y+r*.9);ctx.bezierCurveTo(x+r*.22,y+r*1.15,x-r*.65,y+r*1.04,x-r*.75,y+r*.4);ctx.bezierCurveTo(x-r*.99,y-r*.15,x-r*.45,y-r*.9*stretch,x,y-r*stretch);ctx.closePath();}
     function glassDrop(x,y,r,stretch=1){
+      if(y+r*1.5<0||y-r*stretch>height||x+r<0||x-r>width)return;
       if(overlapsContent(x-r-2,y-r*stretch-2,r*2+4,r*(stretch+1.5)+4))return;
       ctx.save();dropPath(x,y,r,stretch);ctx.clip();
       // Sample the same cover fit used by the CSS background, then magnify it inside the lens.
@@ -136,11 +150,11 @@
     function draw(dt){
       ctx.clearRect(0,0,width,height);
       if(scene==='classic')return;
-      if(geometryDirty)refreshProtection();
+      if(geometryDirty&&scene!=='mountains')refreshProtection();
       clock+=dt;
       if(scene==='rain')rain(dt);else if(scene==='space')space();else mountains();
     }
-    function active(){return !failed&&!paused&&!document.hidden&&!reduced.matches&&scene!=='classic';}
+    function active(){return !failed&&!paused&&!document.hidden&&!reduced.matches&&scene!=='classic'&&!document.body?.classList.contains('modal-open')&&!document.body?.classList.contains('auth-locked');}
     function tick(now){
       frame=0;if(!active()){running=false;last=0;return;}
       if(!last)last=now;
@@ -156,9 +170,10 @@
       if(active()){if(!running){running=true;last=0;frame=window.requestAnimationFrame(tick);}}
       else{if(frame)window.cancelAnimationFrame(frame);frame=0;running=false;last=0;}
     }
-    function setTheme(next){if(scene!==next){scene=next;clock=0;draw(0);}sync();}
+    function loadRain(){if(scene==='rain'&&!image.src){image.decoding='async';image.fetchPriority='low';image.src=new URL('./rain-courtyard-v1.webp',document.baseURI).href;}}
+    function setTheme(next){if(scene!==next){scene=next;clock=0;loadRain();draw(0);}sync();}
     image.onload=()=>{if(scene==='rain')draw(0);};
-    image.src=new URL('./rain-courtyard.png',document.baseURI).href;
+    loadRain();
     window.addEventListener('resize',resize,{passive:true});
     if(reduced.addEventListener)reduced.addEventListener('change',sync);
     window.addEventListener('pagehide',()=>{if(frame)window.cancelAnimationFrame(frame);frame=0;running=false;last=0;});

@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.97-atmosphere-polish-v1';
+const CACHE='eliteservice-18.17.98-theme-performance-v1';
 const SHELL=[
   './',
   './index.html',
@@ -16,11 +16,8 @@ const SHELL=[
   './profit-bridge.js?v=20261103-cash1',
   './payroll-intake-accounting.js?v=20261103-audit1',
   './profit-ui.js?v=20261103-audit1',
-  './visual-refinement.css?v=20261103-atmosphere-polish1',
-  './rain-courtyard.png',
-  './space-panorama.png',
-  './mountain-panorama.png',
-  './workspace-atmosphere.js?v=20261103-atmosphere-polish1',
+  './visual-refinement.css?v=20261104-theme-performance1',
+  './workspace-atmosphere.js?v=20261104-theme-performance1',
   './quality-monitor.js?v=20261101-quality2',
   './premium-v181721.css',
 ];
@@ -42,6 +39,15 @@ self.addEventListener('fetch',event=>{
   if(req.method!=='GET')return;
   const url=new URL(req.url);
   if(url.origin!==self.location.origin)return;
+
+  // Versioned decorative assets load only when selected and stay cached thereafter.
+  if(/\/(?:rain-courtyard|space-panorama|mountain-panorama)-v\d+\.webp$/.test(url.pathname)){
+    event.respondWith(caches.open(CACHE).then(async cache=>{
+      const cached=await cache.match(req);if(cached)return cached;
+      const res=await fetch(req);if(res.ok)await cache.put(req,res.clone());return res;
+    }));
+    return;
+  }
 
   if(req.mode==='navigate'){
     event.respondWith(
