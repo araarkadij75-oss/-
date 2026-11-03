@@ -652,6 +652,20 @@ html body { background:radial-gradient(ellipse at 5% 0,#1c55772b,transparent 55%
 .app #payrollCycleRegisterTable>.table-wrap:first-child .table th:nth-child(4) { background:#cbe8da; color:#164f3a; }
 .app .payroll-intake-register-table { font-size:13px; }
 .app .payroll-intake-register-table>tbody>tr>td:is(:nth-child(3),:nth-child(4)) { text-align:right; font-variant-numeric:tabular-nums; }
+/* The expanded order table owns its columns; legacy daily widths must not cascade into it. */
+.app .payroll-daily-wrap .payroll-intake-register-table { table-layout:fixed!important; min-width:1180px!important; }
+.app .payroll-intake-register-table> :is(thead,tbody)>tr> :is(th,td) { position:static!important; min-width:0; vertical-align:top; }
+.app .payroll-intake-register-table> :is(thead,tbody)>tr> :is(th,td):nth-child(1) { width:165px; }
+.app .payroll-intake-register-table> :is(thead,tbody)>tr> :is(th,td):nth-child(2) { width:95px; }
+.app .payroll-intake-register-table> :is(thead,tbody)>tr> :is(th,td):nth-child(3) { width:110px; }
+.app .payroll-intake-register-table> :is(thead,tbody)>tr> :is(th,td):nth-child(4) { width:185px; }
+.app .payroll-intake-register-table> :is(thead,tbody)>tr> :is(th,td):nth-child(5) { width:auto; }
+.app .payroll-intake-register-table details>.table-wrap { max-height:390px; overflow:auto; margin-top:8px; }
+.app .payroll-intake-register-table details .table { width:100%; min-width:580px; table-layout:fixed; }
+.app .payroll-intake-register-table details .table :is(th,td) { position:static!important; left:auto; width:auto; min-width:0; padding:9px 8px; overflow-wrap:normal; white-space:normal; }
+.app .payroll-intake-register-table details .table :is(th,td):nth-child(-n+3) { width:100px; white-space:nowrap; }
+.app .payroll-intake-register-table details .table :is(th,td):nth-child(4) { width:110px; text-align:right; white-space:nowrap; }
+.app .payroll-intake-register-table details .table :is(th,td):nth-child(5) { overflow-wrap:anywhere; }
 .app :is(.payroll-cycle-order,.shift-report-card,.payroll-history-card) { box-shadow:0 1px 4px #10243b0a; }
 .app .payroll-cycle-register-table details summary { background:#e1edf8; border-color:#9cbdd6; }
 .app .payroll-cycle-register-table details[open] summary { background:#d1e5f4; border-color:#5d96bb; }
