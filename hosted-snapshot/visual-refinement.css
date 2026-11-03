@@ -669,3 +669,107 @@ html body { background:radial-gradient(ellipse at 5% 0,#1c55772b,transparent 55%
 .modal .modal-footer { background:#e3edf5; border-top-color:#a6bfd3; }
 @media(max-width:600px) { .app .section .section-head { padding:13px; } .app #payrollCycleRegisterTable>.table-wrap:first-child .table { font-size:13px; } }
 @media(prefers-reduced-motion:reduce) { .app #colorAudit .color-audit-item { transition:none; } }
+/* Rain glass — a quiet rainy-window atmosphere, below every interactive surface.
+   Rain uses compositor-only transform/opacity; data surfaces retain opaque-enough contrast. */
+html body {
+ background:
+  radial-gradient(ellipse at 12% 66%,#e9c49c8a 0,transparent 24%),
+  radial-gradient(ellipse at 88% 28%,#f1d7ae66 0,transparent 20%),
+  radial-gradient(ellipse at 65% 100%,#a3c5c2 0,transparent 50%),
+  linear-gradient(135deg,#829eae 0%,#b5cbd6 38%,#a1bdcb 68%,#718f9d 100%)!important;
+ background-attachment:fixed;
+ isolation:isolate;
+}
+body::before,body::after { content:""; position:fixed; pointer-events:none; inset:-35px; z-index:0; }
+body::before {
+ background:
+  radial-gradient(ellipse 32px 65px at 8% 72%,#fff1cf80 0,#e8bd7e22 55%,transparent 75%),
+  radial-gradient(ellipse 21px 46px at 12% 73%,#ffdda673 0,transparent 75%),
+  radial-gradient(ellipse 28px 44px at 92% 42%,#ffe5b86b 0,transparent 74%),
+  radial-gradient(ellipse 24px 50px at 95% 43%,#d7ae745c 0,transparent 75%),
+  radial-gradient(ellipse at 35% 22%,#e5f5fa52,transparent 46%),
+  linear-gradient(110deg,transparent 8%,#e7faff24 32%,transparent 53%,#eefaff21 77%,transparent 92%);
+ opacity:.85;
+ animation:rainGlassLight 18s ease-in-out infinite alternate;
+}
+body::after {
+ background-image:
+  repeating-linear-gradient(103deg,transparent 0 76px,#edfaff40 77px,#effbff18 78px,transparent 79px 151px),
+  repeating-linear-gradient(99deg,transparent 0 131px,#eefaff2e 132px,transparent 134px 219px),
+  radial-gradient(ellipse 2px 7px at 25px 40px,#f2fbff59 0,transparent 80%);
+ background-size:auto,auto,137px 173px;
+ opacity:.35;
+ animation:rainGlassDrift 12s linear infinite;
+}
+.app { position:relative; z-index:1; --workspace-ink:#213d50; }
+.app .top {
+ background:linear-gradient(120deg,#f6fcffe8,#dfedf4cf 60%,#f9f1e3c7)!important;
+ border:1px solid #ffffffb8; border-top:1px solid #ffffffed;
+ box-shadow:inset 0 1px 0 #fff,0 12px 36px #294d6226!important;
+ backdrop-filter:blur(18px) saturate(115%); -webkit-backdrop-filter:blur(18px) saturate(115%);
+}
+.app .top .brand h1 { color:#24485d; text-shadow:0 1px 0 #ffffffb3; }
+.app .top .brand p { color:#4c6b7d; }
+.app .top .brand h1::before { background:linear-gradient(145deg,#f8e4ba,#d4b980); border-color:#fff0d0; color:#375365; box-shadow:inset 0 1px 0 #fff7e7,0 3px 10px #586c7420; }
+.app .top-actions > :is(.btn:not(.primary):not(.danger),.badge,.user-badge),.app .top-actions .admin-switch {
+ background:#f4fbffd6; border-color:#9ebacbb3; color:#2c5066; box-shadow:inset 0 1px 0 #fff9;
+}
+.app .top-actions .admin-switch b { color:#4a6578; }
+.app .top-actions > .btn:not(.primary):not(.danger):hover { background:#ffffffed; border-color:#6998af; color:#20465c; }
+.app .tabs {
+ background:linear-gradient(110deg,#eaf5fbd9,#d5e6efcf)!important;
+ border-color:#f4fbffb3; box-shadow:inset 0 1px 0 #fff9,0 6px 20px #294d621c!important;
+ backdrop-filter:blur(16px) saturate(115%); -webkit-backdrop-filter:blur(16px) saturate(115%);
+}
+.app .tabs .tab { color:#36596e; }
+.app .tabs .tab:hover:not(.active) { background:#ffffffa8; border-color:#9ebed1; color:#1b4b64; }
+.app .tabs .tab.active { background:linear-gradient(135deg,#f7e6c1,#e7c990); color:#354d59; border-color:#c2a873; box-shadow:inset 0 1px 0 #fffae9,0 2px 8px #796b4220; }
+.app :is(.card,.executive-summary),.app .section .card:not(.kpi):not(.hero):not(.master-shift-hero) {
+ background:linear-gradient(135deg,#ffffffdf,#f2f8fbd6 70%,#eef6f9cf);
+ border-color:#f8fdffcf; box-shadow:inset 0 1px 0 #fff,0 7px 24px #294d621a;
+ backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
+.app .orders-head :is(.orders-status-card,.orders-today-card) { background:linear-gradient(120deg,#ffffffdf,#eaf5fad6)!important; border-color:#f8fdffcf!important; }
+.app .section .section-head,#profitPanel .profit-head {
+ background:linear-gradient(110deg,#dceef4d9,#f4f9fcde 65%,#f5eddfcc); color:#284d62;
+ border-color:#b1ccdbb3; box-shadow:inset 3px 0 0 #82b7c7,inset 0 1px 0 #fff9;
+}
+.app .section .section-head :is(.chart-title,.chart-sub,.order-dashboard-heading,.help,.muted,label),
+.app .section .section-head .field>label,#profitPanel .profit-head :is(h2,p,label) { color:#2e5369; }
+.app .section .section-head .chart-sub { color:#506d7e; }
+.app .section .filters { background:#e8f3f8c9; border-color:#b7cddba6; }
+.app .section .form-section { background:linear-gradient(110deg,#e0eff6e6,#f4f9fcde); border-color:#aecad9; color:#365c72; }
+.app .orders-table-wrap { background:#e1edf3a6!important; border-color:#a3c0d1b3!important; box-shadow:inset 0 1px 0 #fff9; }
+.app .orders-table-wrap .table thead th,
+.app .orders-table-wrap .table thead th:nth-child(11),
+.app .orders-table-wrap .table thead th:nth-child(12) {
+ background:linear-gradient(180deg,#edf7fcf5,#d4e6f0f5)!important; color:#264e66!important;
+ border-bottom:1px solid #90b5ca; box-shadow:inset 0 1px 0 #fff;
+}
+.app .orders-table-wrap .table thead th:nth-child(n+13):nth-child(-n+16) { background:linear-gradient(180deg,#edf9f3f5,#d3e9def5)!important; color:#2e5d4b!important; border-bottom-color:#8db8a3; }
+.app .orders-table-wrap .order-value-chip,.app .orders-table-wrap .inline-master-input { box-shadow:inset 0 1px 0 #ffffffba; }
+.app .orders-table-wrap .copy-master-btn { background:#f1f8fccf; border-color:#a0bfd1; color:#345d73; }
+.app .section .table-wrap { background:#ffffffc9; border-color:#b8ccd9c9; }
+.app .section .table thead th { background:#e4f0f6e8; color:#345a70; }
+.modal .modal-card { background:#f5fafcf5; border-color:#d6e8f1; box-shadow:0 22px 70px #213d4f4d; backdrop-filter:blur(18px); }
+.modal .modal-head { background:linear-gradient(110deg,#dcecf5f5,#f8fbfdf5); border-bottom-color:#a7c6d8; }
+.modal .modal-title,.modal .modal-head :is(.chart-sub,.muted,.help) { color:#34566b; }
+.modal .modal-head .btn { background:#f5fbff; color:#31586f; border-color:#a4c1d3; }
+.modal .modal-footer { background:#e7f1f7f0; }
+.app .top :is(button,a,input,select,textarea):focus-visible,.app .tabs .tab:focus-visible { outline-color:#317c99!important; }
+@keyframes rainGlassDrift { 0% { transform:translate3d(0,-18px,0); opacity:.28; } 50% { opacity:.4; } 100% { transform:translate3d(-3px,18px,0); opacity:.28; } }
+@keyframes rainGlassLight { from { transform:translate3d(-6px,0,0); opacity:.68; } to { transform:translate3d(6px,2px,0); opacity:.9; } }
+body.rain-motion-paused::before,body.rain-motion-paused::after,
+html[data-rain-motion="off"] body::before,html[data-rain-motion="off"] body::after { animation:none; }
+@media(max-width:800px),(prefers-reduced-motion:reduce) { body::before,body::after { animation:none; transform:none; } }
+@media(max-width:800px) { .app .top,.app .tabs,.app .section .card { backdrop-filter:none; -webkit-backdrop-filter:none; } }
+@media(forced-colors:active) { body::before,body::after { display:none; } .app .top,.app .tabs,.app .card { background:Canvas!important; color:CanvasText!important; border:1px solid CanvasText; } }
+/* Native, keyboard-accessible pause control; no script or external request. */
+.rain-motion-control { position:fixed; left:14px; bottom:14px; z-index:5; display:inline-flex; align-items:center; gap:8px; max-width:calc(100vw - 28px); padding:9px 12px; border:1px solid #ffffffc9; border-radius:10px; background:#f0f8fbe8; color:#33586d; box-shadow:0 4px 18px #294d6226; font:500 12px/1.4 "Segoe UI",Arial,sans-serif; cursor:pointer; backdrop-filter:blur(10px); }
+.rain-motion-control input { width:16px; height:16px; margin:0; accent-color:#4a8199; }
+.rain-motion-control:focus-within { outline:3px solid #317c99; outline-offset:3px; }
+body:has(#rainMotionPaused:checked)::before,body:has(#rainMotionPaused:checked)::after { animation-play-state:paused; }
+body.auth-locked .rain-motion-control,body.modal-open .rain-motion-control { display:none; }
+@media(max-width:800px),(prefers-reduced-motion:reduce),(forced-colors:active) { .rain-motion-control { display:none; } }
+
+html body { background:linear-gradient(#b8d1df26,#d5e4ed38),url('./rain-courtyard.png') center center / cover fixed!important; }

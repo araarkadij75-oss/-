@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.92-premium-visual-v1';
+const CACHE='eliteservice-18.17.93-rain-glass-v1';
 const SHELL=[
   './',
   './index.html',
@@ -16,7 +16,8 @@ const SHELL=[
   './profit-bridge.js?v=20261103-cash1',
   './payroll-intake-accounting.js?v=20261103-audit1',
   './profit-ui.js?v=20261103-audit1',
-  './visual-refinement.css?v=20261103-premium2',
+  './visual-refinement.css?v=20261103-rain3',
+  './rain-courtyard.png',
   './quality-monitor.js?v=20261101-quality2',
   './premium-v181721.css',
 ];
