@@ -25,6 +25,32 @@
     let width=1, height=1, scale=1, frame=0, last=0, clock=0, scene=theme;
     let beads=[], drops=[], stars=[], ridges=[];
     let running=false, failed=false;
+    // Foreground scenery is visible through the workspace, but never over readable content.
+    // Cache geometry only; no order values, credentials or application state are read.
+    let protectedRects=[], geometryDirty=true;
+    function refreshProtection(){
+      if(!document.createTreeWalker||!document.createRange)return;
+      const app=document.querySelector('.app');if(!app)return;
+      const rects=[], range=document.createRange();
+      const walker=document.createTreeWalker(app,4);
+      const keep=r=>{if(r.width&&r.height&&r.bottom>0&&r.top<height&&r.right>0&&r.left<width)rects.push([r.left-4,r.top-3,r.width+8,r.height+6]);};
+      let node;
+      while((node=walker.nextNode())){range.selectNodeContents(node);for(const r of range.getClientRects())keep(r);}
+      for(const el of app.querySelectorAll('input,select,textarea,button,svg,canvas,img,[role="img"]'))keep(el.getBoundingClientRect());
+      protectedRects=rects;geometryDirty=false;
+    }
+    function protectContent(){
+      if(geometryDirty)refreshProtection();
+      for(const r of protectedRects)ctx.clearRect(...r);
+    }
+    function invalidateGeometry(){geometryDirty=true;}
+    document.addEventListener('scroll',invalidateGeometry,{passive:true,capture:true});
+    document.addEventListener('input',invalidateGeometry,{passive:true});
+    document.addEventListener('click',invalidateGeometry,{passive:true});
+    if(typeof MutationObserver!=='undefined'){
+      const app=document.querySelector('.app');
+      if(app)new MutationObserver(invalidateGeometry).observe(app,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','style','open','hidden']});
+    }
     const random=(a,b)=>a+Math.random()*(b-a);
     const image = new Image();
     const cloud = document.createElement('canvas');
@@ -34,7 +60,7 @@
       for(let i=0;i<85;i++){
         const x=random(0,768),y=random(80,180),r=random(25,100);
         const g=fog.createRadialGradient(x,y,0,x,y,r);
-        g.addColorStop(0,'rgba(238,250,255,.11)');g.addColorStop(1,'rgba(238,250,255,0)');
+        g.addColorStop(0,'rgba(238,250,255,.18)');g.addColorStop(.6,'rgba(70,127,147,.09)');g.addColorStop(1,'rgba(238,250,255,0)');
         fog.fillStyle=g;fog.fillRect(x-r,y-r,r*2,r*2);
       }
     }
@@ -43,6 +69,7 @@
     if(light){const g=light.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.12,'rgba(208,235,255,.8)');g.addColorStop(.35,'rgba(126,181,255,.17)');g.addColorStop(1,'rgba(126,181,255,0)');light.fillStyle=g;light.fillRect(0,0,64,64);}
     function newDrop(top=false){const r=random(3.4,7.6);return{x:random(0,width),y:top?random(-120,-20):random(-height*.1,height),r,v:random(12,90),pin:random(0,2),phase:random(0,6.28),trail:[]};}
     function resize(){
+      geometryDirty=true;
       width=Math.max(1,window.innerWidth);height=Math.max(1,window.innerHeight);
       scale=Math.min(window.devicePixelRatio||1,width<800?1:1.5,Math.sqrt(2800000/(width*height)));
       canvas.width=Math.round(width*scale);canvas.height=Math.round(height*scale);ctx.setTransform(scale,0,0,scale,0,0);
@@ -89,8 +116,9 @@
     }
     function space(){
       // Several independent depths, not a flat blinking wallpaper.
+      ctx.save();ctx.shadowColor='rgba(57,83,156,.65)';ctx.shadowBlur=3;
       for(const s of stars){const x=(s.x*width+clock*s.z*1.8)%width,y=s.y*height+Math.sin(clock*.07+s.phase)*3*s.z;const a=.2+.48*(.5+.5*Math.sin(clock*.65+s.phase));const size=3+s.z*8;ctx.globalAlpha=a;ctx.drawImage(glow,x-size/2,y-size/2,size,size);if(s.z>.94){ctx.fillStyle='#dfedff';ctx.fillRect(x-.4,y-3,.8,6);ctx.fillRect(x-3,y-.4,6,.8);}}
-      ctx.globalAlpha=1;
+      ctx.restore();ctx.globalAlpha=1;
       const cycle=clock%18;
       if(cycle>11&&cycle<12.4){const p=(cycle-11)/1.4,x=width*(.18+p*.65),y=height*(.12+p*.32),tail=160;ctx.save();ctx.globalAlpha=Math.sin(p*Math.PI)*.85;const g=ctx.createLinearGradient(x-tail,y-tail*.38,x,y);g.addColorStop(0,'rgba(140,202,255,0)');g.addColorStop(.8,'rgba(162,221,255,.45)');g.addColorStop(1,'rgba(255,255,255,1)');ctx.strokeStyle=g;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-tail,y-tail*.38);ctx.lineTo(x,y);ctx.stroke();ctx.drawImage(glow,x-9,y-9,18,18);ctx.restore();}
       const gx=width*(.2+Math.sin(clock*.022)*.07),gy=height*.22;
@@ -98,7 +126,7 @@
     }
     function mountains(){
       // Soft cloud textures at different distances move independently across the valley.
-      const layers=[{y:.2,w:1.7,h:.28,s:4,a:.21},{y:.42,w:1.4,h:.25,s:7,a:.27},{y:.71,w:1.9,h:.28,s:11,a:.16}];
+      const layers=[{y:.2,w:1.7,h:.28,s:4,a:.32},{y:.42,w:1.4,h:.25,s:7,a:.42},{y:.71,w:1.9,h:.28,s:11,a:.28}];
       for(const layer of layers){const span=width*layer.w,x=((clock*layer.s)%span)-span*.4;ctx.globalAlpha=layer.a;ctx.drawImage(cloud,x,height*layer.y,span,height*layer.h);ctx.drawImage(cloud,x-span,height*layer.y,span,height*layer.h);}ctx.globalAlpha=1;
       // Reflections stay in the lake band and breathe rather than flash.
       for(const p of ridges){const a=(.5+.5*Math.sin(clock*p.speed+p.phase))*.17;ctx.fillStyle=`rgba(234,255,255,${a})`;const x=width*(.22+p.x*.48),y=height*(.53+(p.y-.65)*.32);ctx.fillRect(x+Math.sin(clock*.3+p.phase)*6,y,3+p.x*11,.65);}
@@ -109,6 +137,7 @@
       if(scene==='classic')return;
       clock+=dt;
       if(scene==='rain')rain(dt);else if(scene==='space')space();else mountains();
+      protectContent();
     }
     function active(){return !failed&&!paused&&!document.hidden&&!reduced.matches&&scene!=='classic';}
     function tick(now){

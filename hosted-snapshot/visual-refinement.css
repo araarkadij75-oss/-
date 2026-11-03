@@ -953,3 +953,18 @@ html[data-atmosphere=classic] .workspace-appearance summary,html[data-atmosphere
 @media(max-width:800px) { .app .top,.app .tabs,.app .section .card { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; } }
 @media(prefers-reduced-motion:reduce) { .app *,.modal * { scroll-behavior:auto!important; } }
 @media(forced-colors:active) { html body { background:Canvas!important; } #workspaceAtmosphereStage { display:none!important; } .app .top,.app .tabs,.app .card,.modal .modal-card { background:Canvas!important; color:CanvasText!important; border:1px solid CanvasText!important; } }
+/* Scenery crosses panel whitespace. Canvas clears text/control geometry before presentation. */
+#workspaceAtmosphereStage[data-renderer=canvas] { z-index:2; opacity:.72; }
+body.modal-open #workspaceAtmosphereStage,body.auth-locked #workspaceAtmosphereStage,
+html[data-atmosphere-paused=true] #workspaceAtmosphereStage,
+html[data-atmosphere-reduced=true] #workspaceAtmosphereStage { visibility:hidden; }
+/* A shared readable surface for secondary cards in every workspace module. */
+.app :is(.expert,.debate-item,.scheme-card,.shift-report-card,.payroll-history-card,.order-responsibility),
+.modal :is(.form-section,.order-form-aside-card,.order-form-hint) { color:var(--material-ink); background:var(--material-field); border-color:var(--material-edge); }
+.app :is(.card.hero,.card.master-shift-hero) :is(.chart-title,.chart-sub,.help,.muted,.kpi .l,.kpi .v,.kpi .s) { color:#fff!important; }
+.app .section :is(.chart-title,.section-title,h2,h3,.kpi .l),.modal :is(.modal-title,h2,h3,label) { overflow-wrap:anywhere; min-width:0; text-overflow:clip; white-space:normal; }
+.app .section .btn,.modal .btn { white-space:normal; overflow-wrap:anywhere; height:auto; min-height:34px; line-height:1.35; }
+.app .section :is(.kpi,.profit-metric,.filters>*,.form-grid>*) { min-width:0; }
+.app .section :is(.help,.chart-sub,.source-note),.modal :is(.help,.chart-sub) { line-height:1.5; }
+.app .section .kpi .v,#profitPanel .profit-metric strong { overflow-wrap:anywhere; line-height:1.25; }
+@media(forced-colors:active) { #workspaceAtmosphereStage[data-renderer=canvas] { display:none!important; } }
