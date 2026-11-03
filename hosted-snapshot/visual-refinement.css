@@ -394,3 +394,215 @@ html { font-size:calc(16px * var(--font-scale,1)); }
 :root { --font-ui:"Segoe UI",Arial,sans-serif; }
 html body,.app,.modal,.app :is(button,input,select,textarea),.modal :is(button,input,select,textarea),.app :is(.chart-title,.kpi .v,.mini .v),.modal :is(.chart-title,.modal-title) { font-family:"Segoe UI",Arial,sans-serif!important; font-variation-settings:normal; }
 .modal .field label { font-variation-settings:normal; }
+
+/* EliteService / Professional workspace — 2026-11-03.
+   Reference: Чинилкин's navy, luminous cyan edge and warm gold.
+   Chrome conveys the brand; status colours remain exclusively operational. */
+:root {
+ --workspace-navy:#112738; --workspace-deep:#0b1b29; --workspace-gold:#edc46e;
+ --workspace-cyan:#76bacb; --workspace-ink:#203447; --workspace-line:#c9d4dd;
+ --workspace-soft:#f0f4f6; --workspace-radius:12px;
+ --bg:#e9eef2; --text:#203447; --muted:#566b7b;
+}
+html body {
+ background:linear-gradient(180deg,#112738 0,#17364a 210px,#e9eef2 520px,#e9eef2 100%);
+ background-attachment:fixed;
+ color:var(--workspace-ink);
+}
+body::before { background:none; }
+.app { --accent:#1a657e; --accent2:#124c62; --border:var(--workspace-line); --muted:#566b7b; padding-top:14px; }
+.app .top {
+ position:relative; top:0; padding:16px 18px; margin-bottom:10px;
+ border:1px solid #477184; border-top:2px solid #d8b76f; border-left-width:1px;
+ border-radius:14px; background:linear-gradient(115deg,#17384c,#102738 70%);
+ box-shadow:inset 0 1px 0 #ffffff0d,0 8px 24px #06142024; backdrop-filter:none;
+}
+.app .brand h1 { color:#f2f7fa; font-size:24px; letter-spacing:-.035em; font-weight:750; }
+.app .brand h1::before {
+ content:"E"; background:#edc46e; color:#112738; border:1px solid #ffe3a7;
+ border-radius:9px; box-shadow:none; font-weight:850;
+}
+.app .brand p { color:#b9ceda; letter-spacing:.025em; font-weight:500; }
+.app .top-actions { gap:7px; }
+.app .top-actions > :is(.btn:not(.primary):not(.danger),.badge,.user-badge),
+.app .top-actions .admin-switch {
+ background:#1c394c; border:1px solid #496574; color:#e3edf2; box-shadow:none; border-radius:8px;
+}
+.app .top-actions .admin-switch { padding:5px 7px; }
+.app .top-actions .admin-switch b { color:#c4d5de; }
+.app .top-actions .admin-switch :is(.select,.btn) { background:#f4f7f9; color:#203447; border-color:#9db0bc; }
+.app .top-actions > .btn:not(.primary):not(.danger):hover { background:#2c4c60; color:#fff; border-color:#83b5c6; }
+.app .top-actions .cloud-badge.online,.app .top-actions .badge.db-status-online { background:#193f39; color:#c5efdb; border-color:#4f8b76; }
+.app .top-actions .cloud-badge.error,.app .top-actions .badge.db-status-error { background:#542d35; color:#ffdae0; border-color:#af6c78; }
+.app .top-actions .cloud-badge.syncing,.app .top-actions .badge.db-status-syncing { background:#4a3d23; color:#ffe4ad; border-color:#a58b53; }
+.app .tabs {
+ top:8px; padding:5px; gap:4px; border:1px solid #426277; border-radius:11px;
+ background:#102738; box-shadow:0 5px 14px #0717241c; backdrop-filter:none;
+}
+.app .tabs .tab { color:#c5d8e3; border:1px solid transparent; border-radius:7px; font-weight:600; transform:none; }
+.app .tabs .tab:hover:not(.active) { background:#27475b; border-color:#4d7084; color:#fff; transform:none; }
+.app .tabs .tab.active { color:#142a39; border-color:#f0cf89; background:#edc46e; box-shadow:none; font-weight:750; }
+.app .btn,.modal .btn { border-radius:8px; box-shadow:none; font-weight:600; transition:background .14s,border-color .14s; }
+.app .btn:hover,.modal .btn:hover { transform:none; box-shadow:none; }
+.app .btn.primary,.modal .btn.primary { background:#edc46e; border-color:#c89e46; color:#172d3c; box-shadow:inset 0 1px 0 #fff2c9; font-weight:750; }
+.app .btn.primary:hover:not(:disabled),.modal .btn.primary:hover:not(:disabled) { background:#f4d187; border-color:#a67d2c; color:#102633; }
+.app .btn:not(.primary):not(.danger):not(:disabled):hover { background:#edf4f6; border-color:#83a6b7; color:#164c61; }
+.app .btn.danger,.modal .btn.danger { background:#fff1f1; border-color:#d9a1a7; color:#962f3e; }
+.app :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible,
+.modal :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline:3px solid #19839f; outline-offset:3px; }
+.app .top :is(button,a,input,select,textarea):focus-visible,.app .tabs .tab:focus-visible { outline-color:#ffdf8c; }
+.app .section { --section-accent:#245a70; --section-tint:#edf3f6; --section-border:#c4d1da; }
+.app :is(.card,.executive-summary),.app .section .card:not(.kpi):not(.hero):not(.master-shift-hero) {
+ border:1px solid #c6d2dc; border-radius:12px; background:#fff; box-shadow:0 2px 8px #112b4310;
+}
+.app .section :is(.section-head,.filters) { background:#f1f5f7; border-color:#c8d5de; border-radius:9px; box-shadow:none; }
+.app .section .chart-card { border-top:2px solid #648c9e; }
+.app .section :is(.chart-title,.order-dashboard-heading),.app :is(.chart-title,.form-section) { color:#1d3d52; font-weight:700; letter-spacing:-.015em; }
+.app .chart-title { font-size:17px; }
+.app :is(.chart-sub,.help,.source-note,.muted),.modal :is(.help,.source-note,.muted) { color:#566b7b; }
+.app :is(.input,.select,.textarea),.modal :is(.input,.select,.textarea) { border:1px solid #b8c9d4; border-radius:8px; background-color:#fff; color:#203447; box-shadow:inset 0 1px 2px #112b4305; }
+.app :is(.input,.select,.textarea):focus,.modal :is(.input,.select,.textarea):focus { border-color:#2984a0; box-shadow:0 0 0 2px #2984a01a; }
+.app .section .form-section { background:#edf3f6; border-color:#c5d5df; color:#254b62; border-radius:8px; }
+.app .section :is(.expert,.debate-item,.scheme-card),.app :is(.mini,.quality) { background:#f6f8fa; border-color:#c8d5de; border-radius:9px; }
+.app .section .import-zone { border-color:#6f99ac; background:#f2f7f9; border-radius:12px; }
+.app :is(.kpi,.kpi.tone-blue,.kpi.tone-violet,.kpi.tone-green,.kpi.tone-amber,.kpi.tone-red),
+.app [data-panel=ai] .kpis .kpi {
+ background:#fff; border:1px solid #c6d2dc; border-top:3px solid #477e96; border-radius:11px;
+ box-shadow:0 2px 7px #112b430b; text-align:left;
+}
+.app .kpi.tone-green { border-top-color:#327c66; }
+.app .kpi.tone-amber { border-top-color:#b78d37; }
+.app .kpi.tone-red { border-top-color:#b75b66; }
+.app .kpi::before,.app .kpi::after { display:none; }
+.app .kpi-icon { width:7px; height:7px; border-radius:2px; box-shadow:none; background:#648b9e; }
+.app .kpi .l { text-transform:none; letter-spacing:0; padding-right:0; color:#526a7a; font-weight:600; }
+.app .kpi .v { color:#17384b; font-weight:750; letter-spacing:-.025em; font-variant-numeric:tabular-nums; }
+.app .kpi .s { color:#5b7080; }
+.app .executive-summary { background:#f7fafb; }
+.app .insight-card { background:#fff; border-radius:9px; box-shadow:none; }
+.app .orders-head :is(.orders-status-card,.orders-today-card) { background:#fff!important; border-color:#c4d2dc!important; }
+.app #todayBox .mini { background:#f4f7f9; border-color:#c4d2db; border-radius:8px; }
+.app #todayBox [data-today=cash-new] { background:#eef7f2; border-color:#aacabb; }
+.app #todayBox [data-today=cash-total] { background:#dceee4; border-color:#77ad93; }
+.app #todayBox [data-today=financial] { background:#eef3f6; border-color:#afc6d2; }
+.app #colorAudit .color-audit-item { border-radius:8px; box-shadow:none; min-height:51px; }
+.app .section :is(.table-wrap,.payroll-daily-wrap) { background:#fff; border-color:#c3d1dc; border-radius:10px; box-shadow:none; }
+.app .section .table thead th { background:#e8eff3; color:#2a4b60; border-bottom:1px solid #9fb7c5; text-transform:none; letter-spacing:0; font-weight:700; }
+.app .orders-table-wrap { padding:5px; background:#e8eef2!important; border-color:#aebfcb!important; }
+.app .orders-table-wrap .table { border-spacing:0 5px; }
+.app .orders-table-wrap .table thead th,
+.app .orders-table-wrap .table thead th:nth-child(11),
+.app .orders-table-wrap .table thead th:nth-child(12) { background:#213e51!important; color:#ecf4f8!important; border-bottom:1px solid #62889d; }
+.app .orders-table-wrap .table thead th:nth-child(n+13):nth-child(-n+16) { background:#234b46!important; color:#e4f4ea!important; }
+.app .orders-table-wrap .order-value-chip { border-radius:7px; box-shadow:none; }
+.app .orders-table-wrap .order-dispatcher-chip { background:#eef2f6; border-color:#9fb3c2; color:#294b62; }
+.app .orders-table-wrap .inline-master-input { background:#f3f8fb!important; border-color:#9bb8c9!important; color:#1d4e68; border-radius:7px; }
+.app .orders-table-wrap .order-money-chip { background:#f4f8f5; border-color:#b5cbbf; color:#315c48; }
+.app .orders-table-wrap .order-cash-chip { background:#d8ecdf; border-color:#79aa8d; color:#175538; }
+.app .orders-table-wrap .copy-master-btn { background:#f1f5f8; border-color:#a5bdcc; color:#24516b; }
+.app .orders-table-wrap .action-cell .btn { border-radius:6px; }
+.app .order-address { color:#243e50; }
+.app .order-problem summary { color:#405765; }
+.app .order-problem summary::after { color:#176c87; font-size:11px; }
+/* Decorative disclosure text must not leak from inactive tabs or hidden mobile copies. */
+.app .section:not(.active) .order-problem summary::after,
+.app [hidden] .order-problem summary::after { content:none; }
+.app .mobile-order-meta .team-master-field { background:#edf4f8; border-color:#adc4d1; }
+.app .mobile-order-meta .team-dispatcher-field { background:#f1f3f7; border-color:#b3c2d0; }
+.app .mobile-order-meta .finance-col { background:#e5f1e9; border-color:#a3c4b1; }
+.app :is(.shift-report-card,.payroll-history-card) { background:#f8fafb; border-color:#becfd9; border-radius:10px; }
+.app .payroll-cycle-register-table details summary { background:#edf4f7; border-color:#abc4d2; color:#274f65; border-radius:7px; }
+.app .payroll-cycle-register-table details[open] summary { background:#dfeef3; }
+.app .payroll-cycle-order { border-radius:7px; border-color:#c1d1db; }
+.app .payroll-cycle-order-status { border-radius:6px; background:#eff4f7; color:#36566c; border-color:#b5c9d6; }
+.app .card.master-shift-hero,.app .card.hero { background:linear-gradient(115deg,#17394d,#102b3f); color:#eef7fa; border-color:#54859b; }
+.app .master-shift-hero .section-head { background:transparent; border-color:#58788a; }
+.app .master-shift-hero :is(.chart-title,.chart-sub) { color:#eef7fa; }
+.app .shift-live-grid .salary { background:#17394d; color:#fff; border:1px solid #567e92; }
+.app .shift-live-grid .salary :is(span,small) { color:#c4dce7; }
+.app .quality-monitor { background:#f5f8fa; border-color:#b7ccd8; }
+.app .quality-monitor-summary { background:#e7f0f4; color:#2b5368; }
+#profitPanel .profit-metric { background:#fff; border:1px solid #beced8; border-top:3px solid #4b829a; border-radius:11px; }
+#profitPanel .profit-metric:is(.blue,.violet) { background:#fff; border-color:#beced8; border-top-color:#4b829a; }
+#profitPanel .profit-metric.amber { background:#fffdf7; border-color:#dacaa8; border-top-color:#b78d37; }
+#profitPanel .profit-metric.green { background:#edf6f1; border-color:#a6c9b5; border-top-color:#327c66; }
+#profitPanel .profit-metric.red { background:#fff3f3; border-color:#ddadb2; border-top-color:#b75b66; }
+#profitPanel .profit-metric strong { color:#1e3e50; letter-spacing:-.025em; }
+#profitPanel .profit-metric small { color:#5c7080; }
+#profitPanel :is(h2,h3) { color:#1d3d52; }
+#profitPanel details>summary { color:#2b536b; }
+.app input[type=file]::file-selector-button,#profitPanel input[type=file]::file-selector-button { background:#edf3f6; border-color:#9fb9c9; color:#254f66; border-radius:7px; }
+.modal .modal-card { background:#f8fafb; border:1px solid #809eaf; border-radius:14px; box-shadow:0 28px 80px #06172355; }
+.modal .modal-head { background:#163548; color:#f1f7fa; border-bottom:1px solid #7097ab; border-radius:13px 13px 0 0; }
+.modal .modal-title { color:#f1f7fa; font-weight:700; letter-spacing:-.02em; }
+.modal .modal-head :is(.chart-sub,.muted,.help) { color:#c5d8e3; }
+.modal .modal-head .btn { background:#284a5f; color:#f0f7fa; border-color:#7396aa; }
+.modal .modal-footer { border-top:1px solid #c1d2dd; background:#eef3f6; }
+.modal .form-section { color:#244b61; }
+.modal#loginModal .modal-card { background:#f8fafb; }
+.modal#loginModal .modal-title::before { content:"E"; background:#edc46e; color:#173348; box-shadow:none; border-radius:8px; }
+@media(max-width:800px) {
+ .app .top { padding:12px; }
+ .app .brand h1 { font-size:23px; }
+ .app .tabs { top:5px; }
+ .app .tabs .tab { min-height:40px; }
+ .app .top-actions > :is(.btn,.badge,.user-badge) { min-width:0; }
+ .modal .modal-card { border-radius:14px 14px 8px 8px; }
+}
+@media(prefers-reduced-motion:reduce) { .app .btn,.modal .btn { transition:none; } }
+@media(forced-colors:active) {
+ .app .tabs .tab.active { border:2px solid Highlight; }
+ .app .top,.app .tabs,.app .card,.modal .modal-card { border:1px solid CanvasText; box-shadow:none; }
+}
+/* Resolve legacy !important chrome declarations in premium-v181721.css.
+   Both foreground and background are owned here as one contrast contract. */
+html body { background:linear-gradient(180deg,#112738 0,#17364a 210px,#e9eef2 520px,#e9eef2 100%)!important; background-attachment:fixed; }
+.app .top { background:linear-gradient(115deg,#17384c,#102738 70%)!important; box-shadow:inset 0 1px 0 #ffffff0d,0 8px 24px #06142024!important; }
+.app .top .brand h1 { color:#f2f7fa; font-size:24px; }
+.app .top .brand p { color:#b9ceda; }
+.app .tabs { background:#102738!important; box-shadow:0 5px 14px #0717241c!important; }
+.app .btn.primary,.modal .btn.primary { box-shadow:inset 0 1px 0 #fff2c9!important; }
+.app .btn.primary:hover:not(:disabled),.modal .btn.primary:hover:not(:disabled) { background:#f4d187!important; box-shadow:inset 0 1px 0 #fff2c9!important; }
+.app .card:hover { transform:none; box-shadow:0 2px 8px #112b4310; }
+.app :is(.input,.select,.textarea):focus,.modal :is(.input,.select,.textarea):focus { border-color:#2984a0!important; box-shadow:0 0 0 2px #2984a01a!important; }
+.app :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible,
+.modal :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible { outline:3px solid #19839f!important; }
+.app .top :is(button,a,input,select,textarea):focus-visible,.app .tabs .tab:focus-visible { outline-color:#ffdf8c!important; }
+/* Keep legacy relative navigation layout: no sticky overlap on wrapped toolbars. */
+.app .tabs { position:relative!important; top:auto!important; }
+@media(max-width:800px) { .app .top .brand h1 { font-size:23px; } }
+/* Desktop audit at 1440px: keep navigation complete and columns legible.
+   Below 1300px the existing order cards remain the responsive presentation. */
+.app nav.tabs { display:flex; flex-wrap:wrap; overflow:visible; }
+.app nav.tabs .tab { flex:0 0 auto; max-width:100%; white-space:normal; }
+@media(min-width:1300px) {
+ .app .section .orders-table-wrap { max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
+ .app .section .orders-table-wrap .table { width:100%!important; min-width:calc(1600px * var(--font-scale,1))!important; max-width:none; table-layout:fixed; }
+ .app .section .orders-table-wrap .table :is(th,td) { box-sizing:border-box; padding-inline:5px; word-break:normal; overflow-wrap:normal; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(1) { width:30px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(2) { width:80px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(3) { width:110px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(4) { width:82px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(5) { width:100px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(6) { width:50px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(7) { width:45px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(8) { width:90px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(9) { width:100px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(10) { width:200px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(11) { width:130px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(12) { width:90px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(n+13):nth-child(-n+15) { width:80px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(16) { width:95px!important; }
+ .app .section .orders-table-wrap .table :is(th,td):nth-child(17) { width:110px!important; }
+ .app .section .orders-table-wrap .inline-master-input { min-width:120px; width:100%; }
+ .app .section #orderBody td:nth-child(8)>b { overflow-wrap:normal; word-break:normal; white-space:normal; }
+ .app .section .orders-table-wrap :is(.status-pill,.stage,.status-chip,.status-badge) { overflow-wrap:normal; word-break:normal; white-space:normal; max-width:100%; }
+ .app .section .orders-table-wrap .table th { overflow-wrap:normal!important; word-break:normal; }
+}
+/* Payroll drill-downs: wide registers scroll within their module, never the page. */
+.app #payrollCycleRegister { min-width:0; max-width:100%; }
+.app #payrollCycleRegisterTable,
+.app #payrollCycleRegisterTable > .table-wrap,
+.app #payrollAccrualTable { min-width:0; max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
+.app #payrollAccrualTable > details { min-width:0; }
+.app #payrollAccrualTable > details > summary { white-space:normal; overflow-wrap:break-word; }

@@ -1192,7 +1192,9 @@
         },
         "formRecord-8571039a158b": {
           "globals": [
-            "Date"
+            "Array",
+            "Date",
+            "Object"
           ],
           "crossDomain": [
             {
@@ -4371,7 +4373,8 @@
         "renderPayrollCycleRegister-5260983879c4": {
           "globals": [
             "Date",
-            "Map"
+            "Map",
+            "Set"
           ],
           "crossDomain": [
             {
@@ -9748,7 +9751,9 @@
         },
         "formRecord-a30f01552ee8": {
           "globals": [
-            "Date"
+            "Array",
+            "Date",
+            "Object"
           ],
           "crossDomain": [
             {
@@ -17886,7 +17891,9 @@
         },
         "formRecord-25a7543b5785": {
           "globals": [
-            "Date"
+            "Array",
+            "Date",
+            "Object"
           ],
           "crossDomain": [
             {

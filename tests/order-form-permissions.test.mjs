@@ -25,3 +25,24 @@ for(const page of ['index','master','dispatcher-logistic'])for(const role of ['o
  if(role==='master')assert.ok(controls.every(x=>x.disabled));
  if(role==='dispatcher')assert.equal(elements.get('#f_master').disabled,true);
 });
+
+for(const role of ['owner','dispatcher','master'])test(`${role}: editing preserves source audit provenance without copying arbitrary privileged fields`,()=>{
+ const file=fs.readFileSync(new URL(`../src/crm/orders/${role}.js`,import.meta.url),'utf8');
+ const source=file.match(/^function formRecord\(\).*$/m)[0];
+ const audit={auditId:'audit-original',sourceRow:1876,sourceSpreadsheet:'source-sheet',appliedAt:'2026-11-01T16:21:39Z',actorUid:'original-actor'};
+ const original={_id:'order-1',orderId:'261101-007',_sourceReconciliation:{...audit,grantOwner:true},_createdAt:'2026-11-01T12:00:00Z',_createdBy:'dispatcher-id',_createdByName:'Сергей',_origin:'excel',_grantOwner:true};
+ const before=JSON.stringify(original),fields={f_id:'order-1',f_total:'9500',f_sourceReconciliation:'forged-audit'};
+ const ctx={state:{orders:[original],schemeTouched:false},$:s=>({value:fields[s.slice(1)]||'',checked:false}),clean:x=>String(x??'').trim(),uid:()=> 'new-id',makeOrderId:()=> 'new-order',lockedDispatcher:()=> 'Сергей',masterFixedMode:()=>false,currentRole:()=> 'owner',currentUser:()=>({id:'owner',name:'Владелец',shift:''})};
+ const record=vm.runInNewContext(source+';formRecord()',ctx);
+ assert.deepEqual(JSON.parse(JSON.stringify(record._sourceReconciliation)),audit);
+ assert.equal(record.total,'9500');
+ assert.equal(record._createdBy,'dispatcher-id');
+ assert.equal(record._createdAt,original._createdAt);
+ assert.equal(record._origin,'excel');
+ assert.equal(record._updatedBy,'owner');
+ assert.equal('_grantOwner' in record,false);
+ assert.equal(JSON.stringify(original),before);
+ fields.f_id='';
+ const created=vm.runInNewContext(source+';formRecord()',ctx);
+ assert.equal('_sourceReconciliation' in created,false,'new orders must not inherit an unrelated source audit');
+});
