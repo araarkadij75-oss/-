@@ -772,7 +772,7 @@ body:has(#rainMotionPaused:checked)::before,body:has(#rainMotionPaused:checked):
 body.auth-locked .rain-motion-control,body.modal-open .rain-motion-control { display:none; }
 @media(max-width:800px),(prefers-reduced-motion:reduce),(forced-colors:active) { .rain-motion-control { display:none; } }
 
-html body { background:linear-gradient(#b8d1df26,#d5e4ed38),url('./rain-courtyard.png') center center / cover fixed!important; }
+html body { background:linear-gradient(#b8d1df26,#d5e4ed38),url('./rain-courtyard-v1.webp') center center / cover fixed!important; }
 
 /* Unified workspace atmosphere. Operational colours never depend on the scenery. */
 :root {
@@ -782,9 +782,9 @@ html body { background:linear-gradient(#b8d1df26,#d5e4ed38),url('./rain-courtyar
 }
 html[data-atmosphere=space] { --scene-tint:#e3e7fa; --scene-edge:#a5aed5; --scene-ink:#293b5b; }
 html[data-atmosphere=mountains] { --scene-tint:#dceee9; --scene-edge:#9cbbb8; --scene-ink:#254b4c; }
-html body { background:linear-gradient(#a9c8dd15,#d9e8f01f),url('./rain-courtyard.png') center / cover fixed!important; }
-html[data-atmosphere=space] body { background:linear-gradient(#172d5122,#162a4c11),url('./space-panorama.png') center / cover fixed!important; }
-html[data-atmosphere=mountains] body { background:linear-gradient(#a9d7db0a,#c7e5e710),url('./mountain-panorama.png') center / cover fixed!important; }
+html body { background:linear-gradient(#a9c8dd15,#d9e8f01f),url('./rain-courtyard-v1.webp') center / cover fixed!important; }
+html[data-atmosphere=space] body { background:linear-gradient(#172d5122,#162a4c11),url('./space-panorama-v1.webp') center / cover fixed!important; }
+html[data-atmosphere=mountains] body { background:linear-gradient(#a9d7db0a,#c7e5e710),url('./mountain-panorama-v1.webp') center / cover fixed!important; }
 body::before,body::after { content:none!important; animation:none!important; }
 #workspaceAtmosphereStage { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; contain:strict; }
 #workspaceAtmosphereStage::before,#workspaceAtmosphereStage::after { content:""; position:absolute; inset:-12%; pointer-events:none; }

@@ -6,7 +6,7 @@ const code=fs.readFileSync(new URL('../hosted-snapshot/workspace-atmosphere.js',
 
 // Minimal browser adapter: assert observable settings and scheduling, not drawing internals.
 function run(saved='{}', options={}) {
-  const events={}, windowEvents={}, controls={}, writes=[], frames=new Map(), canvases=[];
+  const events={}, windowEvents={}, controls={}, writes=[], frames=new Map(), canvases=[], observers=[], images=[];
   const root={dataset:{}};
   let sequence=0, paintCount=0, cancelled=0, mediaListener;
   const clears=[];let dropsPainted=0;
@@ -23,7 +23,8 @@ function run(saved='{}', options={}) {
     const canvas={style:{},width:0,height:0,setAttribute(){},getContext(){if(options.canvasThrows)throw Error('unavailable');return options.noCanvas?null:context;}};
     canvases.push(canvas);return canvas;
   }
-  const document={documentElement:root,readyState:'complete',hidden:!!options.hidden,baseURI:'https://crm.example/candidate/index.html',getElementById:id=>controls[id],createElement:()=>makeCanvas(),addEventListener:(name,fn)=>events[name]=fn};
+  const bodyClasses=new Set();
+  const document={body:{classList:{contains:x=>bodyClasses.has(x)}},querySelector:()=>null,documentElement:root,readyState:'complete',hidden:!!options.hidden,baseURI:'https://crm.example/candidate/index.html',getElementById:id=>controls[id],createElement:()=>makeCanvas(),addEventListener:(name,fn)=>events[name]=fn};
   if(options.protection){
     document.querySelector=()=>({querySelectorAll:()=>[{getBoundingClientRect:()=>({left:300,top:200,width:100,height:40,right:400,bottom:240})}]});
     document.createTreeWalker=()=>{let done=false;return{nextNode(){if(done)return null;done=true;return {};}};};
@@ -31,9 +32,11 @@ function run(saved='{}', options={}) {
   }
   const localStorage={getItem(){if(options.storageBlocked)throw Error('denied');return saved;},setItem(key,value){if(options.storageBlocked)throw Error('denied');writes.push(JSON.parse(value));}};
   const window={innerWidth:1440,innerHeight:900,devicePixelRatio:2,matchMedia:()=>media,addEventListener:(name,fn)=>windowEvents[name]=fn,requestAnimationFrame(fn){const id=++sequence;frames.set(id,fn);return id;},cancelAnimationFrame(id){cancelled++;frames.delete(id);}};
-  class Image { complete=false; naturalWidth=0; naturalHeight=0; }
-  vm.runInNewContext(code,{document,localStorage,window,Image,URL});
-  return {root,controls,writes,document,events,frames,canvases,windowEvents,clears,
+  class Image { complete=false; naturalWidth=0; naturalHeight=0; constructor(){images.push(this);} }
+  class MutationObserver {constructor(fn){this.fn=fn;}observe(target){observers.push({target,fn:this.fn});}}
+  vm.runInNewContext(code,{document,localStorage,window,Image,URL,MutationObserver});
+  return {root,controls,writes,document,events,frames,canvases,windowEvents,clears,images,
+    modal(value){value?bodyClasses.add('modal-open'):bodyClasses.delete('modal-open');observers.filter(o=>o.target===document.body).forEach(o=>o.fn());},
     get dropsPainted(){return dropsPainted;},get paintCount(){return paintCount;},get cancelled(){return cancelled;},
     tick(now){const pending=[...frames.values()];frames.clear();for(const fn of pending)fn(now);},
     reduce(value){media.matches=value;mediaListener?.();},
@@ -86,6 +89,20 @@ test('canvas rejection leaves a working static appearance selector',()=>{
 
 test('an initially hidden page does not schedule decorative work',()=>{
   const r=run('{}',{hidden:true});assert.equal(r.frames.size,0);r.hide(false);assert.equal(r.frames.size,1);
+});
+
+test('opening an order dialog stops decorative work and closing resumes one loop',()=>{
+  const r=run();r.modal(true);const paints=r.paintCount;
+  assert.equal(r.frames.size,0);r.tick(200);assert.equal(r.paintCount,paints);
+  r.modal(false);assert.equal(r.frames.size,1);r.modal(false);assert.equal(r.frames.size,1);
+  r.pause(true);r.modal(true);r.modal(false);assert.equal(r.frames.size,0);
+});
+
+test('other themes do not download the rain texture until rain is selected',()=>{
+  for(const theme of ['classic','mountains','space']){
+    const r=run(JSON.stringify({theme}));assert.equal(r.images[0].src,undefined);
+    r.choose('rain');assert.match(r.images[0].src,/rain-courtyard-v1\.webp$/);
+  }
 });
 
 test('particles avoid content without rectangular holes in continuous scenery',()=>{
