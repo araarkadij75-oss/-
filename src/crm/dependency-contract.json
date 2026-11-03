@@ -4371,7 +4371,8 @@
         "renderPayrollCycleRegister-5260983879c4": {
           "globals": [
             "Date",
-            "Map"
+            "Map",
+            "Set"
           ],
           "crossDomain": [
             {
