@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.101-payment-sequence-v1';
+const CACHE='eliteservice-18.17.102-partial-settlement-v1';
 const SHELL=[
   './',
   './index.html',
@@ -14,7 +14,7 @@ const SHELL=[
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261103-cash1',
   './profit-bridge.js?v=20261103-cash1',
-  './payroll-intake-accounting.js?v=20261106-sequence1',
+  './payroll-intake-accounting.js?v=20261106-partial2',
   './profit-ui.js?v=20261103-audit1',
   './visual-refinement.css?v=20261104-expanded-cards1',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',

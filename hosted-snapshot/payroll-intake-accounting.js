@@ -49,8 +49,13 @@
    for(const d of snapshot.days.filter(d=>d.person===b.person)){
     const prior=b.days.find(x=>x.date===d.date);let cash=prior?.cashCents||0,earned=prior?entitlement(cash):0;
     if(!prior){events.push({person:b.person,intakeDate:d.date,date:d.date,amountCents:200000,kind:'daily_minimum'});earned=200000}
-    const receipts=(snapshot.orders||[]).filter(o=>o.person===b.person&&o.intakeDate===d.date&&d.orderIds.includes(o.id)&&validDate(o.cashDate)&&o.cashDate>b.date).sort((a,z)=>a.cashDate.localeCompare(z.cashDate));
-    for(const o of receipts){cash+=o.cashCents;const next=entitlement(cash);if(next>earned)events.push({person:b.person,intakeDate:d.date,date:o.cashDate,amountCents:next-earned,kind:'cash_increment'});earned=next}
+    const receipts=(snapshot.orders||[]).filter(o=>o.person===b.person&&o.intakeDate===d.date&&d.orderIds.includes(o.id)&&validDate(o.cashDate)).sort((a,z)=>a.cashDate.localeCompare(z.cashDate));
+    // A reconciliation may leave individual days partly or wholly unpaid.
+    // Replay dated receipts against the credited entitlement, not the global
+    // reconciliation date. Only undated cash already credited seeds the replay.
+    const knownBefore=receipts.filter(o=>o.cashDate<=b.date).reduce((s,o)=>s+o.cashCents,0);
+    cash=prior?Math.max(0,prior.cashCents-knownBefore):0;
+    for(const o of receipts){cash+=o.cashCents;const next=entitlement(cash);if(next>earned)events.push({person:b.person,intakeDate:d.date,date:o.cashDate,amountCents:next-earned,kind:'cash_increment'});earned=Math.max(earned,next)}
     const target=d.entitlementCents??d.earnedCents;if(target!==earned)unallocated.push({person:b.person,intakeDate:d.date,date:'',amountCents:target-earned,kind:'baseline_difference'});
    }
   }
