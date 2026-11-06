@@ -102,7 +102,7 @@ test('cancelled and refused orders never require a master assignment',()=>{
  }
 });
 
- test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261106-quality4"));assert.ok(!source.includes("20261101-quality2"));}});
+ test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261106-quality5"));assert.ok(!source.includes("20261101-quality2"));}});
 
 test('rolling scope advances at Moscow midnight, retains boundary, future and unknown dates',()=>{
  const rows=[order({orderId:'old',callDate:'2026-10-22'}),order({orderId:'boundary',callDate:'2026-10-23'}),order({orderId:'future',callDate:'2027-01-01'}),order({orderId:'unknown',callDate:'',visitDate:''})];
@@ -110,4 +110,29 @@ test('rolling scope advances at Moscow midnight, retains boundary, future and un
  assert.equal(first.scopeStart,'2026-10-23');assert.equal(first.orderCount,3);
  assert.equal(next.scopeStart,'2026-10-24');assert.equal(next.orderCount,2);
  assert.equal(context.module.exports.scopeStartAt('2027-01-01T00:00:00Z'),'2026-12-18');
+});
+
+test('dispatchers see only their accepted operational issues and never private finance or payroll fields',()=>{
+ const api=context.module.exports,sergey={id:'s',uid:'uid-s',role:'dispatcher_logistic',name:'Сергей',shift:'sergey'},artem={id:'a',uid:'uid-a',role:'dispatcher_logistic',name:'Артём',shift:'artem'};
+ const active=(id,dispatcher,extra={})=>order({orderId:id,dispatcher,_status:'В работе',master:'',name:'',phone:'',request:'',visitDate:'',...extra});
+ const snapshot={orders:[active('S','Сергей'),active('A','Артём'),active('U','',{_createdByName:'Владелец',_createdByShift:'sergey'}),active('CREATOR','',{_createdByName:'Сергей'}),active('EXPLICIT','Иван',{_createdByName:'Сергей'}),active('OLD','Сергей',{callDate:'2026-10-22'}),order({orderId:'MONEY',companyShare:9999999,closeDate:'',_closeApprovedBy:'owner'})],shiftReports:[report({salary:9999999})]},before=JSON.stringify(snapshot);
+ const s=api.analyze(snapshot,{role:'dispatcher_logistic',actor:sergey}),a=api.analyze(snapshot,{role:'dispatcher_logistic',actor:artem});
+ assert.deepEqual([...new Set(s.issues.map(x=>x.orderId))].sort(),['CREATOR','S']);assert.deepEqual([...new Set(a.issues.map(x=>x.orderId))],['A']);assert.ok(s.issues.every(x=>x.responsibleName==='Сергей'));assert.ok(a.issues.every(x=>x.responsibleName==='Артём'));
+ assert.ok(s.issues.every(x=>/^active_|^invalid_(callDate|visitDate)$/.test(x.code)));const safe=api.projectStaffSnapshot(snapshot,sergey);assert.equal(safe.shiftReports.length,0);for(const r of safe.orders)for(const key of ['companyShare','masterAmount','parts','total','salary','closeDate','_cashClosedAt','_closeApprovedBy'])assert.ok(!(key in r),key+' must not enter the staff monitor');assert.equal(JSON.stringify(snapshot),before);
+ assert.equal(api.staffPerson({...sergey,role:'dispatcher'}),'sergey');assert.equal(api.staffPerson({...artem,role:'logistic'}),'artem');assert.equal(api.analyze(snapshot,{role:'dispatcher_logistic'}).issues.length,0);assert.equal(api.analyze(snapshot,{role:'dispatcher_logistic',actor:{...sergey,role:'owner'}}).issues.length,0);assert.equal(api.analyze(snapshot,{role:'dispatcher_logistic',actor:{...sergey,shift:'artem'}}).issues.length,0);
+});
+
+test('staff quality UI has own responsibility and open-order actions without finance/payroll categories',()=>{
+ const doc={hidden:false,addEventListener(){},removeEventListener(){},defaultView:{addEventListener(){},removeEventListener(){}}};doc.createElement=()=>({ownerDocument:doc,dataset:{},children:[],setAttribute(){},addEventListener(){},append(...xs){this.children.push(...xs)},replaceChildren(...xs){this.children=xs},remove(){}});
+ const panel=doc.createElement(),badgeHost=doc.createElement(),actor={id:'s',role:'dispatcher_logistic',name:'Сергей',shift:'sergey'},snapshot={orders:[order({_status:'В работе',master:'',name:'',phone:'',request:'',visitDate:''})]},opened=[];
+ const monitor=context.module.exports.create({panel,badgeHost,role:'dispatcher_logistic',actor:()=>actor,getSnapshot:()=>snapshot,openOrder:id=>opened.push(id)});
+ try{monitor.refresh(true);assert.equal(panel.children[0].textContent,'Мои замечания за 15 дней');const select=panel.children.find(x=>x.className==='select quality-monitor-filter');assert.deepEqual(select.children.map(x=>x.value),['all','active','dates']);const list=panel.children.find(x=>x.className==='quality-monitor-list');assert.ok(list.children.every(li=>li.children.some(x=>x.textContent==='Ответственный: Сергей')));list.children[0].children.find(x=>x.textContent==='Открыть заказ A').onclick();assert.deepEqual(opened,['A']);Object.assign(snapshot.orders[0],{master:'Мастер',name:'Клиент',phone:'123',request:'Работа',visitDate:'2026-11-06'});monitor.refresh(true);assert.equal(monitor.getResult().issues.length,0);}finally{monitor.destroy()}
+});
+
+test('dispatcher integration uses authenticated identity, strips amounts and rechecks ownership on opening',()=>{
+ const text=fs.readFileSync(new URL('../src/crm/quality/shared.js',import.meta.url),'utf8'),code=text.split('/* CRM_UNIT:refreshLiveQuality-e2fb0d2da0de */')[1].split('/* CRM_END:refreshLiveQuality-e2fb0d2da0de */')[0];let options,destroyed=0,preview=false;const opened=[],nodes=new Map(),$=id=>{if(!nodes.has(id))nodes.set(id,{});return nodes.get(id)};
+ const cloud={connected:true,profile:{id:'s',uid:'uid-s',role:'dispatcher_logistic',name:'Сергей',shift:'sergey'}},state={session:{user:{id:'s',role:'dispatcher_logistic'}},orders:[order({orderId:'S',_status:'В работе'}),order({orderId:'A',dispatcher:'Артём',_status:'В работе'})],shiftReports:[report()]};const api={...context.module.exports,create:opts=>{options=opts;return{refresh(){},destroy(){destroyed++}}}};
+ const ctx={state,window:{MasterAICloud:cloud,MasterAIQualityMonitor:api},navigator:{onLine:true},$,ownerPreviewActive:()=>preview,openOrder:r=>opened.push(r.orderId),switchTab(){},liveQualityMonitor:null};vm.createContext(ctx);vm.runInContext(code+';globalThis.run=refreshLiveQuality',ctx);ctx.run();assert.equal(options.getServerStatus,undefined);assert.ok(options.getSnapshot().orders.every(r=>r.orderId==='S'&&!('companyShare' in r)));options.openOrder('A');options.openOrder('S');assert.deepEqual(opened,['S']);state.orders[0].dispatcher='Артём';options.openOrder('S');assert.deepEqual(opened,['S']);
+ const stale=options;cloud.profile={id:'a',uid:'uid-a',role:'dispatcher_logistic',name:'Артём',shift:'artem'};state.session.user={id:'a',role:'dispatcher_logistic'};assert.equal(stale.getSnapshot().orders.length,0);stale.openOrder('A');assert.deepEqual(opened,['S']);ctx.run();assert.equal(destroyed,1);assert.ok(options.getSnapshot().orders.every(r=>r.dispatcher==='Артём'));
+ cloud.profile={id:'owner',uid:'uid-owner',role:'owner'};state.session.user={id:'owner',role:'owner'};preview=true;ctx.run();assert.equal(destroyed,2);assert.equal($('#myQualityPanel').hidden,true);
 });
