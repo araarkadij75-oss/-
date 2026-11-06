@@ -1009,3 +1009,19 @@ html[data-atmosphere-reduced=true] #workspaceAtmosphereStage { visibility:hidden
 .app .section :is(button,label,summary) { overflow-wrap:break-word; }
 .app .section :is(.field,.toolbar,.grid2,.grid3,.grid4)>* { min-width:0; }
 .app .orders-table-wrap .inline-master-input { font-size:13px!important; padding-inline:6px!important; box-sizing:border-box; }
+
+/* Role-aware table columns and polished working controls. */
+body.role-no-money .orders-table-wrap .table th.finance-col { display:none!important; }
+.app .orders-table-wrap .table .action-cell { grid-template-columns:repeat(2,minmax(44px,1fr)); }
+.app .orders-table-wrap .table .action-cell .btn { word-break:normal; overflow-wrap:normal; white-space:normal; }
+.app .orders-table-wrap .table .action-cell .danger { grid-column:2; }
+.app .tabs { gap:6px; padding:7px; border-radius:16px; }
+.app .tabs .tab { min-height:40px; padding:10px 16px; border-radius:11px; font-weight:600; line-height:1.3; transition:background .15s,box-shadow .15s; }
+.app .tabs .tab.active { box-shadow:0 3px 9px rgb(15 60 65 / 18%); }
+#orderModal, #orderModal :is(input,textarea,select,button) { font-family:var(--font-body,"Segoe UI",sans-serif); }
+#orderModal .status-palette { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:8px; }
+#orderModal .status-btn { min-height:46px; border-radius:10px; padding:9px 10px; font-size:13px; font-weight:600; line-height:1.35; word-break:normal; }
+#orderModal .status-btn.active { box-shadow:0 0 0 2px var(--accent,#16716b); }
+#orderModal label { font-size:13px; font-weight:600; line-height:1.4; }
+#orderModal :is(input:not([type=checkbox]):not([type=hidden]),select,textarea) { font-size:14px; line-height:1.5; border-radius:9px; }
+#orderModal .btn { font-weight:600; line-height:1.35; }
