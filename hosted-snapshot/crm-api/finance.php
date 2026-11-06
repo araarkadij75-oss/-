@@ -3,6 +3,34 @@ declare(strict_types=1);
 define('ELITESERVICE_BRIDGE_LIBRARY', true);
 require_once __DIR__ . '/telegram.php';
 
+// Working order amounts are read-only; staff do not receive policies or payroll.
+function fin_order_amount_actor(array $actor): void {
+    if (empty($actor['uid']) || !in_array($actor['role'] ?? '', ['owner','dispatcher_logistic','logistic'], true)) throw new DomainException('dispatcher_required');
+}
+function fin_order_amount_projection(array $order, string $id): array {
+    $out = ['orderId'=>$id];
+    foreach (['total','masterAmount','companyShare'] as $key) {
+        $value = $order[$key] ?? null;
+        $out[$key] = is_string($value) || is_int($value) || is_float($value) ? $value : null;
+    }
+    return $out;
+}
+function fin_order_amounts(PDO $pdo, array $actor): array {
+    fin_order_amount_actor($actor);
+    $q = $pdo->prepare('SELECT document_id,data_json FROM crm_documents WHERE workspace_id=? AND collection_path=? ORDER BY document_id LIMIT 20001');
+    $q->execute([tg_workspace(), 'workspaces/' . tg_workspace() . '/orders']);
+    $rows = $q->fetchAll();
+    if (count($rows) > 20000) throw new LengthException('order_capacity');
+    $result = [];
+    foreach ($rows as $row) {
+        $data = json_decode((string)$row['data_json'], true);
+        if (!is_array($data)) throw new RuntimeException('invalid_stored_order');
+        if (!empty($data['_duplicateOf'])) continue;
+        $result[] = fin_order_amount_projection($data, (string)$row['document_id']);
+    }
+    return ['ok'=>true,'orders'=>$result];
+}
+
 function fin_owner(array $actor): void {
     if (($actor['role'] ?? '') !== 'owner' || empty($actor['uid'])) throw new DomainException('owner_required');
 }
@@ -408,6 +436,7 @@ try {
     $pdo = tg_db();
     $actor = tg_jwt_actor($pdo);
     if (($body['op'] ?? '') === 'order_calculate') tg_reply(200, fin_order_calculate($pdo, $actor, $body));
+    if (($body['op'] ?? '') === 'order_amounts') tg_reply(200, fin_order_amounts($pdo, $actor));
     fin_owner($actor);
     if (($body['op'] ?? '') === 'payroll_payments_list') tg_reply(200,['ok'=>true,'payments'=>fin_payments_list($pdo,$actor)]);
     if (in_array($body['op'] ?? '', ['payroll_payments_add','payroll_payments_void'], true)) tg_reply(200,fin_payments_mutate($pdo,$actor,$body));

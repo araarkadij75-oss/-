@@ -147,3 +147,10 @@ fin_check(fin_order_report_locked($pickup,['paidOrderIds'=>['TEST']],'TEST'),'Pa
 fin_check(fin_order_report_locked($pickup,['lockedOrderIds'=>['TEST']],'TEST'),'Explicitly locked pickup remains locked');
 fin_check(!fin_order_report_locked(['callDate'=>'31.02.2026'],['date'=>'31.02.2026','orderIds'=>['TEST']],'TEST'),'Invalid equal date text is not treated as a valid report match');
 echo "dispatcher order report lock tests passed\n";
+
+foreach (['owner','dispatcher_logistic','logistic'] as $role) fin_order_amount_actor(['uid'=>'u','role'=>$role]);
+foreach (['master','dispatcher','unknown'] as $role) fin_reject(fn()=>fin_order_amount_actor(['uid'=>'u','role'=>$role]),'Working amounts role rejected');
+fin_reject(fn()=>fin_order_amount_actor(['role'=>'dispatcher_logistic']),'Unauthenticated amount access');
+$working = fin_order_amount_projection(['total'=>'12000.50','masterAmount'=>'6000.25','companyShare'=>'5000.25','parts'=>'1000','salary'=>123,'_private'=>'secret'], 'order-1');
+fin_check($working===['orderId'=>'order-1','total'=>'12000.50','masterAmount'=>'6000.25','companyShare'=>'5000.25'],'Working projection only saved amounts, no recalculation or private fields');
+fin_check(fin_order_amount_projection(['total'=>0,'masterAmount'=>'','companyShare'=>null],'o')===['orderId'=>'o','total'=>0,'masterAmount'=>'','companyShare'=>null],'Zero and missing amounts stay distinct');
