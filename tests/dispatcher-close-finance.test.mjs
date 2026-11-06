@@ -47,3 +47,19 @@ for (const role of ['owner','dispatcher']) test(`${role}: saving a closed order 
   assert.equal(r.closeDate,'05.11.2026');
   assert.equal(r._cashClosedOn,'2026-11-05');
 });
+
+for(const page of ['owner','dispatcher']) test(`${page}: staff blank financial controls preserve saved amounts while zero and owner edits remain explicit`,()=>{
+ const source=fs.readFileSync(new URL(`../src/crm/orders/${page}.js`,import.meta.url),'utf8');
+ const helper=source.match(/const finance=\(id,key\)=>\{.*?\};/)[0];
+ const existing={total:'19000',parts:'0',cleanCheck:'19000',masterAmount:'10450',companyShare:'8550'};
+ const clean=v=>String(v??'').trim();
+ for(const role of ['dispatcher_logistic','dispatcher','logistic','owner'])for(const value of ['', '0', '1250']){
+  const finance=vm.runInNewContext(helper+'finance',{get:()=>value,currentRole:()=>role,existing,clean});
+  for(const key of Object.keys(existing))assert.equal(finance('field',key),value===''&&role!=='owner'?existing[key]:value);
+ }
+ const guard=source.match(/if\(currentRole\(\)!=='owner'\)\{const prior=.*?r\[key\]=prior\[key\]\}/)[0];
+ const r={_id:'saved',total:'19000',parts:'0',cleanCheck:'',masterAmount:'',companyShare:''};
+ vm.runInNewContext(guard,{r,state:{orders:[{_id:'saved',...existing}]},currentRole:()=> 'dispatcher_logistic',clean});
+ assert.equal(r.masterAmount,'10450');assert.equal(r.companyShare,'8550');assert.equal(r.parts,'0');
+ assert.ok(source.includes("masterAmount:finance('f_masterAmount','masterAmount')"));
+});

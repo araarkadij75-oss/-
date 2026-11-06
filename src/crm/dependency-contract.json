@@ -11495,8 +11495,8 @@
               "domain": "staff"
             },
             {
-              "symbol": "dispatcherTotalChip",
-              "domain": "ui"
+              "symbol": "currentRole",
+              "domain": "staff"
             },
             {
               "symbol": "esc",

@@ -105,3 +105,8 @@ body.ai-density-compact .card.pad,body.ai-density-compact .chart-card{padding:11
 .sync-card,
 #connectionModal{display:none!important}
 .orders-toolbar #todayOrdersFilter,.orders-toolbar #tomorrowOrdersFilter{white-space:nowrap}.orders-toolbar #todayOrdersFilter.today-filter-active,.orders-toolbar #tomorrowOrdersFilter.tomorrow-filter-active{background:#1d4ed8;color:#fff;border-color:#1d4ed8;box-shadow:0 5px 14px rgba(29,78,216,.22)}@media(max-width:800px){.orders-toolbar #todayOrdersFilter,.orders-toolbar #tomorrowOrdersFilter{width:100%}}/* CRM_END:base-style-0-a6d4a09ca45e */
+
+/* Working amounts are visible in the order list without enabling finance screens. */
+[data-panel="orders"] .order-working-amount{font-variant-numeric:tabular-nums}
+[data-panel="orders"] .mobile-order-meta .order-working-amount{background:#edf7ef;border:1px solid #c5dfcb;border-radius:10px;padding:8px;min-width:0}
+[data-panel="orders"] .mobile-order-meta .order-working-amount b{overflow-wrap:anywhere}
