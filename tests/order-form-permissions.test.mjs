@@ -61,3 +61,11 @@ for(const role of ['owner','dispatcher','master'])test(`${role}: editing preserv
  const created=vm.runInNewContext(source+';formRecord()',ctx);
  assert.equal('_sourceReconciliation' in created,false,'new orders must not inherit an unrelated source audit');
 });
+
+for(const role of ['owner','dispatcher','master'])test(`${role}: default dates and city cannot create an empty order`,async()=>{
+ const source=fs.readFileSync(new URL(`../src/crm/orders/${role}.js`,import.meta.url),'utf8');
+ const start=source.indexOf('async function saveOrder('),end=source.indexOf('if(logisticsClose)',start);
+ const body=source.slice(start,role==='master'?source.indexOf('if(r._autoFinance)',start):end)+'return r;}';
+ for(const value of ['', '   ']){let message='';const ctx={can:()=>true,currentRole:()=> 'owner',formRecord:()=>({name:value,phone:value,address:value,request:value,city:'СПб',callDate:'2026-11-06',visitDate:'2026-11-06'}),clean:x=>String(x??'').trim(),isMeaningful:()=>true,toast:x=>message=x};
+ const result=await vm.runInNewContext(body+';saveOrder()',ctx);assert.equal(result,undefined);assert.match(message,/пустой заказ/);}
+});
