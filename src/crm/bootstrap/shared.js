@@ -3,7 +3,7 @@ async function loadOptionalFeature(name,loader){try{return await loader()}catch(
 await loadOptionalFeature('Расчёт зарплаты',()=>import('./payroll-intake-accounting.js?v=20261106-partial2'));
 await loadOptionalFeature('Финансы',()=>import('./profit-bridge.js?v=20261103-cash1'));/* CRM_END:ImportDeclaration-0-8478b81bfdad */
 /* CRM_UNIT:ImportDeclaration-1-6329805c4c48 */
-await loadOptionalFeature('Контроль данных',()=>import('./quality-monitor.js?v=20261106-quality4'));/* CRM_END:ImportDeclaration-1-6329805c4c48 */
+await loadOptionalFeature('Контроль данных',()=>import('./quality-monitor.js?v=20261106-quality5'));/* CRM_END:ImportDeclaration-1-6329805c4c48 */
 /* CRM_UNIT:ExpressionStatement-101-2597401021a9 */
 window.__betaNotificationEvents=[];/* CRM_END:ExpressionStatement-101-2597401021a9 */
 /* CRM_UNIT:ExpressionStatement-144-a54a591d3228 */
