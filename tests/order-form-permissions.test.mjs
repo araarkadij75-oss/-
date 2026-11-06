@@ -69,3 +69,13 @@ for(const role of ['owner','dispatcher','master'])test(`${role}: default dates a
  for(const value of ['', '   ']){let message='';const ctx={can:()=>true,currentRole:()=> 'owner',formRecord:()=>({name:value,phone:value,address:value,request:value,city:'СПб',callDate:'2026-11-06',visitDate:'2026-11-06'}),clean:x=>String(x??'').trim(),isMeaningful:()=>true,toast:x=>message=x};
  const result=await vm.runInNewContext(body+';saveOrder()',ctx);assert.equal(result,undefined);assert.match(message,/пустой заказ/);}
 });
+
+for(const page of ['index','dispatcher-logistic','master'])test(`${page}: staff renderer starts before authentication without owner-only helpers`,()=>{
+ const html=fs.readFileSync(new URL(`../hosted-snapshot/${page}.html`,import.meta.url),'utf8');
+ const render=html.match(/^function renderStaff\(\).*$/m)[0],preview=html.match(/^function ownerPreviewActive\(\).*$/m)[0];
+ const nodes=new Map(),$=s=>{if(!nodes.has(s))nodes.set(s,{innerHTML:'',onclick:null});return nodes.get(s)};
+ const ctx={$, $$:()=>[], state:{session:{},settings:{staff:[]}},currentUser:()=>({role:'owner'}),toggleNewStaffPin:()=>{}};
+ vm.runInNewContext(preview+';'+render+';renderStaff()',ctx);
+ assert.match($('#staffList').innerHTML,/Аккаунтов сотрудников пока нет/);
+ if(page!=='index')assert.doesNotMatch(html,/\bownerRolePreview\(/);
+});

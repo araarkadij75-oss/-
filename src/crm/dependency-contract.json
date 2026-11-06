@@ -14624,8 +14624,7 @@
             "Math",
             "Object",
             "String",
-            "console",
-            "ownerRolePreview"
+            "console"
           ],
           "crossDomain": [
             {
@@ -14671,6 +14670,10 @@
             {
               "symbol": "log",
               "domain": "ui"
+            },
+            {
+              "symbol": "ownerPreviewActive",
+              "domain": "staff"
             },
             {
               "symbol": "state",
@@ -14734,8 +14737,7 @@
         "mergeImport-d4a96626f927": {
           "globals": [
             "Date",
-            "Map",
-            "ownerRolePreview"
+            "Map"
           ],
           "crossDomain": [
             {
@@ -14769,6 +14771,10 @@
             {
               "symbol": "makeOrderId",
               "domain": "orders"
+            },
+            {
+              "symbol": "ownerPreviewActive",
+              "domain": "staff"
             },
             {
               "symbol": "refillFilters",
@@ -15374,8 +15380,7 @@
         },
         "toggleNewStaffPin-7ba1ecc80f77": {
           "globals": [
-            "String",
-            "ownerRolePreview"
+            "String"
           ],
           "crossDomain": [
             {
@@ -15386,8 +15391,7 @@
         },
         "renderStaff-13b233a85851": {
           "globals": [
-            "Array",
-            "ownerRolePreview"
+            "Array"
           ],
           "crossDomain": [
             {
@@ -15598,7 +15602,6 @@
           "globals": [
             "alert",
             "console",
-            "ownerRolePreview",
             "window"
           ],
           "crossDomain": [
@@ -15639,7 +15642,6 @@
         "addStaff-093e291d99a2": {
           "globals": [
             "Array",
-            "ownerRolePreview",
             "window"
           ],
           "crossDomain": [
@@ -22856,8 +22858,7 @@
         },
         "toggleNewStaffPin-7ba1ecc80f77": {
           "globals": [
-            "String",
-            "ownerRolePreview"
+            "String"
           ],
           "crossDomain": [
             {
@@ -22868,8 +22869,7 @@
         },
         "renderStaff-13b233a85851": {
           "globals": [
-            "Array",
-            "ownerRolePreview"
+            "Array"
           ],
           "crossDomain": [
             {
@@ -23079,7 +23079,6 @@
           "globals": [
             "alert",
             "console",
-            "ownerRolePreview",
             "window"
           ],
           "crossDomain": [
@@ -23120,7 +23119,6 @@
         "addStaff-8c3fd1206c92": {
           "globals": [
             "Array",
-            "ownerRolePreview",
             "window"
           ],
           "crossDomain": [

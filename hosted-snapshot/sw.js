@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.104-order-validation-v1';
+const CACHE='eliteservice-18.17.105-staff-boot-v1';
 const SHELL=[
   './',
   './index.html',
