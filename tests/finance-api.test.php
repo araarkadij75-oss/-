@@ -134,3 +134,16 @@ fin_reject(fn()=>fin_order_plan($empty,array_replace($input,['parts'=>'10001']),
 $large=fin_order_plan($empty,['total'=>'50000','parts'=>'0','review'=>'да','master'=>'Николай'],[],false);
 fin_check($large['masterAmount']==='26000.00','Review bonus is capped at 1000');
 echo "dispatcher server finance calculation tests passed\n";
+
+$lockOrder=['callDate'=>'06.11.2026','_status'=>'В работе'];
+$lockReport=['date'=>'2026-11-06','orderIds'=>['TEST']];
+fin_check(fin_order_report_locked($lockOrder,$lockReport,'TEST'),'Legacy mixed-format report date still locks normal intake order');
+fin_check(!fin_order_report_locked($lockOrder,['date'=>'2026-11-05','orderIds'=>['TEST']],'TEST'),'Unrelated report date does not lock intake fallback');
+fin_check(fin_order_report_locked($lockOrder,['lockedOrderIds'=>['TEST']],'TEST'),'Explicit lock list is authoritative without a date');
+fin_check(fin_order_report_locked($lockOrder,['paidOrderIds'=>['TEST']],'TEST'),'Previously accounted order remains locked');
+$pickup=array_replace($lockOrder,['_isPickup'=>true]);
+fin_check(!fin_order_report_locked($pickup,$lockReport,'TEST'),'Open pickup in intake list stays editable');
+fin_check(fin_order_report_locked($pickup,['paidOrderIds'=>['TEST']],'TEST'),'Paid pickup remains locked');
+fin_check(fin_order_report_locked($pickup,['lockedOrderIds'=>['TEST']],'TEST'),'Explicitly locked pickup remains locked');
+fin_check(!fin_order_report_locked(['callDate'=>'31.02.2026'],['date'=>'31.02.2026','orderIds'=>['TEST']],'TEST'),'Invalid equal date text is not treated as a valid report match');
+echo "dispatcher order report lock tests passed\n";
