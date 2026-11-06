@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.99-expanded-cards-v1';
+const CACHE='eliteservice-18.17.100-login-audit-v1';
 const SHELL=[
   './',
   './index.html',

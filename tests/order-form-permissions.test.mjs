@@ -2,6 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+for(const page of ['index','dispatcher-logistic','master'])test(`${page}: personal login remains editable and visible after reopening`,()=>{
+ const html=fs.readFileSync(new URL(`../hosted-snapshot/${page}.html`,import.meta.url),'utf8');
+ const source=html.match(/^function renderLoginUsers\(\).*$/m)[0];
+ const role=page==='index'?'owner':page==='master'?'master':'dispatcher_logistic';
+ const nodes=new Map();const $=id=>{if(!nodes.has(id))nodes.set(id,{value:'',readOnly:true,hidden:true});return nodes.get(id)};
+ const context={$,cloudMode:()=>true,FORCED_APP_ROLE:role};
+ vm.runInNewContext(source+';renderLoginUsers()',context);
+ assert.equal($('#cloudLoginUser').readOnly,false);
+ assert.equal($('#cloudLoginUserWrap').hidden,false);
+ assert.notEqual($('#cloudLoginUser').value,'beta-master');
+ if(role!=='dispatcher_logistic'){
+  $('#cloudLoginUser').value='personal-login';vm.runInNewContext('renderLoginUsers()',context);
+  assert.equal($('#cloudLoginUser').value,'personal-login');
+ }
+});
 for(const page of ['index','master','dispatcher-logistic'])for(const role of ['owner','master','dispatcher','logistic','dispatcher_logistic'])test(`${page}: new order permissions for ${role} do not throw`,()=>{
  const html=fs.readFileSync(new URL(`../hosted-snapshot/${page}.html`,import.meta.url),'utf8');
  const source=html.match(/^function applyOrderFormPermissions\(\).*$/m)[0];
