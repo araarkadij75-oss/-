@@ -29,20 +29,25 @@ test('private atomic results, overlap lock, stale heartbeat and sanitized failur
 const php=process.env.PHP_BINARY||'php';
 const available=spawnSync(php,['-v'],{encoding:'utf8'}).status===0;
 test('PHP rules validate dates, empty versus zero cash, duplicate accounting and frozen recipients',{skip:!available},()=>{
- const code=`define('ELITESERVICE_QUALITY_LIBRARY',true);require ${JSON.stringify(path.replaceAll('\\','/'))};
- $o=['orderId'=>'A','_status'=>'Выполнен','dispatcher'=>'Сергей','callDate'=>'2026-10-01','closeDate'=>'2026-10-24','total'=>0,'parts'=>0,'masterAmount'=>0,'companyShare'=>0];
+ const code=`function audit_fixed($o,$r){return quality_analyze($o,$r,'2026-11-06T12:00:00Z');}define('ELITESERVICE_QUALITY_LIBRARY',true);require ${JSON.stringify(path.replaceAll('\\','/'))};
+ $o=['orderId'=>'A','_status'=>'Выполнен','dispatcher'=>'Сергей','callDate'=>'2026-10-23','closeDate'=>'2026-10-24','total'=>0,'parts'=>0,'masterAmount'=>0,'companyShare'=>0];
  $r=['id'=>'r','date'=>'2026-10-24','shift'=>'sergey','ownerConfirmed'=>true,'subjectMemberId'=>'s','paidOrderIds'=>['A']];
- $ok=quality_analyze([$o],[$r]);$o['companyShare']='';$empty=quality_analyze([$o],[]);$o['companyShare']=0;$r2=$r;$r2['id']='other';$r2['date']='2026-10-25';$r2['shift']='artem';
+ $ok=audit_fixed([$o],[$r]);$o['companyShare']='';$empty=audit_fixed([$o],[]);$o['companyShare']=0;$r2=$r;$r2['id']='other';$r2['date']='2026-10-25';$r2['shift']='artem';
  $owner=$o;$owner['dispatcher']='';$owner['_createdBy']='owner';$owner['_createdByName']='Владелец';
  $dup=$o;$dup['orderId']='B';$dup['_duplicateOf']='A';$linkedReport=$r;$linkedReport['paidOrderIds']=['A','B'];$undated=$o;$undated['closeDate']='';
  $old=$o;$old['orderId']='OLD';$old['callDate']='2026-09-30';$old['closeDate']='';$old['dispatcher']='';$oldReport=$r;$oldReport['date']='2026-09-30';$oldReport['paidOrderIds']=['OLD','MISSING_OLD'];
  $active=$o;$active['_status']='В работе';$active['visitDate']='2030-01-01';
  $cancelled=$o;$cancelled['_status']='Отмена';$cancelled['master']='';$refused=$cancelled;$refused['_status']='Отказ';
- echo json_encode(['cancelled'=>quality_analyze([$cancelled],[]),'refused'=>quality_analyze([$refused],[]),'scope'=>quality_analyze([$old,$undated],[$oldReport]),'linked'=>quality_analyze([$o,$dup],[$linkedReport]),'badLink'=>quality_analyze([$dup],[]),'undated'=>quality_analyze([$undated],[$r]),'ok'=>$ok,'empty'=>$empty,'conflict'=>quality_analyze([$o],[$r,$r2]),'owner'=>quality_analyze([$owner],[]),'active'=>quality_analyze([$active],[]),'excel'=>quality_date(46326.75),'excelString'=>quality_date('46326'),'invalid'=>quality_date('31.02.2026'),'valid'=>quality_date('29.02.2024')],JSON_THROW_ON_ERROR);`;
+ echo json_encode(['cancelled'=>audit_fixed([$cancelled],[]),'refused'=>audit_fixed([$refused],[]),'scope'=>audit_fixed([$old,$undated],[$oldReport]),'linked'=>audit_fixed([$o,$dup],[$linkedReport]),'badLink'=>audit_fixed([$dup],[]),'undated'=>audit_fixed([$undated],[$r]),'ok'=>$ok,'empty'=>$empty,'conflict'=>audit_fixed([$o],[$r,$r2]),'owner'=>audit_fixed([$owner],[]),'active'=>audit_fixed([$active],[]),'excel'=>quality_date(46326.75),'excelString'=>quality_date('46326'),'invalid'=>quality_date('31.02.2026'),'valid'=>quality_date('29.02.2024')],JSON_THROW_ON_ERROR);`;
  const run=spawnSync(php,['-r',code],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);
- const result=JSON.parse(run.stdout);assert.equal(result.cancelled.counts.active_master,undefined);assert.equal(result.refused.counts.active_master,undefined);assert.equal(result.scope.scopeStart,'2026-10-01');assert.equal(result.scope.orderCount,1);assert.equal(result.scope.totalOrderCount,2);assert.ok(result.scope.issues.every(x=>x.orderId==='A'));assert.ok(result.scope.issues.some(x=>x.code==='closed_date'));assert.equal(result.linked.counts.paid_linked_duplicate,1);assert.equal(result.badLink.counts.duplicate_link_invalid,1);assert.equal(result.undated.issues.find(x=>x.code==='closed_date').severity,'warning');assert.equal(result.ok.issueCount,0);assert.equal(result.empty.counts.closed_cash,1);
+ const result=JSON.parse(run.stdout);assert.equal(result.cancelled.counts.active_master,undefined);assert.equal(result.refused.counts.active_master,undefined);assert.equal(result.scope.scopeStart,'2026-10-23');assert.equal(result.scope.orderCount,1);assert.equal(result.scope.totalOrderCount,2);assert.ok(result.scope.issues.every(x=>x.orderId==='A'));assert.ok(result.scope.issues.some(x=>x.code==='closed_date'));assert.equal(result.linked.counts.paid_linked_duplicate,1);assert.equal(result.badLink.counts.duplicate_link_invalid,1);assert.equal(result.undated.issues.find(x=>x.code==='closed_date').severity,'warning');assert.equal(result.ok.issueCount,0);assert.equal(result.empty.counts.closed_cash,1);
  assert.equal(result.conflict.counts.paid_duplicate,1);assert.equal(result.conflict.counts.paid_owner_conflict,1);
  assert.equal(result.owner.counts.closed_dispatcher,1);assert.equal(result.active.counts.active_required,1);assert.equal(result.active.counts.active_master,1);assert.equal(result.active.counts.invalid_visitDate,undefined);
  assert.equal(result.invalid,'');assert.equal(result.valid,'2024-02-29');
  assert.equal(result.excel,new Date(Date.UTC(1899,11,30)+46326*86400000).toISOString().slice(0,10));assert.equal(result.excelString,'');
+});
+
+test('PHP rolling scope uses Moscow midnight and preserves future and unknown records',{skip:!available},()=>{
+ const code=`define('ELITESERVICE_QUALITY_LIBRARY',true);require ${JSON.stringify(path.replaceAll('\\','/'))};$rows=[['callDate'=>'2026-10-22'],['callDate'=>'2026-10-23'],['callDate'=>'2027-01-01'],[]];echo json_encode([quality_analyze($rows,[],'2026-11-06T20:59:59Z'),quality_analyze($rows,[],'2026-11-06T21:00:00Z'),quality_scope_start('2027-01-01T00:00:00Z')]);`;
+ const r=spawnSync(php,['-r',code],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);const [a,b,c]=JSON.parse(r.stdout);assert.equal(a.scopeStart,'2026-10-23');assert.equal(a.orderCount,3);assert.equal(b.scopeStart,'2026-10-24');assert.equal(b.orderCount,2);assert.equal(c,'2026-12-18');
 });
