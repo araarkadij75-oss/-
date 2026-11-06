@@ -1943,6 +1943,7 @@
         },
         "ExpressionStatement-149-beb14e20d56b": {
           "globals": [
+            "Date",
             "Map",
             "String",
             "window"
@@ -10497,6 +10498,7 @@
         },
         "ExpressionStatement-149-beb14e20d56b": {
           "globals": [
+            "Date",
             "Map",
             "String",
             "window"

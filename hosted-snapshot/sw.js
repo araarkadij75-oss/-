@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.107-dispatcher-close-v1';
+const CACHE='eliteservice-18.17.108-order-delete-cleanup-v1';
 const SHELL=[
   './',
   './index.html',
