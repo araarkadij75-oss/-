@@ -11,10 +11,16 @@ function payrollIntakeSnapshot(cutoff=today()){
  const paidCutover='2026-11-02T10:59:27.607Z';
  const payments=reports.filter(r=>r.ownerConfirmed&&r.subjectMemberId&&r.closedAt&&r.closedAt<=paidCutover&&r.date>=anchor).map(r=>({id:r.id,person:payrollShiftKey(r),date:r.date,amountCents:Math.round(num(r.salary)*100)}));
  const actor=window.MasterAICloud?.profile,actorKey=String(actor?.uid||actor?.id||''),ledgerReady=!!actorKey&&state.payrollPaymentsOwner===actorKey&&state.payrollPaymentsStatus==='loaded';
- if(ledgerReady)for(const p of state.payrollPayments||[])if(p.active!==false)payments.push({id:'payment:'+p.id,person:p.person,date:p.date,amountCents:p.amountCents});
+ const baselines=[];
+ if(ledgerReady){
+  for(const p of state.payrollPayments||[])if(p.active!==false&&p.kind==='settlement_baseline'&&p.date<=cutoff){const prior=baselines.findIndex(x=>x.person===p.person);if(prior<0)baselines.push(p);else if(baselines[prior].date<p.date)baselines[prior]=p}
+  for(let i=payments.length-1;i>=0;i--)if(baselines.some(b=>b.person===payments[i].person&&payments[i].date<=b.date))payments.splice(i,1);
+  for(const p of state.payrollPayments||[])if(p.active!==false&&p.kind!=='settlement_baseline'&&!baselines.some(b=>b.person===p.person&&p.date<=b.date))payments.push({id:'payment:'+p.id,person:p.person,date:p.date,amountCents:p.amountCents});
+  for(const p of baselines)payments.push({id:'baseline:'+p.id,person:p.person,date:p.date,amountCents:p.amountCents,kind:'settlement_baseline'});
+ }
  const result=window.PayrollIntakeAccounting.calculate({orders,days,payments,cutoff,snapshotDate:today()});
  if(!ledgerReady){result.warnings.push({code:'payments_not_loaded',id:''});result.incomplete=true;for(const p of result.people){p.dueCents=null;p.overpaidCents=null}}
  result.paymentsLoaded=ledgerReady;
- return {...result,orders,payments,anchor,days:result.days.map(d=>({...d,earnedCents:d.entitlementCents}))};
+ return {...result,orders,payments,baselines,anchor,days:result.days.map(d=>({...d,earnedCents:d.entitlementCents}))};
 }/* CRM_END:payrollIntakeSnapshot-v2 */
 
