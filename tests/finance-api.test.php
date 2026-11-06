@@ -112,3 +112,25 @@ $bad=$baseline;$bad['baselineConfirmed']=false;fin_reject(fn()=>fin_payment_norm
 $bad=$baseline;$bad['days'][]=$bad['days'][0];fin_reject(fn()=>fin_payment_normalize($bad),'Duplicate baseline day rejected');
 $bad=$baseline;$bad['days'][0]['date']='2026-11-02';fin_reject(fn()=>fin_payment_normalize($bad),'Baseline cannot include future receipts');
 echo "settlement baseline tests passed\n";
+
+// Dispatcher closure computes from the server policy, never hidden browser inputs.
+$input=['total'=>'10000','parts'=>'2000','review'=>'','master'=>'Николай'];
+$empty=['master'=>'Николай'];
+$computed=fin_order_plan($empty,$input,[],false);
+fin_check($computed['cleanCheck']==='8000.00' && $computed['masterAmount']==='4000.00' && $computed['companyShare']==='4000.00','Dispatcher first close calculates all amounts');
+fin_check(fin_order_plan($computed+$empty,$input,[],false)===$computed,'Repeated close is numerically idempotent');
+$bonus=fin_order_plan($empty,array_replace($input,['review'=>'да']),[],false);
+fin_check($bonus['masterAmount']==='4400.00' && $bonus['companyShare']==='3600.00','Review bonus is included once');
+$fixed=fin_order_plan($empty,['total'=>'3000','parts'=>'0','review'=>'','master'=>'Николай'],['fixedRate'=>50],true);
+fin_check($fixed['masterAmount']==='1500.00','Private fixed master policy applies');
+$policy=fin_order_plan($empty,$input,['gridHigh'=>60],false);
+fin_check($policy['masterAmount']==='4800.00','Stored private policy wins over client defaults');
+$manual=array_replace($computed,['master'=>'Николай','_autoFinance'=>false,'companyShare'=>'3500','masterAmount'=>'4500']);
+fin_check(fin_order_plan($manual,$input,[],false)===[],'Manual source amounts are preserved');
+fin_reject(fn()=>fin_order_plan($manual,array_replace($input,['total'=>'11000']),[],false),'Manual total changes require owner');
+fin_reject(fn()=>fin_order_plan($manual,array_replace($input,['master'=>'Другой']),[],false),'Manual reassignment requires owner verification');
+foreach(['-1','1e4','oops','1.234'] as $value) fin_reject(fn()=>fin_order_plan($empty,array_replace($input,['total'=>$value]),[],false),'Invalid amount rejected');
+fin_reject(fn()=>fin_order_plan($empty,array_replace($input,['parts'=>'10001']),[],false),'Parts exceeding total rejected');
+$large=fin_order_plan($empty,['total'=>'50000','parts'=>'0','review'=>'да','master'=>'Николай'],[],false);
+fin_check($large['masterAmount']==='26000.00','Review bonus is capped at 1000');
+echo "dispatcher server finance calculation tests passed\n";
