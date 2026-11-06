@@ -42,6 +42,22 @@ function fin_order_plan(array $order, array $input, array $policy, bool $fixed):
     $money = static fn(int $c): string => number_format($c / 100, 2, '.', '');
     return ['total'=>$money($total), 'parts'=>$money($parts), 'cleanCheck'=>$money($base), 'masterAmount'=>$money($master), 'companyShare'=>$money($base-$master), 'review'=>(string)$review, '_autoFinance'=>true];
 }
+function fin_order_report_locked(array $order, array $report, string $id): bool {
+    $ids = static fn(string $key): array => is_array($report[$key] ?? null) ? array_map('strval', $report[$key]) : [];
+    if (in_array($id, $ids('lockedOrderIds'), true) || in_array($id, $ids('paidOrderIds'), true)) return true;
+    // Merely appearing in the day's intake list must not freeze an open pickup.
+    if (($order['_isPickup'] ?? false) === true || in_array($order['_status'] ?? '', ['Забор / техника у мастера','Забор / у мастера'], true)) return false;
+    $date = static function (mixed $value): string {
+        if (!is_string($value)) return '';
+        $value = trim($value);
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/', $value, $m)) [$year,$month,$day] = [(int)$m[1],(int)$m[2],(int)$m[3]];
+        elseif (preg_match('/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})$/', $value, $m)) [$year,$month,$day] = [(int)$m[3],(int)$m[2],(int)$m[1]];
+        else return '';
+        return checkdate($month,$day,$year) ? sprintf('%04d-%02d-%02d',$year,$month,$day) : '';
+    };
+    $intake = $date($order['callDate'] ?? $order['_createdAt'] ?? '');
+    return $intake !== '' && $intake === $date($report['date'] ?? '') && in_array($id, $ids('orderIds'), true);
+}
 function fin_order_calculate(PDO $pdo, array $actor, array $body): array {
     if (!in_array($actor['role'] ?? '', ['dispatcher_logistic','logistic'], true) || empty($actor['uid'])) throw new DomainException('logistics_required');
     $id = fin_text($body['orderId'] ?? '', 128);
@@ -61,7 +77,7 @@ function fin_order_calculate(PDO $pdo, array $actor, array $body): array {
         foreach ($reportRows as $row) {
             $report = json_decode((string)$row['data_json'], true);
             if (!is_array($report)) throw new DomainException('order_lock_verification_unavailable');
-            if (in_array($id, array_map('strval', $report['paidOrderIds'] ?? []), true) || (($report['date'] ?? '') === ($order['callDate'] ?? '') && in_array($id, array_map('strval', $report['orderIds'] ?? []), true))) throw new DomainException('order_locked');
+            if (fin_order_report_locked($order, $report, $id)) throw new DomainException('order_locked');
         }
         $policy = tg_read($pdo, tg_path('config', 'financePolicy')) ?? [];
         $public = tg_read($pdo, tg_path('config', 'public')) ?? [];
