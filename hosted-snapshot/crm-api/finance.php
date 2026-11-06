@@ -6,6 +6,92 @@ require_once __DIR__ . '/telegram.php';
 function fin_owner(array $actor): void {
     if (($actor['role'] ?? '') !== 'owner' || empty($actor['uid'])) throw new DomainException('owner_required');
 }
+// Staff never receive private rates or calculated amounts. Calculate from the
+// stored policy before committing the operational close, not from hidden inputs.
+function fin_order_money(mixed $value): int {
+    if (!is_string($value) && !is_int($value) && !is_float($value)) throw new InvalidArgumentException('invalid_order_amount');
+    $text = preg_replace('/[\s\x{00a0}\x{202f}]/u', '', (string)$value);
+    $text = str_replace(',', '.', $text ?? '');
+    if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $text) || (float)$text > 1000000000) throw new InvalidArgumentException('invalid_order_amount');
+    return (int)round((float)$text * 100);
+}
+function fin_order_plan(array $order, array $input, array $policy, bool $fixed): array {
+    $total = fin_order_money($input['total'] ?? '');
+    $parts = fin_order_money(($input['parts'] ?? '') === '' ? '0' : $input['parts']);
+    if ($parts > $total) throw new InvalidArgumentException('parts_exceed_total');
+    $review = $input['review'] ?? '';
+    if (!is_string($review) && !is_bool($review) && !is_numeric($review)) throw new InvalidArgumentException('invalid_review');
+    $reviewKey = function_exists('mb_strtolower') ? mb_strtolower(trim((string)$review), 'UTF-8') : trim((string)$review);
+    $bonusOn = is_numeric($review) ? (float)$review != 0 : in_array($reviewKey, ['1','да','yes','true','+','есть','хороший','хорошо','получен','получили'], true);
+    $savedAmounts = array_filter(['cleanCheck','masterAmount','companyShare'], static fn($k) => isset($order[$k]) && $order[$k] !== '');
+    $manual = ($order['_autoFinance'] ?? null) === false || (!empty($savedAmounts) && ($order['_autoFinance'] ?? null) !== true);
+    if ($manual) {
+        if ($total !== fin_order_money($order['total'] ?? '') || $parts !== fin_order_money(($order['parts'] ?? '') === '' ? '0' : $order['parts']) || (string)$review !== (string)($order['review'] ?? '') || (string)($input['master'] ?? '') !== (string)($order['master'] ?? '')) throw new DomainException('manual_finance_owner_required');
+        if (count($savedAmounts) !== 3) throw new DomainException('manual_finance_incomplete');
+        return [];
+    }
+    $pick = static function (string $key, float $fallback) use ($policy): float {
+        return isset($policy[$key]) && is_numeric($policy[$key]) ? (float)$policy[$key] : $fallback;
+    };
+    $base = $total - $parts;
+    $t1 = (int)round($pick('threshold1', 4000) * 100);
+    $t2 = (int)round($pick('threshold2', 8000) * 100);
+    $rate = $fixed ? $pick('fixedRate', 50) : ($base < $t1 ? $pick('gridLow', 30) : ($base < $t2 ? $pick('gridMid', 40) : $pick('gridHigh', 50)));
+    $bonus = $bonusOn ? min((int)round($base * .05), 100000) : 0;
+    $master = min($base, (int)round($base * max(0, min(100, $rate)) / 100) + $bonus);
+    $money = static fn(int $c): string => number_format($c / 100, 2, '.', '');
+    return ['total'=>$money($total), 'parts'=>$money($parts), 'cleanCheck'=>$money($base), 'masterAmount'=>$money($master), 'companyShare'=>$money($base-$master), 'review'=>(string)$review, '_autoFinance'=>true];
+}
+function fin_order_calculate(PDO $pdo, array $actor, array $body): array {
+    if (!in_array($actor['role'] ?? '', ['dispatcher_logistic','logistic'], true) || empty($actor['uid'])) throw new DomainException('logistics_required');
+    $id = fin_text($body['orderId'] ?? '', 128);
+    $path = tg_path('orders', $id);
+    $expected = fin_text($body['expectedUpdatedAt'] ?? '', 80);
+    $pdo->beginTransaction();
+    try {
+        $order = tg_read($pdo, $path, true);
+        if (!$order) throw new DomainException('save_order_before_closing');
+        $projection = tg_read($pdo, tg_path('dispatcherOrders', $id), true) ?? [];
+        if (!empty($order['_reportLockId']) || !empty($projection['_reportLockId']) || !empty($order['_duplicateOf'])) throw new DomainException('order_locked');
+        if ((string)($order['_updatedAt'] ?? '') !== $expected) throw new DomainException('order_changed_refresh');
+        $reports = $pdo->prepare('SELECT data_json FROM crm_documents WHERE workspace_id=? AND collection_path=? LIMIT 10001');
+        $reports->execute([tg_workspace(), 'workspaces/'.tg_workspace().'/shiftReports']);
+        $reportRows = $reports->fetchAll();
+        if (count($reportRows) > 10000) throw new DomainException('order_lock_verification_unavailable');
+        foreach ($reportRows as $row) {
+            $report = json_decode((string)$row['data_json'], true);
+            if (!is_array($report)) throw new DomainException('order_lock_verification_unavailable');
+            if (in_array($id, array_map('strval', $report['paidOrderIds'] ?? []), true) || (($report['date'] ?? '') === ($order['callDate'] ?? '') && in_array($id, array_map('strval', $report['orderIds'] ?? []), true))) throw new DomainException('order_locked');
+        }
+        $policy = tg_read($pdo, tg_path('config', 'financePolicy')) ?? [];
+        $public = tg_read($pdo, tg_path('config', 'public')) ?? [];
+        $master = fin_text($body['master'] ?? '', 250);
+        $fixed = false;
+        foreach (($public['fixedMasters'] ?? []) as $name) if (is_string($name) && tg_master_key($name) === tg_master_key($master)) $fixed = true;
+        $q = $pdo->prepare('SELECT data_json FROM crm_documents WHERE workspace_id=? AND collection_path=?');
+        $q->execute([tg_workspace(), 'workspaces/'.tg_workspace().'/members']);
+        foreach ($q->fetchAll() as $row) {
+            $member = json_decode((string)$row['data_json'], true);
+            if (is_array($member) && ($member['role'] ?? '') === 'master' && tg_master_key((string)($member['master'] ?? $member['name'] ?? '')) === tg_master_key($master)) $fixed = $fixed || ($member['fixedMaster'] ?? false) === true;
+        }
+        $patch = fin_order_plan($order, $body, $policy, $fixed);
+        $changed = false;
+        foreach ($patch as $key=>$value) if (($order[$key] ?? null) !== $value) $changed = true;
+        if ($changed) {
+            $next = array_replace($order, $patch);
+            $next['_financeCalculatedAt'] = gmdate('c');
+            $next['_financeCalculatedBy'] = (string)$actor['uid'];
+            // Do not stamp a cash date or payroll payment here. The normal
+            // operational commit remains responsible for confirming closure.
+            $closePath = tg_path('orderCloseData', $id);
+            $close = tg_read($pdo, $closePath, true) ?? ['orderId'=>$id];
+            foreach (['total','parts','companyShare'] as $key) $close[$key] = $next[$key];
+            tg_write_many($pdo, [$path=>$next, $closePath=>$close], (string)$actor['uid'], (string)$actor['role'], 'order_finance_calculated');
+        }
+        $pdo->commit();
+        return ['ok'=>true, 'changed'=>$changed];
+    } catch (Throwable $e) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $e; }
+}
 function fin_text(mixed $value, int $max): string {
     if (!is_string($value)) throw new InvalidArgumentException('invalid_text');
     $value = preg_replace('/\s+/u', ' ', trim($value));
@@ -305,6 +391,7 @@ try {
     if (!is_array($body)) throw new InvalidArgumentException('invalid_json');
     $pdo = tg_db();
     $actor = tg_jwt_actor($pdo);
+    if (($body['op'] ?? '') === 'order_calculate') tg_reply(200, fin_order_calculate($pdo, $actor, $body));
     fin_owner($actor);
     if (($body['op'] ?? '') === 'payroll_payments_list') tg_reply(200,['ok'=>true,'payments'=>fin_payments_list($pdo,$actor)]);
     if (in_array($body['op'] ?? '', ['payroll_payments_add','payroll_payments_void'], true)) tg_reply(200,fin_payments_mutate($pdo,$actor,$body));

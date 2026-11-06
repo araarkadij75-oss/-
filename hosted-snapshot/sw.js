@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.106-dispatcher-layout-v1';
+const CACHE='eliteservice-18.17.107-dispatcher-close-v1';
 const SHELL=[
   './',
   './index.html',
@@ -16,7 +16,7 @@ const SHELL=[
   './profit-bridge.js?v=20261103-cash1',
   './payroll-intake-accounting.js?v=20261106-partial2',
   './profit-ui.js?v=20261103-audit1',
-  './visual-refinement.css?v=20261106-layout4',
+  './visual-refinement.css?v=20261106-layout5',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
   './quality-monitor.js?v=20261101-quality2',
   './premium-v181721.css',
