@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.110-quality-cache-v1';
+const CACHE='eliteservice-18.17.111-rolling-quality-v1';
 const SHELL=[
   './',
   './index.html',
@@ -19,7 +19,7 @@ const SHELL=[
   './own-payroll.js',
   './visual-refinement.css?v=20261106-layout7',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
-  './quality-monitor.js?v=20261106-quality3',
+  './quality-monitor.js?v=20261106-quality4',
   './premium-v181721.css',
 ];
 

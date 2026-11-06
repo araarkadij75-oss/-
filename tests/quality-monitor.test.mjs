@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-const context={module:{exports:{}},Date,setTimeout,clearTimeout,setInterval,clearInterval};
+class FixedDate extends Date {constructor(...args){super(...(args.length?args:['2026-11-06T12:00:00Z']))}static now(){return Date.parse('2026-11-06T12:00:00Z')}}
+const context={module:{exports:{}},Date:FixedDate,setTimeout,clearTimeout,setInterval,clearInterval};
 vm.runInNewContext(fs.readFileSync(new URL('../hosted-snapshot/quality-monitor.js',import.meta.url),'utf8'),context);
 const {analyze,dateKey}=context.module.exports;
-const order=(extra={})=>({orderId:'A',_status:'Выполнен',dispatcher:'Сергей',callDate:'2026-10-01',closeDate:'2026-10-24',total:10000,parts:1000,masterAmount:5000,companyShare:4000,...extra});
+const order=(extra={})=>({orderId:'A',_status:'Выполнен',dispatcher:'Сергей',callDate:'2026-10-23',closeDate:'2026-10-24',total:10000,parts:1000,masterAmount:5000,companyShare:4000,...extra});
 const report=(extra={})=>({id:'report',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A'],...extra});
 test('validator is read-only and reevaluates current snapshots, not fixed demo numbers',()=>{
  const snapshot={orders:[order()],shiftReports:[report()]},before=JSON.stringify(snapshot);
@@ -83,13 +84,13 @@ test('server failure is visible and monitor cleanup clears the panel',async()=>{
 test('linked duplicate retains a manual saved-payroll warning without operational noise',()=>{const duplicate=order({orderId:'B',_duplicateOf:'A',phone:'',name:''});const result=analyze({orders:[order(),duplicate],shiftReports:[{id:'r',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A','B']}]});assert.ok(result.issues.some(x=>x.code==='paid_linked_duplicate'));assert.ok(!result.issues.some(x=>x.code==='duplicate_link_invalid'));const bad=analyze({orders:[duplicate]});assert.ok(bad.issues.some(x=>x.code==='duplicate_link_invalid'))});
 
 test('missing surrender date remains visible but does not claim saved payroll is unassigned',()=>{const r=analyze({orders:[order({closeDate:''})],shiftReports:[{id:'s',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A']}]});const issue=r.issues.find(x=>x.code==='closed_date');assert.equal(issue.severity,'warning');assert.match(issue.message,/уже учтена/)});
-test('quality scope begins October 2026 without changing historical orders or payroll references',()=>{
+test('quality scope covers the latest 15 Moscow calendar days without changing historical orders or payroll references',()=>{
  const old=order({orderId:'OLD',callDate:'2026-09-30',closeDate:'',dispatcher:'',companyShare:''});
- const current=order({orderId:'NEW',callDate:'2026-10-01',closeDate:''});
+ const current=order({orderId:'NEW',callDate:'2026-10-23',closeDate:''});
  const unknown=order({orderId:'UNKNOWN',callDate:'',closeDate:'',visitDate:''});
  const reports=[report({date:'2026-09-30',paidOrderIds:['OLD','MISSING_OLD']}),report({id:'new',paidOrderIds:['NEW']})];
  const snapshot={orders:[old,current,unknown],shiftReports:reports},before=JSON.stringify(snapshot);
- const result=analyze(snapshot);assert.equal(result.scopeStart,'2026-10-01');assert.equal(result.orderCount,2);assert.equal(result.totalOrderCount,3);
+ const result=analyze(snapshot);assert.equal(result.scopeStart,'2026-10-23');assert.equal(result.orderCount,2);assert.equal(result.totalOrderCount,3);
  assert.ok(!result.issues.some(x=>['OLD','MISSING_OLD'].includes(x.orderId)));
  assert.ok(result.issues.some(x=>x.orderId==='NEW'));assert.ok(result.issues.some(x=>x.orderId==='UNKNOWN'));
  assert.equal(JSON.stringify(snapshot),before);
@@ -101,4 +102,12 @@ test('cancelled and refused orders never require a master assignment',()=>{
  }
 });
 
- test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261106-quality3"));assert.ok(!source.includes("20261101-quality2"));}});
+ test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261106-quality4"));assert.ok(!source.includes("20261101-quality2"));}});
+
+test('rolling scope advances at Moscow midnight, retains boundary, future and unknown dates',()=>{
+ const rows=[order({orderId:'old',callDate:'2026-10-22'}),order({orderId:'boundary',callDate:'2026-10-23'}),order({orderId:'future',callDate:'2027-01-01'}),order({orderId:'unknown',callDate:'',visitDate:''})];
+ const first=analyze({orders:rows},{now:'2026-11-06T20:59:59Z'}),next=analyze({orders:rows},{now:'2026-11-06T21:00:00Z'});
+ assert.equal(first.scopeStart,'2026-10-23');assert.equal(first.orderCount,3);
+ assert.equal(next.scopeStart,'2026-10-24');assert.equal(next.orderCount,2);
+ assert.equal(context.module.exports.scopeStartAt('2027-01-01T00:00:00Z'),'2026-12-18');
+});

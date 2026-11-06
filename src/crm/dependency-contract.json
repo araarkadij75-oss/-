@@ -3139,7 +3139,8 @@
           "globals": [
             "Date",
             "Math",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -5162,7 +5163,8 @@
           "globals": [
             "Array",
             "Math",
-            "Set"
+            "Set",
+            "window"
           ],
           "crossDomain": [
             {
@@ -11662,7 +11664,8 @@
           "globals": [
             "Date",
             "Math",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -13409,7 +13412,8 @@
             "Date",
             "Math",
             "Number",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -19649,7 +19653,8 @@
           "globals": [
             "Date",
             "Math",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -20968,7 +20973,8 @@
             "Date",
             "Math",
             "Number",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
