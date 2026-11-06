@@ -60,6 +60,8 @@ jobs:
           php tests/telegram-bridge.test.php
           php tests/telegram-callback-ack.test.php
           php -l hosted-snapshot/crm-api/finance.php
+          php -l hosted-snapshot/crm-api/own-payroll.php
+          php tests/own-payroll.test.php
           php tests/finance-api.test.php
           php -n tests/telegram-transport.test.php
       - run: npm run gate:static
