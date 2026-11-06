@@ -43,9 +43,14 @@ function quality_who(array $r): string {
     $value = trim((string)($r['approvedForName'] ?? $r['shiftName'] ?? $r['dispatcher'] ?? ''));
     return match($value) {'Сергей','сергей','СЕРГЕЙ','Смена Сергея'=>'sergey','Артём','Артем','артём','артем','АРТЁМ','АРТЕМ','Смена Артёма','Смена Артема'=>'artem',default=>$value};
 }
+function quality_in_scope(array $r): bool {
+    $date=quality_date($r['callDate']??'')?:quality_date($r['_createdAt']??'')?:quality_date($r['visitDate']??'');
+    return $date===''||$date>='2026-10-01';
+}
 function quality_analyze(array $orders, array $reports): array {
-    $issues=[]; $counts=[]; $byId=[];
-    $add=static function(string $code,string $id,string $severity='warning',string $reportId='') use (&$issues,&$counts): void {
+    $issues=[]; $counts=[]; $byId=[];$allById=[];foreach($orders as $row)$allById[(string)($row['orderId']??'')]=$row;
+    $add=static function(string $code,string $id,string $severity='warning',string $reportId='') use (&$issues,&$counts,&$allById): void {
+        if(isset($allById[$id])&&!quality_in_scope($allById[$id]))return;
         $counts[$code]=($counts[$code]??0)+1;
         if(count($issues)<500)$issues[]=['code'=>$code,'orderId'=>$id,'severity'=>$severity,'reportId'=>$reportId];
     };
@@ -53,6 +58,7 @@ function quality_analyze(array $orders, array $reports): array {
     foreach($orders as $r){
         $id=trim((string)($r['orderId']??$r['_id']??''));
         if(isset($byId[$id]))$add('duplicate_order',$id,'error');else $byId[$id]=$r;
+        if(!quality_in_scope($r))continue;
         if(!empty($r['_duplicateOf'])){$target=$allById[(string)$r['_duplicateOf']]??null;if(!$target||$r['_duplicateOf']===$id||!empty($target['_duplicateOf']))$add('duplicate_link_invalid',$id,'error');continue;}
         $status=trim((string)($r['_status']??'')); $closed=in_array($status,['Выполнен','Закрыт','Закрыто'],true);
         if($status!==''&&!$closed&&!in_array($status,['Отказ','Отмена'],true)){
@@ -77,12 +83,12 @@ function quality_analyze(array $orders, array $reports): array {
     foreach($reports as $r){$key=($r['date']??'').'|'.quality_who($r);if(!isset($unique[$key])||$priority($r)>=$priority($unique[$key]))$unique[$key]=$r;}
     $paid=[];foreach($unique as $r){if(!empty($r['closureOnly'])||!empty($r['draft'])||!empty($r['voided'])||!((!empty($r['ownerConfirmed'])&&!empty($r['subjectMemberId']))||(!empty($r['dataHash'])&&!empty($r['closedBy']))))continue;
         $ids=is_array($r['paidOrderIds']??null)?$r['paidOrderIds']:(is_array($r['orderIds']??null)?$r['orderIds']:[]);
-        foreach($ids as $raw){$id=(string)$raw;$reportId=(string)($r['id']??'');if(isset($paid[$id]))$add('paid_duplicate',$id,'error',$reportId);else $paid[$id]=$reportId;
+        foreach($ids as $raw){$id=(string)$raw;if(!isset($byId[$id])&&!quality_in_scope(['callDate'=>$r['date']??'']))continue;$reportId=(string)($r['id']??'');if(isset($paid[$id]))$add('paid_duplicate',$id,'error',$reportId);else $paid[$id]=$reportId;
             if(!isset($byId[$id]))$add('paid_order_missing',$id,'warning',$reportId);else{if(!empty($byId[$id]['_duplicateOf']))$add('paid_linked_duplicate',$id,'warning',$reportId);$owner=quality_who(['dispatcher'=>$byId[$id]['dispatcher']??'']);if($owner!==''&&quality_who($r)!==''&&$owner!==quality_who($r))$add('paid_owner_conflict',$id,'warning',$reportId);}
         }
     }
     foreach($issues as &$issue)if($issue['code']==='closed_date'&&isset($paid[$issue['orderId']])){$issue['severity']='warning';$issue['message']='Дата сдачи не заполнена; зарплата уже учтена в сохранённом отчёте, повторно не начислять';}unset($issue);
-    return ['orderCount'=>count($orders),'reportCount'=>count($reports),'issueCount'=>array_sum($counts),'counts'=>$counts,'issues'=>$issues,'issuesTruncated'=>array_sum($counts)>count($issues)];
+    return ['scopeStart'=>'2026-10-01','orderCount'=>count(array_filter($orders,'quality_in_scope')),'totalOrderCount'=>count($orders),'reportCount'=>count($reports),'issueCount'=>array_sum($counts),'counts'=>$counts,'issues'=>$issues,'issuesTruncated'=>array_sum($counts)>count($issues)];
 }
 function quality_load(PDO $pdo,string $collection,int $limit): array {
     if(!in_array($collection,['orders','shiftReports'],true))throw new InvalidArgumentException('collection');

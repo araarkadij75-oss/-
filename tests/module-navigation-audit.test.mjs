@@ -84,7 +84,7 @@ for(const role of Object.keys(pages)) {
   });
 }
 
-for(const role of ['owner','dispatcher_logistic']) {
+for(const role of ['owner']) {
   test(role+': performance does not recompute the separate hidden shift-closure screen',()=>{
     const h=harness(role);h.switchTab('performance');
     assert.ok(h.calls.includes('renderPerformance'));
@@ -135,3 +135,5 @@ for(const [role,file] of Object.entries(pages)) {
     assert.equal(refreshed,1);
   });
 }
+
+for(const role of ['dispatcher_logistic','master'])test(role+': personal payroll replaces general financial analytics',()=>{const h=harness(role);h.switchTab('performance');assert.deepEqual(h.panels.filter(x=>x.active).map(x=>x.dataset.panel),['orders']);assert.ok(!h.calls.includes('renderPerformance'));h.switchTab('mypayroll');assert.deepEqual(h.panels.filter(x=>x.active).map(x=>x.dataset.panel),['mypayroll']);assert.ok(!h.calls.includes('renderFinance'));});

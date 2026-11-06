@@ -79,3 +79,24 @@ for(const page of ['index','dispatcher-logistic','master'])test(`${page}: staff 
  assert.match($('#staffList').innerHTML,/Аккаунтов сотрудников пока нет/);
  if(page!=='index')assert.doesNotMatch(html,/\bownerRolePreview\(/);
 });
+
+// A cancelled/refused intake needs no technician; only actionable work enters assignment control.
+test('form preview does not request a technician for refusal or cancellation',()=>{
+ const source=fs.readFileSync(new URL('../src/crm/orders/shared.js',import.meta.url),'utf8').match(/^function renderFormPreview\(.*$/m)[0];
+ const nodes=new Map(),$=id=>{if(!nodes.has(id))nodes.set(id,{checked:false,innerHTML:'',value:''});return nodes.get(id)};
+ const record={name:'Test',phone:'',address:'Test',dispatcher:'Test',request:'Test',visitDate:'2026-11-06',master:'',_autoFinance:false};
+ const ctx={$,formRecord:()=>record,calcAuto:()=>({base:0}),numMaybe:()=>null,money:String,pct:String,esc:String,statusPill:()=>'',currentRole:()=> 'owner',clean:v=>String(v||''),cleanPhoneForCompare:()=>'',state:{orders:[]},parseDate:()=>null,num:v=>Number(v)||0,invalidMoney:()=>false};
+ vm.createContext(ctx);vm.runInContext(source,ctx);
+ for(const status of ['Отказ','Отмена']){record._status=status;ctx.renderFormPreview();assert.doesNotMatch($('#formChecks').innerHTML,/Мастер пока не назначен/)}
+ for(const status of ['В работе','Забор / техника у мастера','Будущая дата']){record._status=status;ctx.renderFormPreview();assert.match($('#formChecks').innerHTML,/Мастер пока не назначен/)}
+});
+
+test('shift assignment control excludes terminal orders in current and legacy snapshots',()=>{
+ const rows=['Отмена','Отказ','Выполнен','В работе','Будущая дата'].map((status,i)=>({orderId:String(i),_status:status,master:'',total:0,companyShare:0}));
+ for(const [file,name] of [['owner-dispatcher','shiftSnapshot'],['owner-dispatcher','legacyShiftSnapshot'],['master','shiftSnapshot']]){
+  const source=fs.readFileSync(new URL('../src/crm/payroll/'+file+'.js',import.meta.url),'utf8').match(new RegExp('^function '+name+'\\(.*$','m'))[0];
+  const ctx={state:{orders:rows,settings:{}},shiftOrders:()=>rows,num:v=>Number(v)||0,derivedStage:r=>r._status,truthReview:()=>false,sum:(rs,fn)=>rs.reduce((n,r)=>n+fn(r),0),pinHash:String,shiftName:String,isServiceMaster:v=>!v,shiftPayroll:()=>0,payrollIntakeSnapshot:()=>({days:[]}),payrollShiftKey:()=> 'sergey',today:()=> '2026-11-06',isPickupOrder:()=>false,orderMatchesDispatcher:()=>true};
+  vm.createContext(ctx);vm.runInContext(source,ctx);const result=ctx[name]('2026-11-06',{id:'sergey',shift:'sergey',name:'Сергей'});
+  assert.equal(result.unassigned,2,file+'/'+name);assert.equal(result.cancelled,1);assert.equal(result.refused,1);
+ }
+});

@@ -83,3 +83,20 @@ test('server failure is visible and monitor cleanup clears the panel',async()=>{
 test('linked duplicate retains a manual saved-payroll warning without operational noise',()=>{const duplicate=order({orderId:'B',_duplicateOf:'A',phone:'',name:''});const result=analyze({orders:[order(),duplicate],shiftReports:[{id:'r',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A','B']}]});assert.ok(result.issues.some(x=>x.code==='paid_linked_duplicate'));assert.ok(!result.issues.some(x=>x.code==='duplicate_link_invalid'));const bad=analyze({orders:[duplicate]});assert.ok(bad.issues.some(x=>x.code==='duplicate_link_invalid'))});
 
 test('missing surrender date remains visible but does not claim saved payroll is unassigned',()=>{const r=analyze({orders:[order({closeDate:''})],shiftReports:[{id:'s',date:'2026-10-24',shift:'sergey',ownerConfirmed:true,subjectMemberId:'s',paidOrderIds:['A']}]});const issue=r.issues.find(x=>x.code==='closed_date');assert.equal(issue.severity,'warning');assert.match(issue.message,/уже учтена/)});
+test('quality scope begins October 2026 without changing historical orders or payroll references',()=>{
+ const old=order({orderId:'OLD',callDate:'2026-09-30',closeDate:'',dispatcher:'',companyShare:''});
+ const current=order({orderId:'NEW',callDate:'2026-10-01',closeDate:''});
+ const unknown=order({orderId:'UNKNOWN',callDate:'',closeDate:'',visitDate:''});
+ const reports=[report({date:'2026-09-30',paidOrderIds:['OLD','MISSING_OLD']}),report({id:'new',paidOrderIds:['NEW']})];
+ const snapshot={orders:[old,current,unknown],shiftReports:reports},before=JSON.stringify(snapshot);
+ const result=analyze(snapshot);assert.equal(result.scopeStart,'2026-10-01');assert.equal(result.orderCount,2);assert.equal(result.totalOrderCount,3);
+ assert.ok(!result.issues.some(x=>['OLD','MISSING_OLD'].includes(x.orderId)));
+ assert.ok(result.issues.some(x=>x.orderId==='NEW'));assert.ok(result.issues.some(x=>x.orderId==='UNKNOWN'));
+ assert.equal(JSON.stringify(snapshot),before);
+});
+test('cancelled and refused orders never require a master assignment',()=>{
+ for(const status of ['Отмена','Отказ']){
+  const result=analyze({orders:[order({_status:status,master:'',name:'',phone:'',request:'',visitDate:'',total:0,masterAmount:0,companyShare:0,parts:0})]});
+  assert.ok(!result.issues.some(x=>x.code==='active_master'||x.code==='active_required'));
+ }
+});
