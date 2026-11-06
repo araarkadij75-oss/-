@@ -100,3 +100,5 @@ test('cancelled and refused orders never require a master assignment',()=>{
   assert.ok(!result.issues.some(x=>x.code==='active_master'||x.code==='active_required'));
  }
 });
+
+ test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261106-quality3"));assert.ok(!source.includes("20261101-quality2"));}});
