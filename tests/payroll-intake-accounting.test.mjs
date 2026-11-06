@@ -4,6 +4,15 @@ const o=(id,intakeDate,cashDate,cashCents,extra={})=>({id,person:'sergey',intake
 const d=date=>({person:'sergey',date});
 const p=(id,date,amountCents)=>({id,date,person:'sergey',amountCents});
 
+test('partial settlement retains unpaid dated receipts before reconciliation and omitted days',()=>{
+ const orders=[o('a','2026-10-21','2026-10-22',2924500),o('b','2026-10-21','2026-10-24',1100000),o('c','2026-10-30','2026-11-02',2837000)];
+ const snapshot=calculate({orders,cutoff:'2026-11-06',payments:[p('credit','2026-11-03',292450)]});
+ snapshot.orders=orders;snapshot.baselines=[{person:'sergey',date:'2026-11-03',days:[{date:'2026-10-21',cashCents:2924500}]}];snapshot.payments=[];
+ const r=globalThis.PayrollIntakeAccounting.settlementSequence(snapshot,{anchor:'2026-10-21',first:'sergey'});
+ assert.equal(r.unallocated.length,0);assert.equal(r.cycles.at(-1).dueCents,393700);
+ assert.ok(r.cycles.flatMap(c=>c.events).some(e=>e.date==='2026-10-24'&&e.amountCents===110000));
+});
+
 test('two-day payment sequence carries partner-day late increments into next own cycle',()=>{
  const orders=[o('old','2026-10-31','2026-11-03',2500000),o('new','2026-11-04','2026-11-04',2500000)];
  const snapshot=calculate({cutoff:'2026-11-05',days:[d('2026-10-31'),d('2026-11-04'),d('2026-11-05')],orders});
