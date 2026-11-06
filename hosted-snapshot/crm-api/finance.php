@@ -150,6 +150,17 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
 }
 
 function fin_payment_normalize(array $body): array {
+    if (($body['kind'] ?? '') === 'settlement_baseline') {
+        if (($body['baselineConfirmed'] ?? false) !== true) throw new InvalidArgumentException('baseline_confirmation_required');
+        $date=fin_text($body['date']??'',10);$person=$body['person']??'';
+        if(!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/',$date,$m)||!checkdate((int)$m[2],(int)$m[3],(int)$m[1])||$date<'2026-09-15'||$date>(new DateTimeImmutable('now',new DateTimeZone('Europe/Moscow')))->format('Y-m-d')||!in_array($person,['sergey','artem'],true))throw new InvalidArgumentException('invalid_baseline');
+        $days=$body['days']??null;$seen=[];$amount=0;
+        if(!is_array($days)||!count($days)||count($days)>2000)throw new InvalidArgumentException('invalid_baseline_days');
+        foreach($days as $d){$key=$d['date']??'';$cash=$d['cashCents']??null;if(!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/',$key,$dm)||!checkdate((int)$dm[2],(int)$dm[3],(int)$dm[1])||$key>$date||$key<'2026-09-15'||isset($seen[$key])||!is_int($cash)||$cash<0||$cash>100000000000)throw new InvalidArgumentException('invalid_baseline_day');$seen[$key]=true;$amount+=max(200000,(int)round($cash/10));}
+        $key=fin_text($body['idempotencyKey']??'',128);$reference=fin_text($body['reference']??'',200);$note=fin_text($body['note']??'',4000);
+        if(!preg_match('/^[A-Za-z0-9_-]{16,128}$/',$key)||$reference===''||$note==='')throw new InvalidArgumentException('baseline_evidence_required');
+        return ['kind'=>'settlement_baseline','date'=>$date,'person'=>$person,'amountCents'=>$amount,'days'=>array_map(fn($d)=>['date'=>$d['date'],'cashCents'=>$d['cashCents']],$days),'reference'=>$reference,'note'=>$note,'idempotencyKey'=>$key,'baselineConfirmed'=>true];
+    }
     if (($body['legacyExcluded'] ?? null) !== true) throw new InvalidArgumentException('legacy_exclusion_required');
     foreach (['reportId','shiftReportId','legacyReportId','reportIds','paidOrderIds','orderIds'] as $key) if (array_key_exists($key, $body)) throw new InvalidArgumentException('legacy_payment_binding_forbidden');
     $date = fin_text($body['date'] ?? '', 10);
@@ -179,6 +190,7 @@ function fin_payment_plan(array $existing, array $actor, array $body, string $no
         // Case folding prevents a retry with a new request ID from reusing the same receipt.
         $reference=function(string $value):string{return function_exists('mb_strtolower')?mb_strtolower($value,'UTF-8'):strtolower($value);};
         foreach($map as $prior)if(($prior['person']??'')===$row['person']&&$reference((string)($prior['reference']??''))===$reference($row['reference']))throw new UnexpectedValueException('payment_reference_exists');
+        if(($row['kind']??'')==='settlement_baseline')foreach($map as $prior)if(($prior['active']??true)!==false&&($prior['kind']??'')==='settlement_baseline'&&$prior['person']===$row['person']&&$prior['date']>=$row['date'])throw new UnexpectedValueException('baseline_already_exists');
         if(count($map)>=20000)throw new LengthException('payment_capacity');
         return ['payment'=>$row+['id'=>$id,'active'=>true,'createdAt'=>$now,'updatedAt'=>$now,'createdBy'=>$actor['uid'],'updatedBy'=>$actor['uid']],'changed'=>true,'duplicate'=>false];
     }

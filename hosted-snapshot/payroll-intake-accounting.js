@@ -39,5 +39,26 @@
   const totals=[...people.values()].sort((a,b)=>a.person.localeCompare(b.person));for(const p of totals){p.dueCents=Math.max(0,p.earnedCents-p.paidCents);p.overpaidCents=Math.max(0,p.paidCents-p.earnedCents)}
   return {cutoff,days:resultDays,people:totals,events:events.sort((a,b)=>a.date.localeCompare(b.date)||a.person.localeCompare(b.person)||a.intakeDate.localeCompare(b.intakeDate)),warnings,incomplete:warnings.some(w=>!w.code.startsWith('duplicate_'))};
  }
- root.PayrollIntakeAccounting={calculate};
+ function settlementSequence(snapshot,{anchor,first='artem',cutoff=snapshot.cutoff}={}){
+  if(!validDate(anchor)||!validDate(cutoff)||!['artem','sergey'].includes(first))throw new Error('invalid_schedule');
+  const day=86400000,start=Date.parse(anchor+'T00:00:00Z'),iso=n=>new Date(n).toISOString().slice(0,10),groups=new Map(),unallocated=[];
+  const scheduled=n=>Math.floor((n-start)/day/2)%2===0?first:(first==='artem'?'sergey':'artem');
+  const bucket=(person,date)=>{if(!['artem','sergey'].includes(person)||date<anchor)throw new Error('invalid_cycle_person_or_date');let n=Date.parse(date+'T00:00:00Z');while(scheduled(n)!==person)n+=day;while(scheduled(n+day)===person)n+=day;const end=iso(n),key=person+'|'+end;if(!groups.has(key))groups.set(key,{person,start:iso(n-day),end,ownCents:0,lateCents:0,paidCents:0,events:[],payments:[]});return groups.get(key)};
+  const events=(snapshot.events||[]).filter(e=>!(snapshot.baselines||[]).some(b=>b.person===e.person));
+  for(const b of snapshot.baselines||[]){
+   for(const d of snapshot.days.filter(d=>d.person===b.person)){
+    const prior=b.days.find(x=>x.date===d.date);let cash=prior?.cashCents||0,earned=prior?entitlement(cash):0;
+    if(!prior){events.push({person:b.person,intakeDate:d.date,date:d.date,amountCents:200000,kind:'daily_minimum'});earned=200000}
+    const receipts=(snapshot.orders||[]).filter(o=>o.person===b.person&&o.intakeDate===d.date&&d.orderIds.includes(o.id)&&validDate(o.cashDate)&&o.cashDate>b.date).sort((a,z)=>a.cashDate.localeCompare(z.cashDate));
+    for(const o of receipts){cash+=o.cashCents;const next=entitlement(cash);if(next>earned)events.push({person:b.person,intakeDate:d.date,date:o.cashDate,amountCents:next-earned,kind:'cash_increment'});earned=next}
+    const target=d.entitlementCents??d.earnedCents;if(target!==earned)unallocated.push({person:b.person,intakeDate:d.date,date:'',amountCents:target-earned,kind:'baseline_difference'});
+   }
+  }
+  for(const e of events){if(!validDate(e.date)){unallocated.push(e);continue}const g=bucket(e.person,e.date);g.events.push(e);if(e.intakeDate>=g.start&&e.intakeDate<=g.end)g.ownCents+=e.amountCents;else g.lateCents+=e.amountCents}
+  for(const p of snapshot.payments||[]){if(p.date>cutoff||p.kind==='settlement_baseline')continue;const g=bucket(p.person,p.date);g.paidCents+=p.amountCents;g.payments.push(p)}
+  const balances=new Map();const cycles=[...groups.values()].sort((a,b)=>a.end.localeCompare(b.end)||a.person.localeCompare(b.person));
+  for(const g of cycles){g.openingCents=balances.get(g.person)||0;g.accruedCents=g.ownCents+g.lateCents;g.balanceCents=g.openingCents+g.accruedCents-g.paidCents;balances.set(g.person,g.balanceCents);g.dueCents=Math.max(0,g.balanceCents);g.finished=g.end<=cutoff}
+  return {cycles,unallocated};
+ }
+ root.PayrollIntakeAccounting={calculate,settlementSequence};
 })(typeof window!=='undefined'?window:globalThis);

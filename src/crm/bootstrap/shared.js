@@ -1,6 +1,6 @@
 /* CRM_UNIT:ImportDeclaration-0-8478b81bfdad */
 async function loadOptionalFeature(name,loader){try{return await loader()}catch(error){console.error('Optional CRM module: '+name,error);const notice=document.createElement('div');notice.className='notice warn';notice.setAttribute('role','status');notice.textContent='Модуль «'+name+'» не загрузился. Остальные разделы доступны. Обновите страницу, чтобы повторить подключение.';document.querySelector('.app')?.prepend(notice);return null}}
-await loadOptionalFeature('Расчёт зарплаты',()=>import('./payroll-intake-accounting.js?v=20261103-audit1'));
+await loadOptionalFeature('Расчёт зарплаты',()=>import('./payroll-intake-accounting.js?v=20261106-sequence1'));
 await loadOptionalFeature('Финансы',()=>import('./profit-bridge.js?v=20261103-cash1'));/* CRM_END:ImportDeclaration-0-8478b81bfdad */
 /* CRM_UNIT:ImportDeclaration-1-6329805c4c48 */
 await loadOptionalFeature('Контроль данных',()=>import('./quality-monitor.js?v=20261101-quality2'));/* CRM_END:ImportDeclaration-1-6329805c4c48 */

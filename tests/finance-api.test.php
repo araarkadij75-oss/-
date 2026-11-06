@@ -103,3 +103,12 @@ $flag=$patch;$flag['before']=['_autoFinance'=>true];$flag['after']=['_autoFinanc
 foreach(['false',0,null] as $invalid){$bad=$flag;$bad['after']['_autoFinance']=$invalid;fin_reject(fn()=>fin_reconciliation_patch($bad),'Auto-finance requires boolean');}
 $effective=fin_reconciliation_effective_patch(['_autoFinance'=>true],$normalizedPatch);fin_check($effective['before']['_autoFinance']===true&&$effective['after']['_autoFinance']===false,'Source money patch disables auto recalculation and journals both values');
 $unchanged=fin_reconciliation_effective_patch(['_autoFinance'=>true],$missing);fin_check(!array_key_exists('_autoFinance',$unchanged['after']),'Date-only patch does not change finance mode');
+
+$baseline=['op'=>'payroll_payments_add','kind'=>'settlement_baseline','baselineConfirmed'=>true,'person'=>'sergey','date'=>'2026-11-01','days'=>[['date'=>'2026-10-31','cashCents'=>2500000],['date'=>'2026-11-01','cashCents'=>1500000]],'reference'=>'baseline-confirmed','note'=>'Owner confirms all settled through November 1','idempotencyKey'=>'baseline-test-confirmed-20261101'];
+$bp=fin_payment_plan([],$owner,$baseline,$stamp);fin_check($bp['payment']['amountCents']===450000,'Baseline computed server-side per intake day');
+fin_check(!fin_payment_plan([$bp['payment']],$owner,$baseline,$stamp)['changed'],'Baseline retry is idempotent');
+$other=$baseline;$other['reference']='different';$other['idempotencyKey']='baseline-test-another-20261101';fin_reject(fn()=>fin_payment_plan([$bp['payment']],$owner,$other,$stamp),'Duplicate baseline rejected');
+$bad=$baseline;$bad['baselineConfirmed']=false;fin_reject(fn()=>fin_payment_normalize($bad),'Confirmation required');
+$bad=$baseline;$bad['days'][]=$bad['days'][0];fin_reject(fn()=>fin_payment_normalize($bad),'Duplicate baseline day rejected');
+$bad=$baseline;$bad['days'][0]['date']='2026-11-02';fin_reject(fn()=>fin_payment_normalize($bad),'Baseline cannot include future receipts');
+echo "settlement baseline tests passed\n";

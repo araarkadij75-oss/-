@@ -4374,7 +4374,8 @@
           "globals": [
             "Date",
             "Map",
-            "Set"
+            "Set",
+            "window"
           ],
           "crossDomain": [
             {
@@ -5790,6 +5791,7 @@
             "JSON",
             "Math",
             "Number",
+            "Set",
             "String",
             "crypto",
             "fetch",

@@ -3,6 +3,22 @@ const calculate=globalThis.PayrollIntakeAccounting.calculate;
 const o=(id,intakeDate,cashDate,cashCents,extra={})=>({id,person:'sergey',intakeDate,cashDate,cashCents,closed:true,...extra});
 const d=date=>({person:'sergey',date});
 const p=(id,date,amountCents)=>({id,date,person:'sergey',amountCents});
+
+test('two-day payment sequence carries partner-day late increments into next own cycle',()=>{
+ const orders=[o('old','2026-10-31','2026-11-03',2500000),o('new','2026-11-04','2026-11-04',2500000)];
+ const snapshot=calculate({cutoff:'2026-11-05',days:[d('2026-10-31'),d('2026-11-04'),d('2026-11-05')],orders});
+ snapshot.orders=orders;snapshot.payments=[];snapshot.baselines=[{person:'sergey',date:'2026-11-01',days:[{date:'2026-10-31',cashCents:0}]}];
+ const r=globalThis.PayrollIntakeAccounting.settlementSequence(snapshot,{anchor:'2026-10-31',first:'sergey'});
+ assert.equal(r.cycles.length,1);assert.equal(r.cycles[0].end,'2026-11-05');assert.equal(r.cycles[0].ownCents,450000);assert.equal(r.cycles[0].lateCents,50000);assert.equal(r.cycles[0].dueCents,500000);assert.equal(r.unallocated.length,0);
+});
+
+test('unknown receipt delta stays separate; no duplicate baseline payment or invented date',()=>{
+ const orders=[o('old','2026-10-31','',2800000)];
+ const snapshot=calculate({cutoff:'2026-11-05',snapshotDate:'2026-11-05',orders});snapshot.orders=orders;
+ snapshot.baselines=[{person:'sergey',date:'2026-11-01',days:[{date:'2026-10-31',cashCents:2500000}]}];snapshot.payments=[{...p('baseline','2026-11-01',250000),kind:'settlement_baseline'}];
+ const r=globalThis.PayrollIntakeAccounting.settlementSequence(snapshot,{anchor:'2026-10-31',first:'sergey'});
+ assert.equal(r.cycles.length,0);assert.equal(r.unallocated[0].amountCents,30000);assert.equal(r.unallocated[0].date,'');
+});
 test('each intake day keeps its own minimum: 25k and 15k cash earn 4500',()=>{const r=calculate({cutoff:'2026-10-20',days:[d('2026-10-19'),d('2026-10-20')],orders:[o('a','2026-10-19','2026-10-19',2500000),o('b','2026-10-20','2026-10-20',1500000)]});assert.equal(r.people[0].earnedCents,450000);assert.deepEqual(r.days.map(x=>x.entitlementCents),[250000,200000]);assert.equal(r.events.reduce((s,x)=>s+x.amountCents,0),450000)});
 test('late closure increases original day only by marginal entitlement; paid aggregate is deducted once',()=>{const input={days:[d('2026-10-19')],orders:[o('first','2026-10-19','2026-10-19',1500000),o('late','2026-10-19','2026-10-23',1000000)],payments:[p('paid','2026-10-20',200000)]};const before=JSON.stringify(input),r=calculate({...input,cutoff:'2026-10-23'});assert.equal(r.days.length,1);assert.equal(r.days[0].date,'2026-10-19');assert.equal(r.people[0].dueCents,50000);assert.deepEqual(r.events.filter(x=>x.date==='2026-10-23').map(x=>x.amountCents),[50000]);assert.equal(JSON.stringify(input),before);assert.equal(calculate({...input,cutoff:'2026-10-20'}).people[0].dueCents,0)});
 test('historical paid amounts are employee credits, not invented per-day allocations',()=>{const r=calculate({cutoff:'2026-10-23',days:[d('2026-10-19'),d('2026-10-20')],orders:[o('late','2026-10-19','2026-10-23',3000000)],payments:[p('r1','2026-10-19',450000),p('r2','2026-10-20',200000)]});assert.equal(r.people[0].earnedCents,500000);assert.equal(r.people[0].paidCents,650000);assert.equal(r.people[0].dueCents,0);assert.equal(r.people[0].overpaidCents,150000);assert.ok(r.days.every(x=>!('paidCents' in x)))});
