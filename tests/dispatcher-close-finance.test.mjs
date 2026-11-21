@@ -33,6 +33,12 @@ for (const role of ['owner','dispatcher']) test(`${role} adapter: private financ
   context.fetch=async()=>({ok:false,json:async()=>({ok:false,error:'manual_finance_owner_required'})});
   await assert.rejects(vm.runInContext("upsertOne(row,'dispatcher_logistic')",context),/владелец/);
   assert.equal(writes.length,0,'A rejected financial input cannot close the order');
+  context.row={...context.row,orderId:'261121-003',_status:'В работе',closeDate:'',_origin:'excel',request:'Исправленный текст'};
+  context.cloud.versions.set(context.row.orderId,'old');
+  await vm.runInContext("upsertOne(row,'dispatcher_logistic',{detailsOnly:true})",context);
+  assert.equal(events.at(-1),'commit');
+  assert.ok(writes.some(w=>w.path==='orders/261121-003'));
+  assert.ok(writes.every(w=>!('total' in w.data)&&!('companyShare' in w.data)));
 });
 
 for (const role of ['owner','dispatcher']) test(`${role}: saving a closed order preserves the first closing audit and date`, () => {

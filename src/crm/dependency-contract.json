@@ -8125,6 +8125,10 @@
               "domain": "imports"
             },
             {
+              "symbol": "num",
+              "domain": "core"
+            },
+            {
               "symbol": "openBulkModal",
               "domain": "orders"
             },
@@ -9893,6 +9897,10 @@
             {
               "symbol": "$",
               "domain": "ui"
+            },
+            {
+              "symbol": "can",
+              "domain": "staff"
             },
             {
               "symbol": "canonicalDispatcherSelection",
@@ -16347,6 +16355,10 @@
             {
               "symbol": "mergeImport",
               "domain": "imports"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
             },
             {
               "symbol": "openBulkModal",
@@ -23828,6 +23840,10 @@
             {
               "symbol": "mergeImport",
               "domain": "imports"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
             },
             {
               "symbol": "openBulkModal",
