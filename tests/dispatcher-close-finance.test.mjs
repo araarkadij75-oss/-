@@ -22,13 +22,13 @@ for (const role of ['owner','dispatcher']) test(`${role} adapter: private financ
     mirrorOrder:async()=>{},window:{},
     operationalOrderFields:()=>['total','parts','cleanCheck','masterAmount','companyShare','_status'],
     operationalCreateFields:()=>[],
-    row:{orderId:'TEST',total:'10000',parts:'2000',cleanCheck:'',masterAmount:'',companyShare:'',_status:'Выполнен',master:'Николай',_updatedAt:'new',closeDate:'06.11.2026'},
+    row:{orderId:'TEST',_duplicateOf:'',_createdBy:'original',total:'10000',parts:'2000',cleanCheck:'',masterAmount:'',companyShare:'',_status:'Выполнен',master:'Николай',_updatedAt:'new',closeDate:'06.11.2026'},
   };
   vm.createContext(context);
-  vm.runInContext(declarations.join('\n')+'\n'+upsert,context);
+  vm.runInContext(declarations.join('\n')+'\n'+source.slice(source.indexOf('function staffOrderPatch('),source.indexOf('async function mirrorOrder('))+upsert,context);
   await vm.runInContext("upsertOne(row,'dispatcher_logistic')",context);
   assert.deepEqual(events,['calculate','commit']);
-  for(const {data} of writes) for(const key of ['total','parts','cleanCheck','masterAmount','companyShare']) assert.ok(!(key in data),`${key} must remain server-owned on staff writes`);
+  for(const {data} of writes) for(const key of ['total','parts','cleanCheck','masterAmount','companyShare','_duplicateOf','_createdBy']) assert.ok(!(key in data),`${key} must remain server-owned on staff writes`);
   events.length=0;writes.length=0;
   context.fetch=async()=>({ok:false,json:async()=>({ok:false,error:'manual_finance_owner_required'})});
   await assert.rejects(vm.runInContext("upsertOne(row,'dispatcher_logistic')",context),/владелец/);

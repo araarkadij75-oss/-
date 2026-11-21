@@ -119,7 +119,7 @@ function fin_order_calculate(PDO $pdo, array $actor, array $body): array {
             if (is_array($member) && ($member['role'] ?? '') === 'master' && tg_master_key((string)($member['master'] ?? $member['name'] ?? '')) === tg_master_key($master)) $fixed = $fixed || ($member['fixedMaster'] ?? false) === true;
         }
         $patch = fin_order_plan($order, $body, $policy, $fixed);
-        fin_check_order_receipts(array_replace($order,$patch),true);
+        fin_check_order_receipts(array_replace($order,$patch),($body['closing'] ?? true) !== false);
         $changed = false;
         foreach ($patch as $key=>$value) if (($order[$key] ?? null) !== $value) $changed = true;
         if ($changed) {
