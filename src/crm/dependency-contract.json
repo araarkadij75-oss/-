@@ -2200,6 +2200,7 @@
         "currentOrderRows-50d81cc04c81": {
           "globals": [
             "Date",
+            "Intl",
             "Number",
             "String",
             "arguments"
@@ -10786,6 +10787,7 @@
         "currentOrderRows-50d81cc04c81": {
           "globals": [
             "Date",
+            "Intl",
             "Number",
             "String",
             "arguments"
@@ -18811,6 +18813,7 @@
         "currentOrderRows-50d81cc04c81": {
           "globals": [
             "Date",
+            "Intl",
             "Number",
             "String",
             "arguments"
