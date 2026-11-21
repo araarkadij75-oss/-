@@ -724,8 +724,8 @@ test('REG.RU order intake groups the fast-entry fields for every role without ch
 test('REG.RU order create waits for one server-confirmed write on owner and dispatcher',()=>{
   const owner=read('hosted-snapshot/index.html'),dispatcher=read('hosted-snapshot/dispatcher-logistic.html');
   for(const html of [owner,dispatcher]){
-    assert.match(html,/cloud\.saveOrderConfirmed=async\(order,role\)=>/);
-    assert.match(html,/await upsertOne\(order,role\)/);
+    assert.match(html,/cloud\.saveOrderConfirmed=async\(order,role,options=\{\}\)=>/);
+    assert.match(html,/await upsertOne\(order,role,options\)/);
     assert.match(html,/cloud\.versions\.set\(String\(order\.orderId/);
     assert.match(html,/Заказ не сохранён в общей базе/);
     assert.match(html,/Заказ сохранён в общей базе/);
