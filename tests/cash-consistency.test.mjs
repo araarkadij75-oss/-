@@ -55,3 +55,22 @@ test('selected date basis is strict and cash basis excludes undated receipts',()
  assert.equal(h.orderDate({callDate:'2026-10-01'},'closeDate'),null);
  assert.equal(h.orderDate({callDate:'2026-10-01',_cashClosedOn:'2026-11-02'},'closeDate').toISOString().slice(0,10),'2026-11-02');
 });
+test('cash paid in parts uses actual arrival days, one intake total and a single order in KPI averages',()=>{
+ const h=harness('closeDate');
+ const row={orderId:'parts',callDate:'2026-10-25',closeDate:'2026-11-03',companyShare:11000,_cashReceipts:[
+  {date:'2026-11-02',cents:700000},{date:'2026-11-03',cents:400000}]};
+ assert.deepEqual(Array.from(h.collectRecordedCash([row,row],{basis:'closeDate'}),x=>[x.date,x.cashCents]),[['2026-11-02',700000],['2026-11-03',400000]]);
+ assert.equal(h.collectRecordedCash([row],{basis:'callDate'})[0].cashCents,1100000);
+ assert.equal(h.collectRecordedCash([row],{basis:'callDate',cutoff:'2026-11-02'})[0].cashCents,700000);
+ assert.equal(h.kpiData([row]).avgShare,11000);
+ h.$=id=>({value:({'#dateBasis':'closeDate','#fromDate':'2026-11-02','#toDate':'2026-11-02'})[id]||''});
+ assert.equal(h.analyticsCashCents([row]),700000);
+ assert.equal(h.group([row],'master')[0].share,7000);
+});
+test('open orders count real instalments; invalid schedules cannot manufacture a final receipt',()=>{
+ const h=harness(),row={orderId:'open',callDate:'2026-10-25',stage:'В работе',companyShare:11000,_cashReceipts:[{date:'2026-11-02',cents:700000}]};
+ assert.equal(h.collectRecordedCash([row],{basis:'closeDate'})[0].cashCents,700000);
+ for(const bad of [{...row,stage:'Выполнен'},{...row,companyShare:100},{...row,_cashReceipts:[...row._cashReceipts,...row._cashReceipts]}]){
+   assert.equal(h.collectRecordedCash([bad],{basis:'closeDate'}).length,0);
+ }
+});

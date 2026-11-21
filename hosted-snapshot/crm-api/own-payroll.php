@@ -80,7 +80,15 @@ function own_pay_projection(array $actor,array $orders,array $reports,array $led
   }elseif(own_pay_order_person($r,$members)!==$person)continue;
   $date=own_pay_date($r['callDate']??'');if($date===''||$date<$anchor||$date>$cutoff)continue;
   if(!isset($days[$date]))$days[$date]=['date'=>$date,'cashCents'=>0,'earnedCents'=>$role==='master'?0:200000,'orderIds'=>[]];
-  $closed=!empty($r['_cashClosedAt'])||!empty($r['_cashClosedOn'])||($r['_status']??'')==='Выполнен';if(!$closed)continue;
+  $closed=!empty($r['_cashClosedAt'])||!empty($r['_cashClosedOn'])||($r['_status']??'')==='Выполнен';
+  $entries=$r['_cashReceipts']??[];
+  if($role!=='master'&&$entries!==[]){
+   try{fin_check_order_receipts($r);}catch(InvalidArgumentException $e){$warnings['invalid_cash_receipts']=true;continue;}
+   $cash=0;foreach($entries as $entry)if($entry['date']<=$cutoff)$cash+=$entry['cents'];
+   if($cash>0){$days[$date]['cashCents']+=$cash;$days[$date]['orderIds'][]=$id;}
+   continue;
+  }
+  if(!$closed)continue;
   $cashDate=own_pay_cash_date($r);if($cashDate!==''&&($cashDate<$date||$cashDate>$cutoff)){if($cashDate<$date)$warnings['cash_before_intake']=true;continue;}
   try{$cash=own_pay_money($r[$role==='master'?'masterAmount':'companyShare']??0);}catch(InvalidArgumentException $e){$warnings['invalid_amount']=true;continue;}
   if($cash===0)continue;if($cashDate==='')$warnings['missing_cash_date']=true;

@@ -1,3 +1,4 @@
+import {parseExpressionAt} from 'acorn';
 import '../hosted-snapshot/payroll-intake-accounting.js';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
@@ -5,6 +6,10 @@ import test from 'node:test';
 const html=fs.readFileSync(new URL('../hosted-snapshot/index.html',import.meta.url),'utf8');
 const snapshotSource=fs.readFileSync(new URL('../src/crm/payroll/owner-dispatcher.js',import.meta.url),'utf8');
 const line=name=>name==='shiftSnapshot'?snapshotSource.slice(snapshotSource.indexOf('function shiftSnapshot(')).split('/* CRM_END:')[0]:html.slice(html.indexOf('function '+name+'(')).split('\n')[0];
+function functionSource(src, start) {
+ const expression=parseExpressionAt(src,start,{ecmaVersion:'latest'});
+ return src.slice(start,expression.end);
+}
 const num=x=>Number(x)||0;
 const iso=d=>d?d.toISOString().slice(0,10):'';
 const parseDate=x=>/^\d{4}-\d\d-\d\d$/.test(x||'')?new Date(x+'T12:00:00Z'):null;
@@ -66,7 +71,7 @@ test('owner history compares saved allocation for the subject, with current cash
 
 for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatcher ownership is shared by filters, drilldown and shifts',()=>{
  const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
- const fn=name=>src.slice(src.indexOf('function '+name+'(')).split('\n')[0];
+ const fn=name=>functionSource(src,src.indexOf('function '+name+'('));
  const norm=x=>String(x||'').trim().toLowerCase().replaceAll('ё','е');
  const state={settings:{staff:[{id:'s',name:'Сергей',role:'dispatcher',shift:'artem'},{id:'a',name:'Артём',role:'dispatcher_logistic',shift:'sergey'}]},orders:[]};
  const helpers=['payrollShiftKey','orderPayrollShift','orderDispatcherName','orderMatchesDispatcher'].map(fn).join('\n');
@@ -95,7 +100,7 @@ for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatch
 
 for(const role of ['index','dispatcher-logistic','master'])test(role+': editing an imported order preserves its dispatcher and creation identity',async()=>{
  const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
- const body=src.slice(src.indexOf('async function upsertOne(')).split('\n')[0];
+ const body=functionSource(src,src.indexOf('async function upsertOne('));
  const writes=[],cloud={profile:{id:'a',name:'Артём',shift:'artem'},versions:new Map([['old','v1']])};
  const batch={set:(ref,data)=>writes.push({ref,data}),commit:async()=>{}};
  const save=new Function('cloud','fs','db','orderDoc','dispatchDoc','stripUndefined','dispatcherEditable','dispatchSafe',body+';return upsertOne')(cloud,{writeBatch:()=>batch,setDoc:async(ref,data)=>writes.push({ref,data})},{},id=>'order/'+id,id=>'dispatch/'+id,x=>x,x=>x,x=>x);
@@ -106,7 +111,7 @@ for(const role of ['index','dispatcher-logistic','master'])test(role+': editing 
 
 for(const role of ['index','dispatcher-logistic','master'])test(role+': dispatcher filter resolves the selected name once, not once per order',()=>{
  const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
- const body=src.slice(src.indexOf('function filterRows(')).split('\n')[0];
+ const body=functionSource(src,src.indexOf('function filterRows('));
  let lookups=0;const rows=Array.from({length:1632},(_,i)=>({dispatcher:i%2?' Сергей ':'Артём'}));
  const norm=x=>String(x||'').trim().toLowerCase().replaceAll('ё','е');
  const filter=new Function('$','parseDate','numMaybe','state','roleVisibleOrders','orderDate','canonicalKey','canonicalDispatcherSelection','orderDispatcherName','matchesDrill',body+';return filterRows')(
@@ -122,7 +127,7 @@ test('dispatcher late pickup queue uses the same responsible dispatcher as its p
 
 for(const role of ['index','dispatcher-logistic','master'])test(role+': analytics drill keeps dispatcher scope while ordinary order list stays global',()=>{
  const src=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');
- const fn=name=>src.slice(src.indexOf('function '+name+'(')).split('\n')[0];
+ const fn=name=>functionSource(src,src.indexOf('function '+name+'('));
  const rows=Array.from({length:1274},(_,i)=>({orderId:String(i),dispatcher:i<172?'artem':'sergey'}));
  const state={orders:rows,drill:{type:'closed',analyticsScope:true},session:{}};
  const current=new Function('state','filterRows','roleVisibleOrders','$','norm','matchesDrill','currentRole','orderDate',fn('currentOrderRows')+';return currentOrderRows')(
@@ -152,7 +157,7 @@ test('duplicate linkage is retained in read projections but never offered by sta
 
 test('manual form preview shows stored sums without invented percentages or review bonus in every role',()=>{for(const role of ['index','dispatcher-logistic','master']){const source=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8'),body=source.slice(source.indexOf('function renderFormPreview(')).split('\n')[0],elements=new Map(),get=id=>{if(!elements.has(id))elements.set(id,{checked:false,innerHTML:'',value:''});return elements.get(id)},record={_autoFinance:false,cleanCheck:'8000',masterAmount:'4000',companyShare:'4000',total:'8000',parts:'0',review:'Да',orderId:'test',name:'Test',address:'Test',dispatcher:'Test',request:'Test',visitDate:'2026-11-01',master:'Test'};const run=new Function('$','formRecord','calcAuto','numMaybe','money','pct','esc','statusPill','currentRole','clean','cleanPhoneForCompare','state','parseDate','num','invalidMoney',body+';return renderFormPreview')(get,()=>record,()=>({base:8000,master:4400,company:3600,masterRate:.55,companyRate:.45,reviewBonus:400}),v=>v===''?null:Number(v),String,x=>x+'%',String,()=>'',()=> 'owner',v=>String(v||''),()=>'',{orders:[]},()=>null,num,()=>false);run();const output=get('#formFinancePreview').innerHTML;assert.match(output,/Ручные суммы/);assert.match(output,/>4000</);assert.doesNotMatch(output,/55%|45%|4400|3600|бонус за отзыв 400/);assert.match(get('#reviewBonusHint').innerHTML,/отдельно не пересчитывается/);record.masterAmount='';run();assert.match(get('#formFinancePreview').innerHTML,/Не указано/);assert.doesNotMatch(get('#formFinancePreview').innerHTML,/4400/);const set=source.slice(source.indexOf('function setForm(')).split('\n')[0];const expression=set.match(/\$\('#f_autoFinance'\)\.checked=([^;]+);/)[1];assert.equal(new Function('r','return '+expression)({_id:'existing',_autoFinance:false}),false);assert.equal(new Function('r','return '+expression)({}),true);}});
 
-test('logistics save preserves existing manual amounts but calculates new automatic orders',async()=>{for(const role of ['index','dispatcher-logistic']){const source=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8'),start=source.indexOf('async function saveOrder('),end=source.indexOf('r.direction=normalizeKnown',start),body=source.slice(start,end)+'return r;}';for(const existing of [true,false]){const record={name:'Клиент',_id:existing?'old':'new',_autoFinance:false,total:'8000',parts:'0',cleanCheck:'8000',masterAmount:'4000',companyShare:'4000',_status:'В работе'};let calculations=0;const save=new Function('can','toast','currentRole','formRecord','isMeaningful','state','numMaybe','clean','calcAuto',body+';return saveOrder')(()=>true,()=>{},()=> 'dispatcher_logistic',()=>({...record}),()=>true,{orders:existing?[{_id:'old',_autoFinance:false}]:[]},Number,String,()=>{calculations++;return{clean:8000,master:4400,company:3600}});const result=await save();assert.equal(result._autoFinance,!existing);assert.equal(result.masterAmount,existing?'4000':'4400');assert.equal(result.companyShare,existing?'4000':'3600');assert.equal(calculations,existing?0:1)}}});
+test('logistics save preserves existing manual amounts but calculates new automatic orders',async()=>{for(const role of ['index','dispatcher-logistic']){const source=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8'),start=source.indexOf('async function saveOrder('),end=source.indexOf('r.direction=normalizeKnown',start),body=source.slice(start,end)+'return r;}';for(const existing of [true,false]){const record={name:'Клиент',_id:existing?'old':'new',_autoFinance:false,total:'8000',parts:'0',cleanCheck:'8000',masterAmount:'4000',companyShare:'4000',_status:'В работе'};let calculations=0;const save=new Function('$','can','toast','currentRole','formRecord','isMeaningful','state','numMaybe','clean','calcAuto',body+';return saveOrder')(()=>null,()=>true,()=>{},()=> 'dispatcher_logistic',()=>({...record}),()=>true,{orders:existing?[{_id:'old',_autoFinance:false}]:[]},Number,String,()=>{calculations++;return{clean:8000,master:4400,company:3600}});const result=await save();assert.equal(result._autoFinance,!existing);assert.equal(result.masterAmount,existing?'4000':'4400');assert.equal(result.companyShare,existing?'4000':'3600');assert.equal(calculations,existing?0:1)}}});
 
 test('dashboard money flow excludes unloaded expenses and links to the full profit calculation',()=>{for(const role of ['index','dispatcher-logistic','master']){const source=fs.readFileSync(new URL('../hosted-snapshot/'+role+'.html',import.meta.url),'utf8');assert.ok(source.includes('Суммы заказов и подтверждённая касса. Зарплата и расходы'));assert.ok(source.includes("kpiCard('Чистая прибыль','Открыть расчёт'"));const start=source.indexOf("$('#moneyFlow').innerHTML=barsHTML("),end=source.indexOf(');',start);const expression=source.slice(start+"$('#moneyFlow').innerHTML=barsHTML(".length,end);const rows=new Function('k','return '+expression)({total:100,parts:10,cleanS:90,masterS:40,share:50,ext:5,profit:45});assert.equal(rows.at(-1).key,'Касса / сдача');assert.equal(rows.at(-1).value,50);assert.ok(!rows.some(r=>/Расходы|зарплат|прибыл/i.test(r.key)));assert.ok(!source.includes('От оборота до чистой прибыли за выбранный период'));}});
 

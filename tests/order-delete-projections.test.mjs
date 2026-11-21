@@ -29,7 +29,7 @@ test('an out-of-order close-data snapshot cannot attach the deleted generation t
 
 for(const role of ['owner','dispatcher']) test(`${role}: recreating a deleted ID permits its next deletion`,async()=>{
  const source=fs.readFileSync(new URL(`../src/crm/integrations/${role}.js`,import.meta.url),'utf8');
- const upsert=source.split('\n').find(l=>l.includes('async function upsertOne('));
+ const upsert=source.slice(source.indexOf('async function upsertOne('),source.indexOf('async function persistDeleteTombstones('));
  let commits=0;const cloud={versions:new Map(),appliedDeleteIds:new Set(['TEST'])};
  const context={window:{},cloud,db:{},fs:{writeBatch:()=>({set:()=>{},commit:async()=>{commits++}})},orderDoc:id=>id,closeDataDoc:id=>id,stripUndefined:x=>x,orderCloseSafe:r=>r,mirrorOrder:async()=>{}};
  vm.createContext(context);vm.runInContext(upsert,context);

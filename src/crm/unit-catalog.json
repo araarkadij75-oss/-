@@ -2897,6 +2897,14 @@
       "symbols": [
         "analyticsCashCents"
       ]
+    },
+    {
+      "id": "editOrderCashReceipts-v1",
+      "domain": "orders",
+      "file": "orders/owner.js",
+      "symbols": [
+        "editOrderCashReceipts"
+      ]
     }
   ],
   "dispatcher": [

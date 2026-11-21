@@ -38,3 +38,15 @@ echo "live sanitized owner/staff parity: Sergey 0, Artem 12108.50; all daily ear
 try{own_pay_projection(['uid'=>'conflict','role'=>'dispatcher_logistic','name'=>'Сергей','shift'=>'artem'],$orders,[],$ledger,[],'2026-11-06');throw new RuntimeException('Conflicting actor identity accepted');}catch(DomainException $e){own_check($e->getMessage()==='payroll_identity_conflict','Conflicting identity fails closed');}
 own_check(own_pay_master_match('Костромин Н.','Костромин Николай',['Костромин Николай']),'Unique initials resolve own master');
 own_check(!own_pay_master_match('Костромин Н.','Костромин Николай',['Костромин Николай','Костромин Никита']),'Ambiguous initials do not reveal another master earnings');
+
+$split=own_order('split','sergey','2026-10-25','2026-11-06',11000);
+$split['_cashReceipts']=[['date'=>'2026-11-05','cents'=>700000],['date'=>'2026-11-06','cents'=>400000]];
+$prior=own_order('prior','sergey','2026-10-25','2026-10-25',20000);
+$staff=['uid'=>'sergey','name'=>'Сергей','shift'=>'sergey','role'=>'dispatcher_logistic'];
+foreach(['2026-11-04'=>200000,'2026-11-05'=>270000,'2026-11-06'=>310000] as $cutoff=>$expected){
+ $result=own_pay_projection($staff,[$split,$split,$prior],[],[],[],$cutoff);
+ own_check($result['earnedCents']===$expected,'Split dispatcher entitlement at '.$cutoff);
+}
+$split['_cashReceipts'][1]['date']='2026-11-05';
+$result=own_pay_projection($staff,[$split,$prior],[],[],[],'2026-11-06');
+own_check($result['earnedCents']===200000&&in_array('invalid_cash_receipts',$result['warnings'],true),'Corrupt split never counts entire order');

@@ -11,7 +11,7 @@ for (const role of ['owner','dispatcher']) test(`${role} adapter: private financ
     const line = lines.find(l => l.includes(`const ${name}=`));
     return line ? [line] : [];
   });
-  const upsert = lines.find(l => l.includes('async function upsertOne('));
+  const upsert = source.slice(source.indexOf('async function upsertOne('),source.indexOf('async function persistDeleteTombstones('));
   const events = [], writes = [];
   const context = {
     cloud:{profile:{id:'sergey',name:'Сергей'},versions:new Map([['TEST','old']]),getIdToken:async()=> 'private-test-token'},

@@ -3,6 +3,16 @@
  const validDate=s=>{if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s};
  const money=n=>Number.isSafeInteger(n)&&n>=0;
  const entitlement=cash=>Math.max(200000,Math.round(cash/10));
+ function validReceipts(entries,intakeDate,cashCents,closed){
+  if(!Array.isArray(entries)||entries.length>100||!validDate(intakeDate)||!money(cashCents))return false;
+  const dates=new Set();let total=0;
+  for(const entry of entries){
+   if(!entry||!validDate(entry.date)||entry.date<intakeDate||dates.has(entry.date)||!money(entry.cents)||entry.cents===0)return false;
+   dates.add(entry.date);total+=entry.cents;
+   if(!Number.isSafeInteger(total)||total>cashCents)return false;
+  }
+  return !closed||total===cashCents;
+ }
  function calculate({orders=[],days=[],payments=[],cutoff,snapshotDate}={}){
   if(!validDate(cutoff))throw new Error('invalid_cutoff');
   const warnings=[],groups=new Map(),people=new Map(),seenOrders=new Map(),seenPayments=new Map();
@@ -15,7 +25,19 @@
    const id=String(o.id);if(seenOrders.has(id)){warn(JSON.stringify(seenOrders.get(id))===JSON.stringify(o)?'duplicate_order_id':'conflicting_order_id',id);continue}seenOrders.set(id,o);
    if(o.duplicateOf)continue;
    if(!validDate(o.intakeDate)){warn('missing_or_invalid_intake_date',id);continue}
-   if(!o.closed||o.intakeDate>cutoff)continue;
+   if(o.intakeDate>cutoff)continue;
+   const split=o._cashReceipts;
+   if(split!=null&&!(Array.isArray(split)&&split.length===0)){
+    if(!validReceipts(split,o.intakeDate,o.cashCents,o.closed)){warn('invalid_cash_receipts',id);continue}
+    const posted=split.filter(entry=>entry.date<=cutoff);
+    if(!posted.length)continue;
+    const g=group(o.person,o.intakeDate),total=posted.reduce((n,e)=>n+e.cents,0);
+    if(!Number.isSafeInteger(g.cashCents+total)){warn('cash_overflow',id);continue}
+    g.cashCents+=total;g.orderIds.push(id);
+    for(const e of posted)g.receipts.set(e.date,(g.receipts.get(e.date)||0)+e.cents);
+    continue;
+   }
+   if(!o.closed)continue;
    const undated=o.cashDate==null||o.cashDate==='';
    if(undated){warn('missingcashdate',id);const observed=o.observedAt||snapshotDate;if(!validDate(observed)||observed>cutoff)continue}
    else if(!validDate(o.cashDate)){warn('missing_or_invalid_cash_date',id);continue}
@@ -45,11 +67,17 @@
   const scheduled=n=>Math.floor((n-start)/day/2)%2===0?first:(first==='artem'?'sergey':'artem');
   const bucket=(person,date)=>{if(!['artem','sergey'].includes(person)||date<anchor)throw new Error('invalid_cycle_person_or_date');let n=Date.parse(date+'T00:00:00Z');while(scheduled(n)!==person)n+=day;while(scheduled(n+day)===person)n+=day;const end=iso(n),key=person+'|'+end;if(!groups.has(key))groups.set(key,{person,start:iso(n-day),end,ownCents:0,lateCents:0,paidCents:0,events:[],payments:[]});return groups.get(key)};
   const events=(snapshot.events||[]).filter(e=>!(snapshot.baselines||[]).some(b=>b.person===e.person));
+  const ordersById=new Map();
+  for(const o of snapshot.orders||[])if(!ordersById.has(o.id))ordersById.set(o.id,o);
   for(const b of snapshot.baselines||[]){
    for(const d of snapshot.days.filter(d=>d.person===b.person)){
     const prior=b.days.find(x=>x.date===d.date);let cash=prior?.cashCents||0,earned=prior?entitlement(cash):0;
     if(!prior){events.push({person:b.person,intakeDate:d.date,date:d.date,amountCents:200000,kind:'daily_minimum'});earned=200000}
-    const receipts=(snapshot.orders||[]).filter(o=>o.person===b.person&&o.intakeDate===d.date&&d.orderIds.includes(o.id)&&validDate(o.cashDate)).sort((a,z)=>a.cashDate.localeCompare(z.cashDate));
+    const receipts=d.orderIds.flatMap(id=>{
+     const o=ordersById.get(id);if(!o||o.person!==b.person||o.intakeDate!==d.date)return [];
+     if(Array.isArray(o._cashReceipts)&&o._cashReceipts.length)return o._cashReceipts.map(e=>({cashDate:e.date,cashCents:e.cents}));
+     return [o];
+    }).filter(o=>validDate(o.cashDate)&&o.cashDate<=cutoff).sort((a,z)=>a.cashDate.localeCompare(z.cashDate));
     // A reconciliation may leave individual days partly or wholly unpaid.
     // Replay dated receipts against the credited entitlement, not the global
     // reconciliation date. Only undated cash already credited seeds the replay.
@@ -65,5 +93,5 @@
   for(const g of cycles){g.openingCents=balances.get(g.person)||0;g.accruedCents=g.ownCents+g.lateCents;g.balanceCents=g.openingCents+g.accruedCents-g.paidCents;balances.set(g.person,g.balanceCents);g.dueCents=Math.max(0,g.balanceCents);g.finished=g.end<=cutoff}
   return {cycles,unallocated};
  }
- root.PayrollIntakeAccounting={calculate,settlementSequence};
+ root.PayrollIntakeAccounting={calculate,settlementSequence,validReceipts};
 })(typeof window!=='undefined'?window:globalThis);

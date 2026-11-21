@@ -66,7 +66,7 @@ for(const role of ['owner','dispatcher','master'])test(`${role}: default dates a
  const source=fs.readFileSync(new URL(`../src/crm/orders/${role}.js`,import.meta.url),'utf8');
  const start=source.indexOf('async function saveOrder('),end=source.indexOf('if(logisticsClose)',start);
  const body=source.slice(start,role==='master'?source.indexOf('if(r._autoFinance)',start):end)+'return r;}';
- for(const value of ['', '   ']){let message='';const ctx={can:()=>true,currentRole:()=> 'owner',formRecord:()=>({name:value,phone:value,address:value,request:value,city:'СПб',callDate:'2026-11-06',visitDate:'2026-11-06'}),clean:x=>String(x??'').trim(),isMeaningful:()=>true,toast:x=>message=x};
+ for(const value of ['', '   ']){let message='';const ctx={$:()=>null,can:()=>true,currentRole:()=> 'owner',formRecord:()=>({name:value,phone:value,address:value,request:value,city:'СПб',callDate:'2026-11-06',visitDate:'2026-11-06'}),clean:x=>String(x??'').trim(),isMeaningful:()=>true,toast:x=>message=x};
  const result=await vm.runInNewContext(body+';saveOrder()',ctx);assert.equal(result,undefined);assert.match(message,/пустой заказ/);}
 });
 

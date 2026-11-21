@@ -52,3 +52,26 @@ test('undated receipts require observation proof at historical cutoff; explicit 
 test('invalid receipt dates are not silently treated as confirmed undated receipts',()=>{
  const r=calculate({cutoff:'2026-11-02',snapshotDate:'2026-11-02',orders:[o('bad','2026-10-19','2026-02-31',2500000)]});assert.equal(r.days.length,0);assert.equal(r.warnings[0].code,'missing_or_invalid_cash_date');
 });
+
+test('split cash is recognized on receipt dates and raises only the original day entitlement',()=>{
+ const day='2026-10-25',a='2026-11-05',b='2026-11-06',receipts=[{date:a,cents:700000},{date:b,cents:400000}];
+ const orders=[o('prior',day,day,2000000),o('split',day,b,1100000,{_cashReceipts:receipts})];
+ const payments=[p('base',day,200000)];
+ const first=calculate({orders,cutoff:a,payments});
+ assert.equal(first.people[0].dueCents,70000);assert.deepEqual(first.days[0].orderIds,['prior','split']);
+ const last=calculate({orders:[...orders,orders[1]],cutoff:b,payments});
+ assert.equal(last.days[0].cashCents,3100000);assert.equal(last.people[0].dueCents,110000);
+ assert.deepEqual(last.events.filter(x=>x.kind==='cash_increment').map(x=>[x.date,x.amountCents]),[[a,70000],[b,40000]]);
+ const sequence=globalThis.PayrollIntakeAccounting.settlementSequence({...last,orders:[...orders,orders[1]],baselines:[{person:'sergey',date:a,days:[{date:day,cashCents:2700000}]}]}, {anchor:day,first:'sergey'});
+ assert.equal(sequence.unallocated.length,0);
+ assert.deepEqual(sequence.cycles.flatMap(x=>x.events).map(e=>[e.date,e.amountCents]),[[b,40000]]);
+});
+test('invalid split is flagged without reverting to a whole-order receipt; partial open orders count posted money only',()=>{
+ const day='2026-11-01',date='2026-11-05',part={date,cents:300000};
+ for(const entries of [[part,part],[{...part,date:'2026-11-31'}],[{...part,date:'2026-10-31'}],[{...part,cents:-1}],[part]]){
+  const r=calculate({orders:[o('bad',day,date,600000,{_cashReceipts:entries})],cutoff:date});
+  assert.equal(r.days.length,0);assert.equal(r.warnings[0].code,'invalid_cash_receipts');
+ }
+ const r=calculate({orders:[o('pending',day,'',600000,{closed:false,_cashReceipts:[part]})],cutoff:date});
+ assert.equal(r.days[0].cashCents,300000);
+});
