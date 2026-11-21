@@ -127,6 +127,7 @@
           "fillDatalists-913eec741a00",
           "switchTab-0a5fbc31ee87",
           "formRecord-8571039a158b",
+          "editOrderCashReceipts-v1",
           "setForm-5883854858fe",
           "syncStatusPalette-92bc6790daa0",
           "syncFinanceMode-25edc8187ab0",
@@ -6781,6 +6782,16 @@
         "owner",
         "dispatcher",
         "master"
+      ]
+    },
+    "editOrderCashReceipts-v1": {
+      "file": "orders/owner.js",
+      "domain": "orders",
+      "symbols": [
+        "editOrderCashReceipts"
+      ],
+      "roles": [
+        "owner"
       ]
     }
   },

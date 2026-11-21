@@ -5,7 +5,7 @@ function payrollIntakeSnapshot(cutoff=today()){
  // A planned calendar date alone is not evidence of a worked day.
  for(const r of state.orders||[]){if(r._duplicateOf)continue;const date=iso(parseDate(r.callDate||'')),person=orderPayrollShift(r);if(date>=anchor&&date<=cutoff&&['sergey','artem'].includes(person))days.push({date,person})}
  for(const r of reports)if(r.date>=anchor&&r.date<=cutoff)days.push({date:r.date,person:payrollShiftKey(r)});
- const orders=(state.orders||[]).filter(r=>!r._duplicateOf).map(r=>({id:String(r.orderId||r._id||''),person:orderPayrollShift(r),intakeDate:iso(parseDate(r.callDate||'')),cashDate:shiftCashRecordedDate(r),cashCents:Math.round(num(r.companyShare)*100),closed:payrollOrderCashRecorded(r),duplicateOf:r._duplicateOf||''})).filter(r=>r.intakeDate>=anchor&&r.intakeDate<=cutoff);
+ const orders=(state.orders||[]).filter(r=>!r._duplicateOf).map(r=>({id:String(r.orderId||r._id||''),person:orderPayrollShift(r),intakeDate:iso(parseDate(r.callDate||'')),cashDate:shiftCashRecordedDate(r),cashCents:Math.round(num(r.companyShare)*100),_cashReceipts:r._cashReceipts,closed:payrollOrderCashRecorded(r),duplicateOf:r._duplicateOf||''})).filter(r=>r.intakeDate>=anchor&&r.intakeDate<=cutoff);
  // Owner confirmed that all existing confirmed reports were paid. The cutover
  // is fixed: confirming a NEW report must never silently register a payment.
  const paidCutover='2026-11-02T10:59:27.607Z';

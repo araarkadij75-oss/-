@@ -15,19 +15,44 @@ function applyFinanceHint(){recalculateFinance()}/* CRM_END:applyFinanceHint-450
 
 function hasRecordedCashSurrenderOn(r,date){return collectRecordedCash([r],{basis:'closeDate'}).some(x=>x.date===date)}/* CRM_END:hasRecordedCashSurrenderOn-437f4036f0a7 */
 /* CRM_UNIT:collectRecordedCash-shared-v1 */
-function collectRecordedCash(rows,{basis='callDate',cutoff=today()}={}){
+function collectRecordedCash(rows,{basis='callDate',cutoff=today(),from='',to=''}={}){
  const result=[],seen=new Set(),date=v=>{const d=parseDate(v||'');return d?iso(d):''};
  for(const r of rows||[]){const id=String(r.orderId||'').trim();if(!id||r._duplicateOf||seen.has(id))continue;seen.add(id);
+  if (Array.isArray(r._cashReceipts) && r._cashReceipts.length) {
+    const intakeDate=date(r.callDate), selectedDate=basis==='callDate'?intakeDate:date(r[basis]);
+    const expected=Math.round(numMaybe(r.companyShare)*100), dates=new Set();
+    let total=0;
+    const valid=r._cashReceipts.length<=100 && r._cashReceipts.every(entry=>{
+      if (!entry || !entry.date || date(entry.date)!==entry.date || dates.has(entry.date) ||
+          (intakeDate && entry.date<intakeDate) || !Number.isSafeInteger(entry.cents) || entry.cents<=0) return false;
+      dates.add(entry.date); total+=entry.cents; return Number.isSafeInteger(total);
+    });
+    if (!valid || !Number.isSafeInteger(expected) || total>expected ||
+        ((derivedStage(r)==='Выполнен'||r._cashClosedAt||r._cashClosedOn) && total!==expected)) continue;
+    const received=r._cashReceipts.filter(entry=>entry.date<=cutoff);
+    if (basis==='closeDate') {
+      for (const entry of received) {
+        if ((!from || entry.date>=from) && (!to || entry.date<=to)) {
+          result.push({order:r,id,intakeDate,date:entry.date,cashDate:entry.date,receiptDate:entry.date,cashCents:entry.cents});
+        }
+      }
+    } else if (received.length && selectedDate && selectedDate<=cutoff &&
+               (!from || selectedDate>=from) && (!to || selectedDate<=to)) {
+      result.push({order:r,id,intakeDate,date:selectedDate,cashDate:shiftCashRecordedDate(r),
+        cashCents:received.reduce((sum,entry)=>sum+entry.cents,0)});
+    }
+    continue;
+  }
   if(!(derivedStage(r)==='Выполнен'||r._cashClosedAt||r._cashClosedOn))continue;
   const raw=numMaybe(r.companyShare),cashCents=Math.round(raw*100);if(raw==null||!Number.isFinite(raw)||raw<=0||!Number.isSafeInteger(cashCents)||cashCents<=0)continue;
   const intakeDate=date(r.callDate),cashDate=shiftCashRecordedDate(r),explicit=String(r.closeDate||'').trim();
   if(cashDate&&(!date(cashDate)||date(cashDate)!==cashDate||cashDate>cutoff||(intakeDate&&cashDate<intakeDate)))continue;
-  const selected=basis==='closeDate'?cashDate:basis==='callDate'?intakeDate:date(r[basis]);if(!selected||selected>cutoff)continue;
+  const selected=basis==='closeDate'?cashDate:basis==='callDate'?intakeDate:date(r[basis]);if(!selected||selected>cutoff||(from&&selected<from)||(to&&selected>to))continue;
   result.push({order:r,id,date:selected,intakeDate,cashDate,cashCents});
  }return result;
 }/* CRM_END:collectRecordedCash-shared-v1 */
 /* CRM_UNIT:analyticsCashCents-shared-v1 */
-function analyticsCashCents(rows){return collectRecordedCash(rows,{basis:$('#dateBasis')?.value||'callDate'}).reduce((n,x)=>n+x.cashCents,0)}/* CRM_END:analyticsCashCents-shared-v1 */
+function analyticsCashCents(rows){return collectRecordedCash(rows,{basis:$('#dateBasis')?.value||'callDate',from:$('#fromDate')?.value||'',to:$('#toDate')?.value||''}).reduce((n,x)=>n+x.cashCents,0)}/* CRM_END:analyticsCashCents-shared-v1 */
 /* CRM_UNIT:currentExpenses-c1b1b8a1c565 */
 function currentExpenses(){const fd=parseDate($('#fromDate')?.value),td=parseDate($('#toDate')?.value);return state.expenses.filter(x=>{const d=parseDate(x.date);return (!fd||!d||d>=fd)&&(!td||!d||d<=td)})}/* CRM_END:currentExpenses-c1b1b8a1c565 */
 /* CRM_UNIT:collectionsLag-66288b43b81e */

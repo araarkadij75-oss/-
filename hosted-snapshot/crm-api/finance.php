@@ -119,6 +119,7 @@ function fin_order_calculate(PDO $pdo, array $actor, array $body): array {
             if (is_array($member) && ($member['role'] ?? '') === 'master' && tg_master_key((string)($member['master'] ?? $member['name'] ?? '')) === tg_master_key($master)) $fixed = $fixed || ($member['fixedMaster'] ?? false) === true;
         }
         $patch = fin_order_plan($order, $body, $policy, $fixed);
+        fin_check_order_receipts(array_replace($order,$patch),true);
         $changed = false;
         foreach ($patch as $key=>$value) if (($order[$key] ?? null) !== $value) $changed = true;
         if ($changed) {
@@ -345,17 +346,74 @@ function fin_payments_mutate(PDO $pdo,array $actor,array $body):array{
     }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}finally{$unlock=$pdo->prepare('SELECT RELEASE_LOCK(?)');$unlock->execute([$lockName]);}
 }
 
+function fin_receipts_total(mixed $entries,string $intake=''):int {
+    if(!is_array($entries)||array_values($entries)!==$entries||count($entries)>100)throw new InvalidArgumentException('invalid_cash_receipts');
+    $dates=[];$total=0;
+    foreach($entries as $entry){
+        if(!is_array($entry)||count($entry)!==2||!isset($entry['date'],$entry['cents']))throw new InvalidArgumentException('invalid_cash_receipts');
+        $date=$entry['date'];$cents=$entry['cents'];
+        if(!is_string($date)||!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/D',$date,$m)||!checkdate((int)$m[2],(int)$m[3],(int)$m[1])||$date<$intake||isset($dates[$date]))throw new InvalidArgumentException('invalid_receipt_date');
+        if(!is_int($cents)||$cents<=0||$cents>100000000000-$total)throw new InvalidArgumentException('invalid_receipt_amount');
+        $dates[$date]=true;$total+=$cents;
+    }
+    return $total;
+}
+function fin_check_order_receipts(array $order,bool $closing=false):void {
+    $entries=$order['_cashReceipts']??[];
+    if($entries===[])return;
+    $intake=(string)($order['callDate']??'');
+    if(preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/',$intake,$d))$intake=sprintf('%04d-%02d-%02d',(int)$d[3],(int)$d[2],(int)$d[1]);
+    if(!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/D',$intake,$d)||!checkdate((int)$d[2],(int)$d[3],(int)$d[1]))throw new InvalidArgumentException('invalid_receipt_intake');
+    $total=fin_receipts_total($entries,$intake);
+    $company=fin_order_money($order['companyShare']??null);
+    $closed=$closing||($order['_status']??'')==='Выполнен'||!empty($order['_cashClosedAt'])||!empty($order['_cashClosedOn']);
+    if($total>$company||($closed&&$total!==$company))throw new InvalidArgumentException('cash_receipts_total_mismatch');
+}
+function fin_plan_receipts(array $order,array $body,string $today):array {
+    if(!empty($order['_duplicateOf']))throw new DomainException('order_locked');
+    $previous=$order['_cashReceipts']??null;
+    $entries=$body['receipts']??null;
+    fin_receipts_total($entries);
+    if(!array_key_exists('before',$body)||!isset($body['expectedUpdatedAt'],$body['companyShareCents'])||!is_string($body['expectedUpdatedAt'])||!is_int($body['companyShareCents']))throw new InvalidArgumentException('receipt_snapshot_required');
+    $before=$body['before'];if($before!==null)fin_receipts_total($before);
+    if($body['companyShareCents']!==fin_order_money($order['companyShare']??null))throw new UnexpectedValueException('order_changed_refresh');
+    foreach($entries as $e)if($e['date']>$today)throw new InvalidArgumentException('future_receipt');
+    $next=array_replace($order,['_cashReceipts'=>$entries]);
+    fin_check_order_receipts($next);
+    if($previous===$entries)return ['changed'=>false,'order'=>$order];
+    if($body['expectedUpdatedAt']!==($order['_updatedAt']??'')||$previous!==$before)throw new UnexpectedValueException('order_changed_refresh');
+    return ['changed'=>true,'order'=>$next];
+}
+function fin_save_receipts(PDO $pdo,array $actor,array $body):array {
+    fin_owner($actor);$id=fin_text($body['orderId']??'',128);
+    if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/D',$id))throw new InvalidArgumentException('invalid_order_id');
+    $path=tg_path('orders',$id);$pdo->beginTransaction();
+    try{
+        $order=tg_read($pdo,$path,true);if(!$order)throw new OutOfBoundsException('order_not_found');
+        $plan=fin_plan_receipts($order,$body,(new DateTimeImmutable('now',new DateTimeZone('Europe/Moscow')))->format('Y-m-d'));
+        if(!$plan['changed']){$pdo->commit();return ['ok'=>true,'changed'=>false,'updatedAt'=>$order['_updatedAt']??''];}
+        $actorId=(string)$actor['uid'];$stamp=gmdate('c');$next=$plan['order'];$next['_updatedAt']=$stamp;$next['_updatedBy']=$actorId;
+        $auditId=bin2hex(random_bytes(16));
+        $audit=['id'=>$auditId,'orderId'=>$id,'actorUid'=>$actorId,'appliedAt'=>$stamp,'before'=>['_cashReceipts'=>$order['_cashReceipts']??null],'after'=>['_cashReceipts'=>$next['_cashReceipts']]];
+        $closePath=tg_path('orderCloseData',$id);$close=tg_read($pdo,$closePath,true);
+        $writes=[$path=>$next,tg_path('reconciliationAudit',$auditId)=>$audit];
+        if($close!==null)$writes[$closePath]=fin_reconciliation_projection($close,$audit['after'],'orderCloseData',$stamp);
+        tg_write_many($pdo,$writes,$actorId,'owner','order_cash_receipts');$pdo->commit();
+        return ['ok'=>true,'changed'=>true,'updatedAt'=>$stamp];
+    }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
+}
 function fin_reconciliation_patch(array $patch): array {
-    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn','_autoFinance'];
+    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn','_autoFinance','_cashReceipts'];
     $id=fin_text($patch['orderId']??'',128);
     if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$id))throw new InvalidArgumentException('invalid_order_id');
     $before=$patch['before']??null;$after=$patch['after']??null;
     if(!is_array($before)||!is_array($after)||!count($after))throw new InvalidArgumentException('invalid_patch');
     $bk=array_keys($before);$ak=array_keys($after);sort($bk);sort($ak);
     if($bk!==$ak||array_diff($ak,$allowed))throw new InvalidArgumentException('invalid_patch_fields');
-    foreach($before as $k=>$v)if(!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v)&&!($k==='_autoFinance'&&is_bool($v)))throw new InvalidArgumentException('invalid_before');
+    foreach($before as $k=>$v)if(!($k==='_cashReceipts'&&is_array($v))&&!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v)&&!($k==='_autoFinance'&&is_bool($v)))throw new InvalidArgumentException('invalid_before');
     foreach($after as $key=>$value){
-        if($key==='_autoFinance'){if(!is_bool($value))throw new InvalidArgumentException('invalid_auto_finance');}
+        if($key==='_cashReceipts')fin_receipts_total($value);
+        elseif($key==='_autoFinance'){if(!is_bool($value))throw new InvalidArgumentException('invalid_auto_finance');}
         elseif(in_array($key,['companyShare','masterAmount','total','parts','cleanCheck','pp'],true)){
             if(!is_string($value)&&!is_int($value)&&!is_float($value))throw new InvalidArgumentException('invalid_cash');
             if($value!==''&&!preg_match('/^\d+(?:\.\d{1,2})?$/',(string)$value)||(float)$value>1000000000)throw new InvalidArgumentException('invalid_cash');
@@ -390,7 +448,7 @@ function fin_reconciliation_effective_patch(array $order,array $patch): array {
     return $patch;
 }
 function fin_reconciliation_projection(array $projection,array $after,string $collection,string $stamp): array {
-    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts','_cashClosedOn','_duplicateOf']:['closeDate','dispatcher','_status','_duplicateOf'];
+    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts','_cashClosedOn','_duplicateOf','_cashReceipts']:['closeDate','dispatcher','_status','_duplicateOf'];
     foreach($after as $key=>$value)if(in_array($key,$allowed,true))$projection[$key]=$value;
     $projection['_updatedAt']=$stamp;
     return $projection;
@@ -409,6 +467,7 @@ function fin_reconcile(PDO $pdo,array $actor,array $body): array {
             if(!$order||!fin_reconciliation_matches($order,$patch)){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>$order?'before_mismatch':'not_found'];continue;}
             if(!empty($patch['after']['_duplicateOf'])){$target=tg_read($pdo,tg_path('orders',$patch['after']['_duplicateOf']),true);if(!$target||!empty($target['_duplicateOf'])){$pdo->rollBack();$conflicts[]=['orderId'=>$patch['orderId'],'reason'=>'invalid_duplicate_target'];continue;}}
             $patch=fin_reconciliation_effective_patch($order,$patch);
+            fin_check_order_receipts(array_replace($order,$patch['after']));
             $stamp=gmdate('c');$auditId=bin2hex(random_bytes(16));
             $audit=$patch+['id'=>$auditId,'actorUid'=>(string)$actor['uid'],'appliedAt'=>$stamp];
             foreach($patch['after'] as $key=>$value)$order[$key]=$value;
@@ -440,12 +499,13 @@ try {
     fin_owner($actor);
     if (($body['op'] ?? '') === 'payroll_payments_list') tg_reply(200,['ok'=>true,'payments'=>fin_payments_list($pdo,$actor)]);
     if (in_array($body['op'] ?? '', ['payroll_payments_add','payroll_payments_void'], true)) tg_reply(200,fin_payments_mutate($pdo,$actor,$body));
+    if (($body['op'] ?? '') === 'cash_receipts') tg_reply(200,fin_save_receipts($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'reconcile') tg_reply(200,fin_reconcile($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'list') tg_reply(200, ['ok' => true, 'expenses' => fin_list($pdo, $actor)] + fin_reports($pdo, $actor));
     tg_reply(200, fin_mutate($pdo, $actor, $body));
 } catch (InvalidArgumentException $e) { tg_reply(400, ['ok' => false, 'error' => $e->getMessage()]);
 } catch (DomainException $e) { tg_reply(403, ['ok' => false, 'error' => $e->getMessage()]);
-} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => in_array($e->getMessage(),['expense_overlap','payment_conflict','payment_reference_exists'],true) ? $e->getMessage() : 'expense_conflict']);
-} catch (OutOfBoundsException $e) { tg_reply(404, ['ok' => false, 'error' => $e->getMessage()==='payment_not_found'?'payment_not_found':'expense_not_found']);
+} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => in_array($e->getMessage(),['expense_overlap','payment_conflict','payment_reference_exists','order_changed_refresh'],true) ? $e->getMessage() : 'expense_conflict']);
+} catch (OutOfBoundsException $e) { tg_reply(404, ['ok' => false, 'error' => in_array($e->getMessage(),['order_not_found','payment_not_found'],true)?$e->getMessage():'expense_not_found']);
 } catch (LengthException $e) { tg_reply(413, ['ok' => false, 'error' => 'expense_capacity']);
 } catch (Throwable $e) { tg_reply(503, ['ok' => false, 'error' => 'finance_service_unavailable']); }

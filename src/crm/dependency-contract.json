@@ -1231,6 +1231,59 @@
             }
           ]
         },
+        "editOrderCashReceipts-v1": {
+          "globals": [
+            "Array",
+            "Error",
+            "JSON",
+            "NaN",
+            "Number",
+            "Set",
+            "String",
+            "confirm",
+            "document",
+            "fetch",
+            "window"
+          ],
+          "crossDomain": [
+            {
+              "symbol": "$",
+              "domain": "ui"
+            },
+            {
+              "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
+              "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "ownerPreviewActive",
+              "domain": "staff"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
+              "symbol": "refresh",
+              "domain": "ui"
+            },
+            {
+              "symbol": "state",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
+            }
+          ]
+        },
         "setForm-5883854858fe": {
           "globals": [
             "Date",
@@ -1419,6 +1472,7 @@
         "saveOrder-bbeb655dc006": {
           "globals": [
             "Date",
+            "Math",
             "String",
             "confirm",
             "setTimeout",
@@ -1470,6 +1524,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isStaffOrderLocked",
               "domain": "staff"
             },
@@ -1478,7 +1536,15 @@
               "domain": "ui"
             },
             {
+              "symbol": "num",
+              "domain": "core"
+            },
+            {
               "symbol": "numMaybe",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
               "domain": "core"
             },
             {
@@ -1691,7 +1757,9 @@
           ]
         },
         "duplicateOrder-285e73846c6a": {
-          "globals": [],
+          "globals": [
+            "undefined"
+          ],
           "crossDomain": [
             {
               "symbol": "state",
@@ -2781,6 +2849,7 @@
         "approveMasterClose-7f16c882cea5": {
           "globals": [
             "Date",
+            "Math",
             "Object",
             "confirm"
           ],
@@ -2800,6 +2869,10 @@
             {
               "symbol": "log",
               "domain": "ui"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
             },
             {
               "symbol": "refresh",
@@ -2838,6 +2911,10 @@
             {
               "symbol": "log",
               "domain": "ui"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
             },
             {
               "symbol": "numMaybe",
@@ -3042,6 +3119,7 @@
         },
         "collectRecordedCash-shared-v1": {
           "globals": [
+            "Array",
             "Math",
             "Number",
             "Set",
@@ -3257,6 +3335,14 @@
               "domain": "staff"
             },
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "matchesDrill",
               "domain": "analytics"
             },
@@ -3462,6 +3548,7 @@
         },
         "kpiData-81c4ff44c4a8": {
           "globals": [
+            "Set",
             "String"
           ],
           "crossDomain": [
@@ -5591,8 +5678,7 @@
         "renderDashboard-40a515c112f2": {
           "globals": [
             "Map",
-            "Math",
-            "Set"
+            "Math"
           ],
           "crossDomain": [
             {
@@ -5602,10 +5688,6 @@
             {
               "symbol": "$$",
               "domain": "ui"
-            },
-            {
-              "symbol": "analyticsCashCents",
-              "domain": "finance"
             },
             {
               "symbol": "bindBarsToFilter",
@@ -5654,6 +5736,10 @@
             {
               "symbol": "orderDate",
               "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
             },
             {
               "symbol": "pct",
@@ -7738,10 +7824,6 @@
             {
               "symbol": "$",
               "domain": "ui"
-            },
-            {
-              "symbol": "currentRole",
-              "domain": "staff"
             },
             {
               "symbol": "openOrder",
@@ -9985,6 +10067,7 @@
         "saveOrder-50dd35b2e695": {
           "globals": [
             "Date",
+            "Math",
             "String",
             "confirm",
             "setTimeout",
@@ -10036,6 +10119,10 @@
               "domain": "ui"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isStaffOrderLocked",
               "domain": "staff"
             },
@@ -10044,7 +10131,15 @@
               "domain": "ui"
             },
             {
+              "symbol": "num",
+              "domain": "core"
+            },
+            {
               "symbol": "numMaybe",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
               "domain": "core"
             },
             {
@@ -10257,7 +10352,9 @@
           ]
         },
         "duplicateOrder-285e73846c6a": {
-          "globals": [],
+          "globals": [
+            "undefined"
+          ],
           "crossDomain": [
             {
               "symbol": "state",
@@ -11343,6 +11440,7 @@
         "approveMasterClose-7f16c882cea5": {
           "globals": [
             "Date",
+            "Math",
             "Object",
             "confirm"
           ],
@@ -11362,6 +11460,10 @@
             {
               "symbol": "log",
               "domain": "ui"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
             },
             {
               "symbol": "refresh",
@@ -11567,6 +11669,7 @@
         },
         "collectRecordedCash-shared-v1": {
           "globals": [
+            "Array",
             "Math",
             "Number",
             "Set",
@@ -11782,6 +11885,14 @@
               "domain": "staff"
             },
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "matchesDrill",
               "domain": "analytics"
             },
@@ -11987,6 +12098,7 @@
         },
         "kpiData-81c4ff44c4a8": {
           "globals": [
+            "Set",
             "String"
           ],
           "crossDomain": [
@@ -13811,8 +13923,7 @@
         "renderDashboard-40a515c112f2": {
           "globals": [
             "Map",
-            "Math",
-            "Set"
+            "Math"
           ],
           "crossDomain": [
             {
@@ -13822,10 +13933,6 @@
             {
               "symbol": "$$",
               "domain": "ui"
-            },
-            {
-              "symbol": "analyticsCashCents",
-              "domain": "finance"
             },
             {
               "symbol": "bindBarsToFilter",
@@ -13874,6 +13981,10 @@
             {
               "symbol": "orderDate",
               "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
             },
             {
               "symbol": "pct",
@@ -15936,10 +16047,6 @@
             {
               "symbol": "$",
               "domain": "ui"
-            },
-            {
-              "symbol": "currentRole",
-              "domain": "staff"
             },
             {
               "symbol": "openOrder",
@@ -18334,7 +18441,9 @@
           ]
         },
         "duplicateOrder-285e73846c6a": {
-          "globals": [],
+          "globals": [
+            "undefined"
+          ],
           "crossDomain": [
             {
               "symbol": "state",
@@ -19356,6 +19465,7 @@
         "approveMasterClose-7f16c882cea5": {
           "globals": [
             "Date",
+            "Math",
             "Object",
             "confirm"
           ],
@@ -19375,6 +19485,10 @@
             {
               "symbol": "log",
               "domain": "ui"
+            },
+            {
+              "symbol": "num",
+              "domain": "core"
             },
             {
               "symbol": "refresh",
@@ -19559,6 +19673,7 @@
         },
         "collectRecordedCash-shared-v1": {
           "globals": [
+            "Array",
             "Math",
             "Number",
             "Set",
@@ -19771,6 +19886,14 @@
               "domain": "staff"
             },
             {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "matchesDrill",
               "domain": "analytics"
             },
@@ -19976,6 +20099,7 @@
         },
         "kpiData-81c4ff44c4a8": {
           "globals": [
+            "Set",
             "String"
           ],
           "crossDomain": [
@@ -21372,8 +21496,7 @@
         "renderDashboard-40a515c112f2": {
           "globals": [
             "Map",
-            "Math",
-            "Set"
+            "Math"
           ],
           "crossDomain": [
             {
@@ -21383,10 +21506,6 @@
             {
               "symbol": "$$",
               "domain": "ui"
-            },
-            {
-              "symbol": "analyticsCashCents",
-              "domain": "finance"
             },
             {
               "symbol": "bindBarsToFilter",
@@ -21435,6 +21554,10 @@
             {
               "symbol": "orderDate",
               "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
             },
             {
               "symbol": "pct",
@@ -23416,10 +23539,6 @@
             {
               "symbol": "$",
               "domain": "ui"
-            },
-            {
-              "symbol": "currentRole",
-              "domain": "staff"
             },
             {
               "symbol": "openOrder",

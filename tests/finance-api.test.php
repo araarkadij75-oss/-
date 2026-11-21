@@ -154,3 +154,26 @@ fin_reject(fn()=>fin_order_amount_actor(['role'=>'dispatcher_logistic']),'Unauth
 $working = fin_order_amount_projection(['total'=>'12000.50','masterAmount'=>'6000.25','companyShare'=>'5000.25','parts'=>'1000','salary'=>123,'_private'=>'secret'], 'order-1');
 fin_check($working===['orderId'=>'order-1','total'=>'12000.50','masterAmount'=>'6000.25','companyShare'=>'5000.25'],'Working projection only saved amounts, no recalculation or private fields');
 fin_check(fin_order_amount_projection(['total'=>0,'masterAmount'=>'','companyShare'=>null],'o')===['orderId'=>'o','total'=>0,'masterAmount'=>'','companyShare'=>null],'Zero and missing amounts stay distinct');
+
+$receipts=[['date'=>'2026-11-05','cents'=>700000],['date'=>'2026-11-06','cents'=>400000]];
+$input=['orderId'=>'261025-009','before'=>['_cashReceipts'=>null],'after'=>['_cashReceipts'=>$receipts],'sourceRow'=>1799,'sourceSpreadsheet'=>'sheet-test'];
+$before=['orderId'=>'261025-009','companyShare'=>'11000','callDate'=>'2026-10-25','closeDate'=>'2026-11-06','_status'=>'Выполнен'];
+$plan=fin_reconciliation_patch($input);fin_check(fin_reconciliation_matches($before,$plan),'New split applies once');
+$after=array_replace($before,$plan['after']);fin_check_order_receipts($after);
+fin_check(!fin_reconciliation_matches($after,$plan),'Replay cannot double-post');
+fin_check(fin_reconciliation_projection([],$plan['after'],'orderCloseData','now')['_cashReceipts']===$receipts,'Private close projection contains split');
+fin_check(!isset(fin_reconciliation_projection([],$plan['after'],'masterAssignments','now')['_cashReceipts']),'Split not exposed to master assignment');
+foreach([['companyShare'=>'7000'],['callDate'=>'2026-11-06'],['_cashReceipts'=>[$receipts[0],$receipts[0]]],['_cashReceipts'=>[['date'=>'2026-11-31','cents'=>1100000]]]] as $bad){
+ try{fin_check_order_receipts(array_replace($after,$bad));throw new RuntimeException('Invalid split accepted');}catch(InvalidArgumentException $expected){}
+}
+echo "Split receipt validation, idempotent reconciliation and projection tests passed\n";
+
+$body=['expectedUpdatedAt'=>'before','before'=>null,'receipts'=>$receipts,'companyShareCents'=>1100000];
+$order=array_replace($before,['_updatedAt'=>'before']);
+$saved=fin_plan_receipts($order,$body,'2026-11-06');
+fin_check($saved['changed']&&$saved['order']['_cashReceipts']===$receipts,'Owner split write');
+fin_check(!fin_plan_receipts(array_replace($saved['order'],['_updatedAt'=>'after']),$body,'2026-11-06')['changed'],'Lost response retry is harmless');
+foreach([['expectedUpdatedAt'=>'old'],['companyShareCents'=>700000],['before'=>[]]] as $stale){
+ try{fin_plan_receipts($order,array_replace($body,$stale),'2026-11-06');throw new RuntimeException('Stale split accepted');}catch(UnexpectedValueException $e){}
+}
+try{fin_plan_receipts($order,$body,'2026-11-05');throw new RuntimeException('Future receipt accepted');}catch(InvalidArgumentException $e){}
