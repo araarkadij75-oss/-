@@ -46,7 +46,7 @@ for (const role of ['owner','dispatcher']) test(`${role}: saving a closed order 
   const body=source.match(/stampLogisticsClose=\(\)=>\{(.*?)\};if\(idx>=0\)/s)?.[1];
   assert.ok(body);
   const r={closeDate:'05.11.2026',_closeApprovedAt:'first',_closeApprovedBy:'original',_closeApprovedByName:'Сергей',_doneAt:'first',_cashClosedAt:'first',_cashClosedOn:'2026-11-05',_cashClosedBy:'original',_cashClosedByName:'Сергей'};
-  const context={r,currentUser:()=>({id:'other',name:'Другой'}),today:()=> '2026-11-06',ddmm:()=> '06.11.2026'};
+  const context={r,currentUser:()=>({id:'other',name:'Другой'}),today:()=> '2026-11-06',cashDateToday:()=> '06.11.2026'};
   vm.runInNewContext(body,context);
   for(const key of ['_closeApprovedAt','_doneAt','_cashClosedAt']) assert.equal(r[key],'first');
   assert.equal(r._closeApprovedBy,'original');

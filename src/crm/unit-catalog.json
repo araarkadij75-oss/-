@@ -501,7 +501,7 @@
       "domain": "core",
       "file": "core/shared.js",
       "symbols": [
-        "ddmm"
+        "cashDateToday"
       ]
     },
     {
@@ -3385,7 +3385,7 @@
       "domain": "core",
       "file": "core/shared.js",
       "symbols": [
-        "ddmm"
+        "cashDateToday"
       ]
     },
     {
@@ -6120,7 +6120,7 @@
       "domain": "core",
       "file": "core/shared.js",
       "symbols": [
-        "ddmm"
+        "cashDateToday"
       ]
     },
     {

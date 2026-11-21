@@ -503,10 +503,7 @@
           "crossDomain": []
         },
         "ddmm-7e44aad38ab5": {
-          "globals": [
-            "Date",
-            "String"
-          ],
+          "globals": [],
           "crossDomain": []
         },
         "money-f0cbc3bddf82": {
@@ -1500,6 +1497,10 @@
               "domain": "staff"
             },
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "clean",
               "domain": "core"
             },
@@ -1514,10 +1515,6 @@
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "fillDatalists",
@@ -2720,16 +2717,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentRole",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -2856,16 +2853,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentUser",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -2898,16 +2895,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentUser",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -8033,6 +8030,10 @@
               "domain": "staff"
             },
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "clean",
               "domain": "core"
             },
@@ -8067,10 +8068,6 @@
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "deleteSelectedOrders",
@@ -9159,10 +9156,7 @@
           "crossDomain": []
         },
         "ddmm-7e44aad38ab5": {
-          "globals": [
-            "Date",
-            "String"
-          ],
+          "globals": [],
           "crossDomain": []
         },
         "money-f0cbc3bddf82": {
@@ -10108,6 +10102,10 @@
               "domain": "staff"
             },
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "clean",
               "domain": "core"
             },
@@ -10122,10 +10120,6 @@
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "fillDatalists",
@@ -11319,16 +11313,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentRole",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -11460,16 +11454,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentUser",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -16265,6 +16259,10 @@
               "domain": "staff"
             },
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "clean",
               "domain": "core"
             },
@@ -16299,10 +16297,6 @@
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "deleteSelectedOrders",
@@ -17359,10 +17353,7 @@
           "crossDomain": []
         },
         "ddmm-7e44aad38ab5": {
-          "globals": [
-            "Date",
-            "String"
-          ],
+          "globals": [],
           "crossDomain": []
         },
         "money-f0cbc3bddf82": {
@@ -19349,16 +19340,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentRole",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -19490,16 +19481,16 @@
           ],
           "crossDomain": [
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "currentUser",
               "domain": "staff"
             },
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "log",
@@ -23762,6 +23753,10 @@
               "domain": "staff"
             },
             {
+              "symbol": "cashDateToday",
+              "domain": "core"
+            },
+            {
               "symbol": "clean",
               "domain": "core"
             },
@@ -23792,10 +23787,6 @@
             {
               "symbol": "dbWrite",
               "domain": "integrations"
-            },
-            {
-              "symbol": "ddmm",
-              "domain": "core"
             },
             {
               "symbol": "deleteSelectedOrders",

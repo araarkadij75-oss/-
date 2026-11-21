@@ -33,7 +33,7 @@ const fmtDate=v=>{const d=parseDate(v);return d?new Intl.DateTimeFormat('ru-RU',
 /* CRM_UNIT:today-fc88c9aae119 */
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};/* CRM_END:today-fc88c9aae119 */
 /* CRM_UNIT:ddmm-7e44aad38ab5 */
-const ddmm=()=>{const d=new Date();return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}`};/* CRM_END:ddmm-7e44aad38ab5 */
+const cashDateToday=()=>today().split('-').reverse().join('.');/* CRM_END:ddmm-7e44aad38ab5 */
 /* CRM_UNIT:money-f0cbc3bddf82 */
 function money(v){return new Intl.NumberFormat('ru-RU',{style:'currency',currency:state.settings.currency||'RUB',minimumFractionDigits:0,maximumFractionDigits:2}).format(Number.isFinite(v)?v:0)}/* CRM_END:money-f0cbc3bddf82 */
 /* CRM_UNIT:integer-45638ccae914 */
