@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.114-payroll-cycle-v2';
+const CACHE='eliteservice-18.17.114-status-clarity-v1';
 const SHELL=[
   './',
   './index.html',
@@ -17,7 +17,7 @@ const SHELL=[
   './payroll-intake-accounting.js?v=20261124-cycle1',
   './profit-ui.js?v=20261121-receipts1',
   './own-payroll.js',
-  './visual-refinement.css?v=20261106-layout7',
+  './visual-refinement.css?v=20261124-status',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
   './quality-monitor.js?v=20261106-quality5',
   './premium-v181721.css',
