@@ -25,3 +25,28 @@ foreach ([null,'../bad','',str_repeat('x',129)] as $bad) {
 }
 try {fin_order_amount_actor(['uid'=>'employee','role'=>'master']);throw new RuntimeException('Master accepted');} catch(DomainException $expected) {}
 echo "Sheet order batch and authorization checks passed.\n";
+
+$fixture=sys_get_temp_dir().DIRECTORY_SEPARATOR.'crm-sheet-'.bin2hex(random_bytes(5));
+mkdir($fixture,0700);
+$web=$fixture.DIRECTORY_SEPARATOR.'public';
+mkdir($web,0700);
+$path=$fixture.DIRECTORY_SEPARATOR.'eliteservice-sheets.json';
+$_SERVER['DOCUMENT_ROOT']=$web;
+putenv('ELITESERVICE_SHEETS_CREDENTIALS='.$path);
+try {
+    try {sheet_public_certificate();throw new LogicException('Public GET provisioned credentials');}
+    catch (RuntimeException $e) {check_sheet_send(!file_exists($path),'Read-only endpoint does not provision');}
+    $cfg=sheet_credentials(true);
+    check_sheet_send($cfg['client_email']===ORDER_WRITER,'Limited dedicated identity');
+    check_sheet_send(openssl_x509_check_private_key(sheet_public_certificate(),$cfg['private_key']),'Public certificate matches private key');
+    check_sheet_send(!str_contains(sheet_public_certificate(),'PRIVATE KEY'),'No private material in certificate response');
+    check_sheet_send(sheet_credentials(true)===$cfg,'Provisioning is idempotent');
+    if (PHP_OS_FAMILY!=='Windows') check_sheet_send((fileperms($path)&0777)===0600,'Only owner reads private material');
+    putenv('ELITESERVICE_SHEETS_CREDENTIALS='.$web.DIRECTORY_SEPARATOR.'forbidden.json');
+    try {sheet_credentials(true);throw new LogicException('Created key underneath website');}
+    catch (RuntimeException $e) {check_sheet_send(!file_exists($web.DIRECTORY_SEPARATOR.'forbidden.json'),'No secret in document root');}
+} finally {
+    if (file_exists($path)) unlink($path);
+    rmdir($web);rmdir($fixture);putenv('ELITESERVICE_SHEETS_CREDENTIALS');
+}
+echo "Sheet certificate issuance, isolation, and readback checks passed.\n";

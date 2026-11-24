@@ -8,23 +8,69 @@ const ORDER_BOOK = '1A2qaFu8zHMwl2D-uvkGdhuX2UYUE9s4Gp1ItG4WA4Ug';
 const ORDER_TAB = 'Лист1';
 const ORDER_META_KEY = 'eliteservice_order_id';
 
-function sheet_credentials(): array {
-    $root = realpath((string)($_SERVER['DOCUMENT_ROOT'] ?? ''));
+const ORDER_WRITER = 'crm-sheet-writer@master-ai-beta-9440599.iam.gserviceaccount.com';
+
+// Resolve the parent even when the key has not yet been created. Never follow
+// symlinks at the key location or create it in a public directory.
+function sheet_key_path(): string {
+    $docroot=(string)($_SERVER['DOCUMENT_ROOT']??'');
+    $root=$docroot!==''?realpath($docroot):false;
     if (!$root) throw new RuntimeException('sheet_not_configured');
-    $path = getenv('ELITESERVICE_SHEETS_CREDENTIALS');
+    $path=getenv('ELITESERVICE_SHEETS_CREDENTIALS');
     if (!$path) {
-        $dir = $root;
-        for ($i=0; $i<8 && dirname($dir)!==$dir; $i++, $dir=dirname($dir)) {
-            if (is_file($dir.'/eliteservice-config.php')) { $path = $dir.'/eliteservice-sheets.json'; break; }
+        $private=getenv('ELITESERVICE_CONFIG');
+        if ($private && is_file($private)) $path=dirname($private).'/eliteservice-sheets.json';
+        else {
+            for ($dir=$root,$i=0;$i<8 && dirname($dir)!==$dir;$i++,$dir=dirname($dir)) {
+                if (is_file($dir.'/eliteservice-config.php')) { $path=$dir.'/eliteservice-sheets.json'; break; }
+            }
         }
     }
-    $path = $path ? realpath($path) : false;
-    if (!$path || str_starts_with($path,$root.DIRECTORY_SEPARATOR) || !is_readable($path)) throw new RuntimeException('sheet_not_configured');
-    $cfg = json_decode((string)file_get_contents($path),true);
+    $dir=$path?realpath(dirname($path)):false;
+    if (!$dir || $dir===$root || str_starts_with($dir,$root.DIRECTORY_SEPARATOR) || is_link($path)) throw new RuntimeException('sheet_not_configured');
+    return $dir.DIRECTORY_SEPARATOR.basename($path);
+}
+
+function sheet_generate_private_key(string $path):void {
+    if (is_file($path)) return;
+    $options=['private_key_bits'=>2048,'private_key_type'=>OPENSSL_KEYTYPE_RSA,'digest_alg'=>'sha256'];
+    $key=openssl_pkey_new($options);
+    if (!$key || !openssl_pkey_export($key,$private,null,$options)) throw new RuntimeException('sheet_not_configured');
+    $csr=openssl_csr_new(['commonName'=>'EliteService CRM Sheets writer','emailAddress'=>ORDER_WRITER],$key,$options);
+    $cert=$csr?openssl_csr_sign($csr,null,$key,365,$options,random_int(1,2147483647)):false;
+    if (!$cert || !openssl_x509_export($cert,$public)) throw new RuntimeException('sheet_not_configured');
+    $json=json_encode(['type'=>'service_account','client_email'=>ORDER_WRITER,'private_key'=>$private,'public_certificate'=>$public],JSON_THROW_ON_ERROR);
+    $temp=dirname($path).DIRECTORY_SEPARATOR.'.sheets-'.bin2hex(random_bytes(16)).'.tmp';
+    $mask=umask(0077);
+    try {
+        $fp=fopen($temp,'xb');
+        if (!$fp) throw new RuntimeException('sheet_not_configured');
+        try {
+            if (!chmod($temp,0600) || fwrite($fp,$json)!==strlen($json) || !fflush($fp)) throw new RuntimeException('sheet_not_configured');
+        } finally { fclose($fp); }
+        // A concurrent owner request may have installed another complete key.
+        // Atomic no-clobber publication keeps the first certificate authoritative.
+        if (!@link($temp,$path) && !is_file($path)) throw new RuntimeException('sheet_not_configured');
+    } finally {
+        if (is_file($temp)) unlink($temp);
+        umask($mask);
+    }
+}
+
+function sheet_credentials(bool $provision=false):array {
+    $path=sheet_key_path();
+    if ($provision && !is_file($path)) sheet_generate_private_key($path);
+    if (!is_file($path) || !is_readable($path)) throw new RuntimeException('sheet_not_configured');
+    $cfg=json_decode((string)file_get_contents($path),true);
     if (($cfg['type']??'')!=='service_account' || empty($cfg['client_email']) || empty($cfg['private_key'])) throw new RuntimeException('sheet_not_configured');
     return $cfg;
 }
-
+function sheet_public_certificate():string {
+    $cfg=sheet_credentials();
+    $pem=$cfg['public_certificate']??'';
+    if (!is_string($pem) || !str_starts_with($pem,'-----BEGIN CERTIFICATE-----') || !openssl_x509_export($pem,$canonical)) throw new RuntimeException('sheet_not_configured');
+    return $canonical;
+}
 function sheet_http(string $url, ?string $body, array $headers): array {
     $ch=curl_init($url);
     curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>22,CURLOPT_HTTPHEADER=>$headers]);
@@ -36,8 +82,8 @@ function sheet_http(string $url, ?string $body, array $headers): array {
     return $result;
 }
 
-function sheet_token(): string {
-    $cfg=sheet_credentials();
+function sheet_token(bool $provision=false): string {
+    $cfg=sheet_credentials($provision);
     $cache='eliteservice:sheets:'.sha1($cfg['client_email'].($cfg['private_key_id']??''));
     if (function_exists('apcu_fetch') && is_string($cached=apcu_fetch($cache))) return $cached;
     $base64=static fn(string $v):string=>rtrim(strtr(base64_encode($v),'+/','-_'),'=');
@@ -93,7 +139,13 @@ function sheet_existing(array $order,array $verified,array $rows):?int {
         if (!sheet_matches_order($order,sheet_order_cells($order,$rows),$actual)) throw new UnexpectedValueException('sheet_row_changed');
         return $ids[0];
     }
-    return sheet_order_find($order,$rows);
+    $existing=sheet_order_find($order,$rows);
+    if ($existing!==null) {
+        foreach ($verified as $otherId=>$locations) {
+            if ($otherId!==$order['orderId'] && in_array($existing,$locations,true)) throw new UnexpectedValueException('sheet_row_conflict');
+        }
+    }
+    return $existing;
 }
 function sheet_metadata_id(string $orderId):int {
     return 1+(hexdec(substr(hash('sha256',ORDER_META_KEY.':'.$orderId),0,8))%2147483646);
@@ -139,7 +191,7 @@ function sheet_dispatch(PDO $pdo,array $actor,array $input):array {
     $ids=$action==='status'?($input['orderIds']??null):[$input['orderId']??null];
     if (!is_array($ids)||count($ids)<1||count($ids)>100) throw new InvalidArgumentException('invalid_order_ids');
     $ids=array_values(array_unique(array_map('sheet_id',$ids)));
-    $token=sheet_token();
+    $token=sheet_token(($actor['role']??'')==='owner' && $action==='status');
     if ($action==='status') {
         [, $verified,$rows]=sheet_snapshot($token);
         $result=[];$uncertain=[];
@@ -175,6 +227,14 @@ function sheet_dispatch(PDO $pdo,array $actor,array $input):array {
 }
 
 if (defined('ELITESERVICE_SHEET_LIBRARY')) return;
+// Public keys are intended for distribution. GET never provisions or rotates.
+if (($_SERVER['REQUEST_METHOD']??'GET')==='GET' && isset($_GET['certificate'])) {
+    try {
+        $public=sheet_public_certificate();
+        header('Content-Type: application/x-pem-file'); header('Cache-Control: no-store'); header('X-Content-Type-Options: nosniff');
+        echo $public; exit;
+    } catch (Throwable $e) {tg_reply(404,['ok'=>false,'error'=>'certificate_unavailable']);}
+}
 try {
     if (($_SERVER['REQUEST_METHOD']??'GET')!=='POST') tg_reply(405,['ok'=>false,'error'=>'method']);
     $raw=file_get_contents('php://input',false,null,0,32769);
@@ -191,5 +251,8 @@ try {
     $code=$e->getMessage();
     tg_reply(503,['ok'=>false,'error'=>in_array($code,['sheet_not_configured','sheet_access_unavailable','sheet_layout_changed','sheet_busy'],true)?$code:'sheet_service_unavailable']);
 }
+
+
+
 
 
