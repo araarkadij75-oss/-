@@ -4469,6 +4469,7 @@
       "file": "analytics/shared.js",
       "domain": "analytics",
       "symbols": [
+        "renderMasterMetrics",
         "renderPerformance"
       ],
       "roles": [
