@@ -16438,6 +16438,10 @@
               "domain": "staff"
             },
             {
+              "symbol": "roleVisibleOrders",
+              "domain": "staff"
+            },
+            {
               "symbol": "runAICommand",
               "domain": "quality"
             },

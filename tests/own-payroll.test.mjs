@@ -45,7 +45,7 @@ test('personal payroll renders only its final balance and rejects a response aft
  const context={document,window:{MasterAICloud:cloud},Intl,Date,AbortController,setTimeout,clearTimeout,setInterval:fn=>intervals.push(fn),fetch:response};vm.createContext(context);vm.runInContext(read('hosted-snapshot/own-payroll.js'),context);
  const payload={ok:true,kind:'dispatcher',cutoff:'2026-11-06',earnedCents:9000000,paidCents:8800000,dueCents:200000,warnings:[],cycles:[{start:'2026-11-04',end:'2026-11-05',earnedCents:450000}],days:[{date:'2026-11-04',earnedCents:250000,orderIds:['own-order']}]};
  const first=handlers.click();await new Promise(setImmediate);resolveResponse({ok:true,json:async()=>payload});await first;
- assert.match(box.innerHTML,/Осталось к выплате/);assert.doesNotMatch(box.innerHTML,/90.?000|88.?000|Всего начислено|Уже выдано/);assert.match(box.innerHTML,/own-order/);
+ assert.match(box.innerHTML,/Осталось к выплате/);assert.doesNotMatch(box.innerHTML,/90.?000|88.?000|Всего начислено|Уже выдано/);assert.match(box.innerHTML,/data-payroll-order="own-order" aria-label="Открыть заказ own-order"/);
  const second=handlers.click();await new Promise(setImmediate);cloud.profile={id:'artem',role:'dispatcher_logistic'};resolveResponse({ok:true,json:async()=>({...payload,days:[{date:'2026-11-04',earnedCents:250000,orderIds:['stale-secret-order']}]})});await second;
  assert.doesNotMatch(box.innerHTML,/stale-secret-order/);
 });
