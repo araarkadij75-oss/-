@@ -25,6 +25,12 @@
     const response = await fetch('./crm-api/finance.php', { method: 'POST', cache: 'no-store', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ op, ...details }) });
     const data = await response.json().catch(() => ({}));
     if(!owner()||!cloud.connected||String(cloud.profile?.uid||cloud.profile?.id||'')!==actorId)throw new Error('Сессия изменилась. Обновите раздел после входа.');
+    const coverageErrors = {
+      expense_account_required:'Выберите кабинет Авито: даты отчёта пересекаются с дневными расходами B2BHelp.',
+      expense_partial_coverage:'Дневные расходы B2BHelp покрывают только часть периода или выбранные периоды перекрываются. Разделите выгрузку по датам.',
+      expense_coverage_mismatch:'Сумма выбранных операций расходится с дневными расходами B2BHelp. Проверьте полноту выгрузки, возвраты и выбранный кабинет.'
+    };
+    if (!response.ok && coverageErrors[data.error]) throw new Error(coverageErrors[data.error]);
     if (!response.ok || data.ok !== true) throw new Error(({ 400:'Проверьте даты и суммы выбранных строк.', 403:'Для этого действия нужен вход владельца.', 409:'Найден конфликт: операция уже загружена с другими данными либо периоды статистики пересекаются. Не добавляйте статистику и отдельные операции одного кабинета за одинаковые даты.', 413:'Слишком много строк. Разделите загрузку на части до 1000 строк.' })[response.status] || 'Не удалось сохранить расходы. Попробуйте позже.');
     return data;
   }
@@ -161,7 +167,7 @@
       if(!$('#profitImportConsent').checked||!state.parsed||!state.selected.size)return;
       if(state.selected.size>1000)throw new Error('Можно добавить не более 1000 строк за один раз.');
       const rows=[...state.selected].map(i=>state.parsed.rows[i]).map(r=>expensePayload(r,$('#profitAccount').value));
-      const result=await api('import',{rows});state.expenses=result.expenses||[];bridge().setExpenses?.(state.expenses);state.selected.clear();$('#avitoPreview').hidden=true;render();notice(`Добавлено: ${result.inserted||0}. Уже были учтены: ${result.duplicates||0}.`);
+      const result=await api('import',{rows});state.expenses=result.expenses||[];bridge().setExpenses?.(state.expenses);state.selected.clear();$('#avitoPreview').hidden=true;render();notice(`Добавлено: ${result.inserted||0}. Уже были учтены: ${result.duplicates||0}. Сверено с дневными расходами B2BHelp: ${result.covered||0}.`);
     });
     if(anchor.classList.contains('active'))tab.onclick();
   }
