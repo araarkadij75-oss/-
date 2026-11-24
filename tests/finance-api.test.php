@@ -203,3 +203,13 @@ fin_check(fin_overlap($daily,$debit)&&fin_overlap($debit,$daily),'Cannot restore
 fin_check(!fin_overlap($daily,array_replace($debit,['date'=>'2026-10-30'])),'Uncovered date allowed');
 fin_reject(fn()=>fin_normalize(array_replace($daily,['account'=>''])),'Blank marker account');
 fin_reject(fn()=>fin_normalize(array_replace($daily,['date'=>'2026-10-30'])),'Daily marker date mismatch');
+$refund=['id'=>'case-1','date'=>'2025-11-24','companyCents'=>150000,'masterCents'=>150000];
+$received=['callDate'=>'04.11.2025','closeDate'=>'05.11.2025','companyShare'=>'3600','masterAmount'=>'4400','_cashRefunds'=>[$refund]];
+fin_check_order_receipts($received);
+fin_reject(fn()=>fin_validate_refund_entries([$refund,$refund]),'Reject duplicate refund identity');
+fin_reject(fn()=>fin_check_order_receipts(array_replace($received,['_cashRefunds'=>[array_replace($refund,['date'=>'2025-11-04'])]])),'Reject refund before money arrived');
+fin_reject(fn()=>fin_check_order_receipts(array_replace($received,['_cashRefunds'=>[array_replace($refund,['companyCents'=>360001])]])),'Company cannot refund more than received');
+fin_reject(fn()=>fin_check_order_receipts(array_replace($received,['_cashRefunds'=>[array_replace($refund,['masterCents'=>440001])]])),'Master cannot refund more than earned');
+$refundPatch=['orderId'=>'test','sourceRow'=>1,'sourceSpreadsheet'=>'example','before'=>['_cashRefunds'=>null],'after'=>['_cashRefunds'=>[$refund]]];
+fin_reconciliation_patch($refundPatch);
+fin_reject(fn()=>fin_reconciliation_patch(array_replace($refundPatch,['before'=>['_cashRefunds'=>[$refund]],'after'=>['_cashRefunds'=>[]]])),'Previous refunds are immutable');
