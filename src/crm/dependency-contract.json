@@ -1834,7 +1834,10 @@
         },
         "quickSetMaster-258c12e87798": {
           "globals": [
-            "Date"
+            "Date",
+            "Error",
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -1843,6 +1846,10 @@
             },
             {
               "symbol": "canonicalMasterSelection",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentRole",
               "domain": "staff"
             },
             {
@@ -1862,8 +1869,16 @@
               "domain": "ui"
             },
             {
+              "symbol": "ownerRolePreview",
+              "domain": "staff"
+            },
+            {
               "symbol": "renderDashboard",
               "domain": "analytics"
+            },
+            {
+              "symbol": "SECURE_CLOUD_REQUIRED",
+              "domain": "staff"
             },
             {
               "symbol": "state",
