@@ -4,6 +4,17 @@ const o=(id,intakeDate,cashDate,cashCents,extra={})=>({id,person:'sergey',intake
 const d=date=>({person:'sergey',date});
 const p=(id,date,amountCents)=>({id,date,person:'sergey',amountCents});
 
+test('cycle balance deducts the same valid unique payments as the employee ledger',()=>{
+ const paid=p('receipt-1','2026-11-21',60000);
+ const payments=[null,{...paid,amountCents:-1},paid,{...paid},{...paid,amountCents:80000}];
+ const snapshot=calculate({cutoff:'2026-11-21',days:[d('2026-11-20')],payments});
+ const {cycles}=globalThis.PayrollIntakeAccounting.settlementSequence({...snapshot,payments},{anchor:'2026-11-20',first:'sergey'});
+ assert.equal(cycles.length,1);
+ assert.deepEqual(cycles[0].payments,[paid]);
+ assert.equal(cycles[0].dueCents,140000);
+ assert.equal(cycles[0].dueCents,snapshot.people[0].dueCents);
+});
+
 test('partial settlement retains unpaid dated receipts before reconciliation and omitted days',()=>{
  const orders=[o('a','2026-10-21','2026-10-22',2924500),o('b','2026-10-21','2026-10-24',1100000),o('c','2026-10-30','2026-11-02',2837000)];
  const snapshot=calculate({orders,cutoff:'2026-11-06',payments:[p('credit','2026-11-03',292450)]});
