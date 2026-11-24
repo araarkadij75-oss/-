@@ -433,6 +433,10 @@ html,body,button,input,select,textarea,table{font-family:Arial,Helvetica,sans-se
 .app .order-quick-filters .btn{flex:none;width:auto;min-height:32px;height:auto;padding:6px 9px;white-space:nowrap}
 .app .order-quick-filters .btn[aria-pressed="true"]{background:var(--accent,#176e71);color:white}
 @media(max-width:700px){.app .orders-toolbar .order-quick-filters{flex-wrap:wrap;max-width:100%}}
+#dispatcherIntakeMeter:not([hidden]){position:sticky;top:0;z-index:4;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 12px;padding:6px 12px;margin:4px 0;border-radius:10px;background:#123642;color:#f2ffff;font:600 13px/1.4 system-ui,sans-serif}
+#dispatcherIntakeMeter strong{font-variant-numeric:tabular-nums;color:#8af3ce}
+#dispatcherIntakeMeter small{font-size:12px;color:#dfebef}
+#dispatcherIntakeMeter .intake-cells{width:min(160px,36vw);height:12px;border-radius:3px;background:linear-gradient(90deg,#49e3b4 var(--filled,0%),#50717b 0);mask-image:repeating-linear-gradient(90deg,#000 0 calc(10% - 2px),transparent calc(10% - 2px) 10%)}
 </style></head>
 <body class="auth-locked"><div id="workspaceAtmosphereStage" aria-hidden="true"></div><details class="workspace-appearance"><summary>Оформление</summary><div class="workspace-appearance-panel"><label for="workspaceAtmosphere">Атмосфера</label><select id="workspaceAtmosphere"><option value="rain">Дождливый Петербург</option><option value="space">Космические просторы</option><option value="mountains">Горное озеро</option><option value="classic">Классический</option></select><label class="atmosphere-pause"><input id="rainMotionPaused" type="checkbox"><span>Остановить анимацию</span></label><small>При уменьшении движения в настройках устройства фон остаётся неподвижным.</small></div></details><div class="app" id="app">
 <div class="top"><div class="brand"><h1>EliteService</h1><p>Приём, распределение и контроль заказов.</p></div><div class="top-actions"><span id="qualityMonitorBadge" hidden></span><button class="btn primary" id="newOrderTop">+ Новый заказ</button><button class="btn" id="backupTop" data-owner-action>Резервная копия</button><div class="admin-switch" id="adminRoleSwitch" hidden><b style="font-size:11px">Просмотр как</b><select class="select" id="adminViewRole"><option value="owner">Владелец</option><option value="dispatcher_logistic">Диспетчер‑логист</option><option value="master">Мастер</option></select><select class="select role-preview-master" id="adminViewMaster" hidden><option value="">Выберите мастера</option></select><button class="btn small" id="adminViewReset" type="button">Сбросить</button></div><span class="user-badge" id="userBadge"><span class="role-dot"></span><span id="userBadgeText">Владелец</span></span><button class="btn small" id="enableNotificationsTop" type="button">🔔 Уведомления</button><button class="btn small" id="installAppTop">⬇ Установить</button><span class="badge cloud-badge" id="cloudBadge"><span class="dot"></span><span id="cloudBadgeText">Подключение…</span></span><button class="btn small" id="logoutBtn" hidden>Выйти</button><span class="badge"><span class="dot"></span><span id="dbBadge">Заказов: 0</span></span><span class="badge" id="testBadgeWrap" hidden><span class="dot"></span><span id="testBadge">Проверка</span></span></div></div>
@@ -440,6 +444,7 @@ html,body,button,input,select,textarea,table{font-family:Arial,Helvetica,sans-se
 <nav class="tabs">
 <button class="tab active" data-tab="orders">Заказы</button><button class="tab" data-tab="mypayroll">Моя зарплата</button><button class="tab" data-tab="myquality">Мои замечания</button><button class="tab" data-tab="dashboard">Дашборд</button><button class="tab" data-tab="mastermetrics">Показатели мастеров</button><button class="tab" data-tab="performance">Перформанс</button><button class="tab" data-tab="mastershifts">График мастеров</button><button class="tab" data-tab="shiftclose">Закрытие смены</button><button class="tab" data-tab="reports">Недельные отчёты</button><button class="tab" data-tab="ai">AI-центр</button><button class="tab" data-tab="finance">Финансы</button><button class="tab" data-tab="quality">Контроль</button><button class="tab" data-tab="diagnostics">100-контроль</button><button class="tab" data-tab="import">Импорт / экспорт</button><button class="tab" data-tab="settings">Настройки</button>
 </nav>
+<div id="dispatcherIntakeMeter" hidden><span>Принято командой сегодня</span><strong></strong><span class="intake-cells" role="progressbar" aria-label="Дневная цель команды" aria-valuemin="0" aria-valuemax="10"></span><small></small></div>
 <div class="master-mobile-head"><div class="hero"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>Мои заказы</b><button type="button" class="btn small" id="enableNotifications">🔔 Уведомления</button></div><p>Адрес доступен сразу. Телефон откроется автоматически в назначенное время.</p></div></div>
 
 <section class="section active" data-panel="orders"><div class="card pad role-work-guide" id="roleWorkGuide" style="margin-bottom:12px"></div>
@@ -1081,6 +1086,28 @@ for(const receipt of trendCash){
  if(!m.has(key))m.set(key,{total:0,clean:0,master:0,share:0});
  const x=m.get(key);x.share=(Math.round(x.share*100)+receipt.cashCents)/100;
 }const keys=[...m.keys()].sort();$('#moneyTrend').innerHTML=lineSVG([{name:'Оборот',values:keys.map(k=>({label:k,v:m.get(k).total}))},{name:'Касса компании',values:keys.map(k=>({label:k,v:m.get(k).share}))}]);renderDailyCash(rows);$('#moneyFlow').innerHTML=barsHTML([{key:'Общая сумма',value:k.total},{key:'З/Ч',value:k.parts},{key:'Чистый чек',value:k.cleanS},{key:'Мастер',value:k.masterS},{key:'Касса / сдача',value:k.share}]);const gm=group(rows.filter(r=>!isServiceMaster(r.master)),'master'),metric=$('#topMasterMetric')?.value||'share';for(const x of gm)x.rankValue=financeMetric(x,metric);$('#topMasters').innerHTML=barsHTML(gm,'rankValue',metric==='n'?integer:['margin','reviewRate','masterRate','revenueMargin','fixedShare'].includes(metric)?pct:money,15);$('#topCities').innerHTML=barsHTML(group(rows.map(r=>({...r,city:spbArea(r)})),'city',r=>num(r.total)));$('#topDirections').innerHTML=barsHTML(group(rows,'direction',r=>num(r.total)));bindBarsToFilter('topMasters','masterFilter','master');bindBarsToFilter('topDirections','dirFilter','direction');renderDrillBanner()}
+function dailyIntakeCount(day, dispatcherName){
+ const ids=new Set();
+ for(const order of state.orders){
+  if(!order.orderId||order._duplicateOf||iso(parseDate(order.callDate))!==day)continue;
+  if(dispatcherName&&norm(orderDispatcherName(order))!==norm(dispatcherName))continue;
+  ids.add(order.orderId);
+ }
+ return ids.size;
+}
+function renderDispatcherIntakeMeter(){
+ const meter=$('#dispatcherIntakeMeter');
+ if(!meter)return;
+ meter.hidden=currentRole()!=='dispatcher_logistic';
+ if(meter.hidden)return;
+ const count=dailyIntakeCount(today()),filled=Math.min(count,10);
+ meter.querySelector('strong').textContent=count+' / 10';
+ const bar=meter.querySelector('[role="progressbar"]');
+ bar.setAttribute('aria-valuenow',filled);
+ bar.setAttribute('aria-valuetext',count+' из 10');
+ bar.style.setProperty('--filled',filled*10+'%');
+ meter.querySelector('small').textContent=count>=10?'Цель достигнута':'До цели: '+(10-count);
+}
 function renderMasterMetrics(){
  const day=today(), monday=new Date(day+'T12:00:00Z');
  monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
@@ -1089,13 +1116,12 @@ function renderMasterMetrics(){
  period.onchange=rank.onchange=renderMasterMetrics;
  const start=period.value==='week'?week:month, user=currentUser(), personal=currentRole()==='dispatcher_logistic';
  const masters=new Map(),names=new Map(),seen=new Set(),cohort=[],assigned=new Map();
- let intake=0;
+ const intake=dailyIntakeCount(day,personal?user.name:null);
  for(const r of state.orders){
   if(r._duplicateOf||!r.orderId||seen.has(r.orderId))continue;
   const parsed=parseDate(r.callDate);if(!parsed)continue;
   const date=iso(parsed);if(date>day||date<(week<month?week:month))continue;
   seen.add(r.orderId);
-  if(date===day&&(!personal||norm(orderDispatcherName(r))===norm(user.name)))intake++;
   if(!r.master||isServiceMaster(r.master))continue;
   if(!names.has(r.master))names.set(r.master,canonicalMasterSelection(r.master));
   const name=names.get(r.master),key=canonicalKey(name,'master');
@@ -1216,7 +1242,7 @@ function refreshLiveQuality(){
  onNavigate:()=>{if(stillAllowed())switchTab(owner?'ai':'myquality')},openOrder:id=>{if(!stillAllowed())return;const row=state.orders.find(r=>String(r.orderId)===String(id));if(!row)return;if(staff&&(api.responsiblePerson(row)!==api.staffPerson(window.MasterAICloud.profile)||!api.inScope(row)||row._duplicateOf))return;openOrder(row)}});liveQualityMonitor.identityKey=key}
  liveQualityMonitor.refresh()
 }
-function refresh(){try{refreshLiveQuality()}catch(e){console.error('render quality monitor',e)};const tab=$('.tab.active')?.dataset.tab||'orders';const jobs=[['filters',refillFilters],['drill',renderDrillBanner]];const panels={orders:[['orders',renderOrders]],dashboard:[['dashboard',renderDashboard]],mastermetrics:[["master metrics",()=>renderMasterMetrics()]],performance:[['performance',()=>renderPerformance(filterRows())]],shiftclose:[['shifts',renderShiftClose]],mastershifts:[['master shifts',renderMasterShifts],['team performance',()=>renderTeamPerformance(filterRows())]],reports:[['reports',renderShiftReports]],quality:[['quality',renderQuality]],ai:[['ai',renderAI]],finance:[['finance',()=>renderFinance()]],settings:[['settings',renderSettings]],import:[['schema',renderSchema]],diagnostics:[['colors',renderColorAudit]]};jobs.push(...(panels[tab]||[]));for(const [name,fn] of jobs)try{fn()}catch(e){console.error('render '+name,e)}}
+function refresh(){try{refreshLiveQuality()}catch(e){console.error('render quality monitor',e)};const tab=$('.tab.active')?.dataset.tab||'orders';const jobs=[['filters',refillFilters],['drill',renderDrillBanner]];const panels={orders:[['orders',renderOrders]],dashboard:[['dashboard',renderDashboard]],mastermetrics:[["master metrics",()=>renderMasterMetrics()]],performance:[['performance',()=>renderPerformance(filterRows())]],shiftclose:[['shifts',renderShiftClose]],mastershifts:[['master shifts',renderMasterShifts],['team performance',()=>renderTeamPerformance(filterRows())]],reports:[['reports',renderShiftReports]],quality:[['quality',renderQuality]],ai:[['ai',renderAI]],finance:[['finance',()=>renderFinance()]],settings:[['settings',renderSettings]],import:[['schema',renderSchema]],diagnostics:[['colors',renderColorAudit]]};if($('#dispatcherIntakeMeter'))jobs.push(['intake meter',()=>renderDispatcherIntakeMeter()]);jobs.push(...(panels[tab]||[]));for(const [name,fn] of jobs)try{fn()}catch(e){console.error('render '+name,e)}}
 function autoStatusFromVisit(){const vd=parseDate($('#f_visitDate').value),td=parseDate(today()),cur=$('#f_status').value;if(vd&&td&&vd>td&&(cur==='В работе'||!cur)){$('#f_status').value='Будущая дата';syncStatusPalette()}else if(vd&&td&&vd<=td&&cur==='Будущая дата'){$('#f_status').value='В работе';syncStatusPalette()}}
 
 function wireLabels(){$$('.field').forEach(f=>{const l=f.querySelector('label'),e=f.querySelector('input[id],select[id],textarea[id]');if(l&&e&&!l.htmlFor)l.htmlFor=e.id})}
