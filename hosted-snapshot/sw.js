@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.118-master-totals';
+const CACHE='eliteservice-18.17.119-cash-details';
 const SHELL=[
   './',
   './index.html',
@@ -17,7 +17,7 @@ const SHELL=[
   './payroll-intake-accounting.js?v=20261124-paycycle3',
   './profit-ui.js?v=20261121-receipts1',
   './own-payroll.js?v=order-links',
-  './visual-refinement.css?v=20261124-navigation',
+  './visual-refinement.css?v=20261124-cash-details',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
   './quality-monitor.js?v=20261106-quality5',
   './premium-v181721.css',

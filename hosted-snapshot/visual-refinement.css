@@ -1316,3 +1316,16 @@ html[data-atmosphere="space"] .app nav.tabs {
 .app nav.tabs [data-tab="diagnostics"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M2%2013h5l3-8%204%2014%203-7h5%22%2F%3E%3C%2Fsvg%3E"); }
 .app nav.tabs [data-tab="import"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%203v12%20M3%2012l3%203%203-3%20M18%2021V9%20M15%2012l3-3%203%203%20M3%2020h8%20M13%204h8%22%2F%3E%3C%2Fsvg%3E"); }
 .app nav.tabs [data-tab="settings"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%206h8%20M15%206h6%20M3%2012h2%20M9%2012h12%20M3%2018h10%20M17%2018h4%20M11%204h4v4h-4z%20M5%2010h4v4H5z%20M13%2016h4v4h-4z%22%2F%3E%3C%2Fsvg%3E"); }
+.metric-cash{display:grid;gap:.22rem;min-width:9.6rem}
+.metric-detail>summary,.metric-zero{display:flex;align-items:baseline;gap:.4em;font-variant-numeric:tabular-nums}
+.metric-detail>summary{cursor:pointer;list-style:none;border-radius:.3em}
+.metric-detail>summary::before{content:'+';font-weight:700;color:inherit}
+.metric-detail[open]>summary::before{content:'−'}
+.metric-detail>summary:hover b{text-decoration:underline}
+.metric-detail>summary:focus-visible{outline:2px solid currentColor}
+.metric-cash small{flex:1}.metric-zero{padding-inline-start:1em}
+.metric-cash>:first-child{border-bottom:1px solid currentColor;padding-bottom:.15rem}
+.metric-ledger{margin:.35rem 0;padding:.4rem;border-inline-start:2px solid currentColor}
+.metric-ledger ul{list-style:none;padding:0;margin:.2rem 0;max-height:13rem;overflow:auto}
+.metric-ledger li{display:flex;gap:.55rem;justify-content:space-between;white-space:nowrap;font-variant-numeric:tabular-nums}
+.metric-help{margin:.5rem 0}.metric-help summary{cursor:pointer}
