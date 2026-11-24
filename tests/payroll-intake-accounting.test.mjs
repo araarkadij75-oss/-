@@ -71,6 +71,7 @@ test('split cash is recognized on receipt dates and raises only the original day
  const first=calculate({orders,cutoff:a,payments});
  assert.equal(first.people[0].dueCents,70000);assert.deepEqual(first.days[0].orderIds,['prior','split']);
  const last=calculate({orders:[...orders,orders[1]],cutoff:b,payments});
+ assert.equal(first.days[0].lateCashCents,700000);assert.equal(last.days[0].lateCashCents,1100000);
  assert.equal(last.days[0].cashCents,3100000);assert.equal(last.people[0].dueCents,110000);
  assert.deepEqual(last.events.filter(x=>x.kind==='cash_increment').map(x=>[x.date,x.amountCents]),[[a,70000],[b,40000]]);
  const sequence=globalThis.PayrollIntakeAccounting.settlementSequence({...last,orders:[...orders,orders[1]],baselines:[{person:'sergey',date:a,days:[{date:day,cashCents:2700000}]}]}, {anchor:day,first:'sergey'});

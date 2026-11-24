@@ -57,7 +57,8 @@
   for(const g of [...groups.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.person.localeCompare(b.person))){
    let cumulative=0,previous=200000;events.push({person:g.person,intakeDate:g.date,date:g.date,amountCents:200000,kind:'daily_minimum'});
    for(const [date,cash] of [...g.receipts].sort((a,b)=>(a[0]||'9999').localeCompare(b[0]||'9999'))){cumulative+=cash;const next=entitlement(cumulative),increase=next-previous;if(increase>0)events.push({person:g.person,intakeDate:g.date,date,amountCents:increase,kind:date?'cash_increment':'undated_increment'});previous=next}
-   g.entitlementCents=entitlement(g.cashCents);person(g.person).earnedCents+=g.entitlementCents;resultDays.push({person:g.person,date:g.date,cashCents:g.cashCents,entitlementCents:g.entitlementCents,orderIds:g.orderIds.sort()});
+   const lateCashCents=[...g.receipts].reduce((sum,[date,cents])=>date>g.date?sum+cents:sum,0),undatedCashCents=g.receipts.get('')||0;
+   g.entitlementCents=entitlement(g.cashCents);person(g.person).earnedCents+=g.entitlementCents;resultDays.push({person:g.person,date:g.date,lateCashCents,undatedCashCents,cashCents:g.cashCents,entitlementCents:g.entitlementCents,orderIds:g.orderIds.sort()});
   }
   const totals=[...people.values()].sort((a,b)=>a.person.localeCompare(b.person));for(const p of totals){p.dueCents=Math.max(0,p.earnedCents-p.paidCents);p.overpaidCents=Math.max(0,p.paidCents-p.earnedCents)}
   return {cutoff,days:resultDays,people:totals,events:events.sort((a,b)=>a.date.localeCompare(b.date)||a.person.localeCompare(b.person)||a.intakeDate.localeCompare(b.intakeDate)),warnings,incomplete:warnings.some(w=>!w.code.startsWith('duplicate_'))};
