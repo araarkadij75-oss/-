@@ -23,7 +23,7 @@ test('accrual profit ignores missing or invalid payments but still exposes order
 });
 test('profit payroll labels distinguish recalculated completed days from confirmed payments',()=>{
  const ui=fs.readFileSync(new URL('../hosted-snapshot/profit-ui.js',import.meta.url),'utf8');
- assert.match(ui,/Расчёт завершённых дней/);assert.match(ui,/не подтверждение отчёта и не факт выплаты/);assert.match(ui,/Выплаченные зарплаты повторно из прибыли не вычитаются/);
+ assert.match(ui,/По расчёту .*salaryConfirmed.*предварительно .*salaryEstimated/);assert.match(ui,/Ставка относится ко дню приёма заказа/);assert.match(ui,/Выданная зарплата уже учтена в начислениях/);
  assert.doesNotMatch(ui,/Подтверждённые смены и предварительные начисления/);
  const legacy=fs.readFileSync(new URL('../src/crm/ui/screens/owner-dispatcher.html',import.meta.url),'utf8');assert.doesNotMatch(legacy,/Автоматические выплаты по закрытым сменам|Выплаченные ID исключаются/);assert.match(legacy,/Подтверждённые оплаты вычитаются один раз/);
 });

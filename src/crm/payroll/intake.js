@@ -1,5 +1,5 @@
 /* CRM_UNIT:payrollIntakeSnapshot-v2 */
-function payrollIntakeSnapshot(cutoff=today()){
+function payrollIntakeSnapshot(cutoff=today(),snapshotDate=today()){
  if(!window.PayrollIntakeAccounting)throw new Error('Модуль расчёта зарплаты не загружен');
  const {anchor}=payrollSchedule(),days=[],reports=uniqueShiftReports(state.shiftReports||[]).filter(payrollAccountingReport);
  // A planned calendar date alone is not evidence of a worked day.
@@ -18,7 +18,7 @@ function payrollIntakeSnapshot(cutoff=today()){
   for(const p of state.payrollPayments||[])if(p.active!==false&&p.kind!=='settlement_baseline'&&!baselines.some(b=>b.person===p.person&&p.date<=b.date))payments.push({id:'payment:'+p.id,person:p.person,date:p.date,amountCents:p.amountCents});
   for(const p of baselines)payments.push({id:'baseline:'+p.id,person:p.person,date:p.date,amountCents:p.amountCents,kind:'settlement_baseline'});
  }
- const result=window.PayrollIntakeAccounting.calculate({orders,days,payments,cutoff,snapshotDate:today()});
+ const result=window.PayrollIntakeAccounting.calculate({orders,days,payments,cutoff,snapshotDate});
  if(!ledgerReady){result.warnings.push({code:'payments_not_loaded',id:''});result.incomplete=true;for(const p of result.people){p.dueCents=null;p.overpaidCents=null}}
  result.paymentsLoaded=ledgerReady;
  return {...result,orders,payments,baselines,anchor,days:result.days.map(d=>({...d,earnedCents:d.entitlementCents}))};
