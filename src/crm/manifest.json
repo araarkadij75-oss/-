@@ -4244,6 +4244,7 @@
       "domain": "payroll",
       "symbols": [
         "shiftHistoryCycles",
+        "previewShiftReport",
         "shareShiftReport"
       ],
       "roles": [

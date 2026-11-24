@@ -4920,7 +4920,6 @@
         },
         "renderShiftClose-0c2972d31b20": {
           "globals": [
-            "Boolean",
             "String"
           ],
           "crossDomain": [
@@ -5053,14 +5052,15 @@
           "globals": [
             "Array",
             "Blob",
+            "Boolean",
             "Date",
             "JSON",
             "Map",
+            "Math",
             "Number",
             "Set",
             "String",
             "URL",
-            "arguments",
             "document",
             "navigator"
           ],
@@ -5070,7 +5070,15 @@
               "domain": "core"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
               "domain": "core"
             },
             {
@@ -13121,7 +13129,6 @@
         },
         "renderShiftClose-91849dc4d2a9": {
           "globals": [
-            "Boolean",
             "String"
           ],
           "crossDomain": [
@@ -13264,14 +13271,15 @@
           "globals": [
             "Array",
             "Blob",
+            "Boolean",
             "Date",
             "JSON",
             "Map",
+            "Math",
             "Number",
             "Set",
             "String",
             "URL",
-            "arguments",
             "document",
             "navigator"
           ],
@@ -13281,7 +13289,15 @@
               "domain": "core"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "parseDate",
               "domain": "core"
             },
             {
