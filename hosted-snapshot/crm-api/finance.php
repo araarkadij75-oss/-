@@ -429,7 +429,47 @@ function fin_receipts_total(mixed $entries,string $intake=''):int {
     }
     return $total;
 }
+function fin_refund_date(mixed $value): string {
+    if(!is_string($value))return '';
+    if(preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/D',$value,$m))$value=sprintf('%04d-%02d-%02d',$m[3],$m[2],$m[1]);
+    return preg_match('/^(\d{4})-(\d{2})-(\d{2})$/D',$value,$m)&&checkdate((int)$m[2],(int)$m[3],(int)$m[1])?$value:'';
+}
+function fin_validate_refund_entries(mixed $entries): void {
+    if(!is_array($entries)||array_values($entries)!==$entries||count($entries)>100)throw new InvalidArgumentException('invalid_cash_refunds');
+    $ids=[];
+    foreach($entries as $event){
+        if(!is_array($event)||count($event)!==4||!isset($event['id'],$event['date'],$event['companyCents'],$event['masterCents']))throw new InvalidArgumentException('invalid_cash_refund');
+        $id=$event['id'];
+        if(!is_string($id)||!preg_match('/^[a-zA-Z0-9._-]{1,100}$/D',$id)||isset($ids[$id]))throw new InvalidArgumentException('invalid_refund_id');
+        $ids[$id]=true;
+        if(fin_refund_date($event['date'])===''||fin_refund_date($event['date'])!==$event['date'])throw new InvalidArgumentException('invalid_refund_date');
+        foreach(['companyCents','masterCents'] as $key)if(!is_int($event[$key])||$event[$key]<0||$event[$key]>100000000000)throw new InvalidArgumentException('invalid_refund_amount');
+        if($event['companyCents']+$event['masterCents']===0)throw new InvalidArgumentException('empty_refund');
+    }
+}
+function fin_check_order_refunds(array $order): void {
+    $refunds=$order['_cashRefunds']??[];
+    fin_validate_refund_entries($refunds);
+    if(!$refunds)return;
+    $receipts=$order['_cashReceipts']??[];
+    if(!$receipts){
+        $date=fin_refund_date(($order['_cashClosedOn']??'')?:($order['closeDate']??''));
+        if($date==='')throw new InvalidArgumentException('missing_refund_receipt_date');
+        $receipts=[['date'=>$date,'cents'=>fin_order_money($order['companyShare']??null)]];
+    }
+    usort($refunds,static fn($a,$b)=>strcmp($a['date'],$b['date']));
+    $today=(new DateTimeImmutable('now',new DateTimeZone('Europe/Moscow')))->format('Y-m-d');
+    $company=0;$master=0;$intake=fin_refund_date($order['callDate']??'');
+    foreach($refunds as $event){
+        if(!$intake||$event['date']<$intake||$event['date']>$today)throw new InvalidArgumentException('invalid_refund_date');
+        $company+=$event['companyCents'];$master+=$event['masterCents'];
+        $available=0;
+        foreach($receipts as $receipt)if($receipt['date']<=$event['date'])$available+=$receipt['cents'];
+        if($company>$available||$master>fin_order_money($order['masterAmount']??null))throw new InvalidArgumentException('refund_exceeds_order');
+    }
+}
 function fin_check_order_receipts(array $order,bool $closing=false):void {
+    fin_check_order_refunds($order);
     $entries=$order['_cashReceipts']??[];
     if($entries===[])return;
     $intake=(string)($order['callDate']??'');
@@ -474,16 +514,21 @@ function fin_save_receipts(PDO $pdo,array $actor,array $body):array {
     }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
 }
 function fin_reconciliation_patch(array $patch): array {
-    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn','_autoFinance','_cashReceipts'];
+    $allowed=['closeDate','companyShare','dispatcher','_status','masterAmount','total','parts','cleanCheck','pp','_duplicateOf','_cashClosedOn','_autoFinance','_cashReceipts','_cashRefunds'];
     $id=fin_text($patch['orderId']??'',128);
     if(!preg_match('/^[A-Za-z0-9._-]{1,128}$/',$id))throw new InvalidArgumentException('invalid_order_id');
     $before=$patch['before']??null;$after=$patch['after']??null;
     if(!is_array($before)||!is_array($after)||!count($after))throw new InvalidArgumentException('invalid_patch');
     $bk=array_keys($before);$ak=array_keys($after);sort($bk);sort($ak);
     if($bk!==$ak||array_diff($ak,$allowed))throw new InvalidArgumentException('invalid_patch_fields');
-    foreach($before as $k=>$v)if(!($k==='_cashReceipts'&&is_array($v))&&!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v)&&!($k==='_autoFinance'&&is_bool($v)))throw new InvalidArgumentException('invalid_before');
+    foreach($before as $k=>$v)if(!(in_array($k,['_cashReceipts','_cashRefunds'],true)&&is_array($v))&&!is_null($v)&&!is_string($v)&&!is_int($v)&&!is_float($v)&&!($k==='_autoFinance'&&is_bool($v)))throw new InvalidArgumentException('invalid_before');
     foreach($after as $key=>$value){
         if($key==='_cashReceipts')fin_receipts_total($value);
+        elseif($key==='_cashRefunds'){
+            fin_validate_refund_entries($value);
+            $prior=$before[$key]??[];fin_validate_refund_entries($prior);
+            if(array_slice($value,0,count($prior))!=$prior)throw new InvalidArgumentException('immutable_cash_refunds');
+        }
         elseif($key==='_autoFinance'){if(!is_bool($value))throw new InvalidArgumentException('invalid_auto_finance');}
         elseif(in_array($key,['companyShare','masterAmount','total','parts','cleanCheck','pp'],true)){
             if(!is_string($value)&&!is_int($value)&&!is_float($value))throw new InvalidArgumentException('invalid_cash');
@@ -519,7 +564,7 @@ function fin_reconciliation_effective_patch(array $order,array $patch): array {
     return $patch;
 }
 function fin_reconciliation_projection(array $projection,array $after,string $collection,string $stamp): array {
-    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts','_cashClosedOn','_duplicateOf','_cashReceipts']:['closeDate','dispatcher','_status','_duplicateOf'];
+    $allowed=$collection==='orderCloseData'?['companyShare','closeDate','total','parts','_cashClosedOn','_duplicateOf','_cashReceipts','_cashRefunds']:['closeDate','dispatcher','_status','_duplicateOf'];
     foreach($after as $key=>$value)if(in_array($key,$allowed,true))$projection[$key]=$value;
     $projection['_updatedAt']=$stamp;
     return $projection;

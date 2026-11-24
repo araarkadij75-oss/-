@@ -50,3 +50,10 @@ foreach(['2026-11-04'=>200000,'2026-11-05'=>270000,'2026-11-06'=>310000] as $cut
 $split['_cashReceipts'][1]['date']='2026-11-05';
 $result=own_pay_projection($staff,[$split,$prior],[],[],[],'2026-11-06');
 own_check($result['earnedCents']===200000&&in_array('invalid_cash_receipts',$result['warnings'],true),'Corrupt split never counts entire order');
+$refundOrder=own_order('refund','sergey','2026-11-04','2026-11-04',22500);
+$refundOrder['masterAmount']='2500';
+$refundOrder['_cashRefunds']=[['id'=>'r','date'=>'2026-11-24','companyCents'=>150000,'masterCents'=>150000]];
+foreach(['2026-11-23'=>225000,'2026-11-24'=>210000] as $cutoff=>$expected){
+ $result=own_pay_projection($staff,[$refundOrder,$refundOrder],[],[],[],$cutoff);
+ own_check($result['earnedCents']===$expected,'Dated refund projection at '.$cutoff);
+}
