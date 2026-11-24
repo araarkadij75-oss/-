@@ -4474,6 +4474,7 @@
         },
         "renderPayrollCycleRegister-5260983879c4": {
           "globals": [
+            "Array",
             "Date",
             "Map",
             "Set",
