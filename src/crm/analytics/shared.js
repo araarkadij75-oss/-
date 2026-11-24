@@ -46,6 +46,44 @@ for(const receipt of trendCash){
  const x=m.get(key);x.share=(Math.round(x.share*100)+receipt.cashCents)/100;
 }const keys=[...m.keys()].sort();$('#moneyTrend').innerHTML=lineSVG([{name:'Оборот',values:keys.map(k=>({label:k,v:m.get(k).total}))},{name:'Касса компании',values:keys.map(k=>({label:k,v:m.get(k).share}))}]);renderDailyCash(rows);$('#moneyFlow').innerHTML=barsHTML([{key:'Общая сумма',value:k.total},{key:'З/Ч',value:k.parts},{key:'Чистый чек',value:k.cleanS},{key:'Мастер',value:k.masterS},{key:'Касса / сдача',value:k.share}]);const gm=group(rows.filter(r=>!isServiceMaster(r.master)),'master'),metric=$('#topMasterMetric')?.value||'share';for(const x of gm)x.rankValue=financeMetric(x,metric);$('#topMasters').innerHTML=barsHTML(gm,'rankValue',metric==='n'?integer:['margin','reviewRate','masterRate','revenueMargin','fixedShare'].includes(metric)?pct:money,15);$('#topCities').innerHTML=barsHTML(group(rows.map(r=>({...r,city:spbArea(r)})),'city',r=>num(r.total)));$('#topDirections').innerHTML=barsHTML(group(rows,'direction',r=>num(r.total)));bindBarsToFilter('topMasters','masterFilter','master');bindBarsToFilter('topDirections','dirFilter','direction');renderDrillBanner()}/* CRM_END:renderDashboard-40a515c112f2 */
 /* CRM_UNIT:renderPerformance-dc373758dc06 */
+function renderMasterMetrics(){
+ const day=today(), monday=new Date(day+'T12:00:00Z');
+ monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
+ const week=monday.toISOString().slice(0,10),month=day.slice(0,7)+'-01';
+ const period=$('#metricPeriod'),rank=$('#metricRank');
+ period.onchange=rank.onchange=renderMasterMetrics;
+ const start=period.value==='week'?week:month, user=currentUser(), personal=currentRole()==='dispatcher_logistic';
+ const masters=new Map(),names=new Map(),seen=new Set(),cohort=[],assigned=new Map();
+ let intake=0;
+ for(const r of state.orders){
+  if(r._duplicateOf||!r.orderId||seen.has(r.orderId))continue;
+  const parsed=parseDate(r.callDate);if(!parsed)continue;
+  const date=iso(parsed);if(date>day||date<(week<month?week:month))continue;
+  seen.add(r.orderId);
+  if(date===day&&(!personal||norm(orderDispatcherName(r))===norm(user.name)))intake++;
+  if(!r.master||isServiceMaster(r.master))continue;
+  if(!names.has(r.master))names.set(r.master,canonicalMasterSelection(r.master));
+  const name=names.get(r.master),key=canonicalKey(name,'master');
+  if(!masters.has(key))masters.set(key,{name,week:0,month:0,orders:0,done:0,good:0,checks:0,total:0,receipts:0,cents:0});
+  const m=masters.get(key);
+  if(date>=week)m.week++;
+  if(date>=month)m.month++;
+  if(date<start)continue;
+  cohort.push(r);assigned.set(r,m);m.orders++;
+  if(derivedStage(r)==='Выполнен'){
+   m.done++;if(truthReview(r.review))m.good++;
+   const amount=num(r.total);if(amount>0){m.total+=amount;m.checks++}
+  }
+ }
+ for(const receipt of collectRecordedCash(cohort,{basis:'callDate',cutoff:day})){
+  const m=assigned.get(receipt.order);m.receipts++;m.cents+=receipt.cashCents;
+ }
+ const rows=[...masters.values()].filter(m=>m.orders);
+ for(const m of rows){m.avg=m.checks?m.total/m.checks:null;m.cash=m.receipts?m.cents/100/m.receipts:null;m.reviews=m.done?100*m.good/m.done:null}
+ rows.sort((a,b)=>(b[rank.value]??-1)-(a[rank.value]??-1)||b.orders-a.orders||a.name.localeCompare(b.name,'ru'));
+ $('#intakeGoal').innerHTML='<strong>'+(personal?'Принято вами сегодня':'Принято сегодня командой')+': '+intake+' / 10</strong> <progress aria-label="Дневной ориентир" max="10" value="'+Math.min(intake,10)+'"></progress> '+(intake>=10?'Ориентир достигнут':'Осталось до цели: '+(10-intake));
+ $('#metricRows').innerHTML=rows.map((m,i)=>'<tr>'+[m[rank.value]==null?'—':i+1,esc(m.name),m.week,m.month,m.done,m.avg==null?'—':money(m.avg),m.cash==null?'—':money(m.cash),m.done?pct(m.reviews)+' ('+m.good+' из '+m.done+')':'—'].map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')||'<tr><td colspan="8">За выбранный период заказов с назначенным мастером пока нет.</td></tr>';
+}
 function renderPerformance(rows=filterRows()){const metric=$('#masterSortMetric')?.value||'share',masters=group(rows.filter(r=>!isServiceMaster(r.master)),'master');masters.sort((a,b)=>financeMetric(b,metric)-financeMetric(a,metric));const fixed=rows.filter(r=>r._schemeKnown&&r._fixedMaster),grid=rows.filter(r=>r._schemeKnown&&!r._fixedMaster),unknown=rows.filter(r=>!r._schemeKnown),good=rows.filter(r=>truthReview(r.review)),cards=[['Сетка 30–50',grid.length,grid.length?analyticsCashCents(grid)/100/grid.length:0],['Фикс 50+',fixed.length,fixed.length?analyticsCashCents(fixed)/100/fixed.length:0],['Схема не задана',unknown.length,unknown.length?analyticsCashCents(unknown)/100/unknown.length:0],['Хороший отзыв',good.length,rows.length?good.length/rows.length*100:0],['Касса всего',rows.length,analyticsCashCents(rows)/100]];$('#schemeSummary').innerHTML=cards.map((x,i)=>`<button type="button" class="scheme-card kpi-click" data-scheme-card="${i}"><span class="muted">${x[0]}</span><b>${i===3?pct(x[2]):i===4?money(x[2]):integer(x[1])}</b><div class="metric-note">${i<3?'касса/заказ '+money(x[2]):i===3?integer(x[1])+' заявок':'по выбранному периоду'}</div></button>`).join('');$$('[data-scheme-card]').forEach(b=>b.onclick=()=>{const i=+b.dataset.schemeCard;if(i===0)applySimpleDrill('grid','Сетка мастеров');else if(i===1)applySimpleDrill('fixed','Фикс-мастера');else if(i===2)applySimpleDrill('unknown','Схема не задана');else if(i===3)setDrill('review','','Хорошие отзывы');else if(i===4)setDrill('cash','','Касса всего');});$('#masterPerf').innerHTML=`<div class="table-wrap"><table class="table" style="min-width:1450px"><thead><tr><th>Мастер</th><th class="num">Заказы</th><th class="num">Фин.</th><th class="num">Заполнение</th><th class="num">Оборот</th><th class="num">Средний чек</th><th class="num">Медианный чек</th><th class="num">Мастеру</th><th class="num">Мастеру/заказ</th><th class="num">Мастеру %</th><th class="num">Касса</th><th class="num">Касса/заказ</th><th class="num">Касса % чистого</th><th class="num">Касса % оборота</th><th class="num">Хор. отзывы</th><th class="num">Фикс</th></tr></thead><tbody>${masters.slice(0,100).map(x=>`<tr class="clickable-row" tabindex="0" data-master-row="${esc(x.key)}"><td><b>${esc(x.key)}</b></td><td class="num">${x.n}</td><td class="num">${x.finN}</td><td class="num">${pct(financeMetric(x,'coverage'))}</td><td class="num">${money(x.total)}</td><td class="num">${money(financeMetric(x,'avg'))}</td><td class="num">${money(financeMetric(x,'median'))}</td><td class="num">${money(x.master)}</td><td class="num">${money(financeMetric(x,'avgMaster'))}</td><td class="num">${pct(financeMetric(x,'masterRate'))}</td><td class="num"><b>${money(x.share)}</b></td><td class="num">${money(financeMetric(x,'avgShare'))}</td><td class="num">${pct(financeMetric(x,'margin'))}</td><td class="num">${pct(financeMetric(x,'revenueMargin'))}</td><td class="num">${pct(financeMetric(x,'reviewRate'))}</td><td class="num">${pct(financeMetric(x,'fixedShare'))}</td></tr>`).join('')}</tbody></table></div>`;$$('[data-master-row]').forEach(tr=>{const go=()=>setCanonicalFilter('masterFilter',tr.dataset.masterRow,'Мастер: '+tr.dataset.masterRow);tr.onclick=go;tr.onkeydown=e=>{if(e.key==='Enter')go()}});const disp=group(rows,'dispatcher',r=>num(r.companyShare));$('#dispatcherPerf').innerHTML=barsHTML(disp,'share',money,12);bindBarsToFilter('dispatcherPerf','dispFilter','dispatcher');const buckets=[0,3000,5000,8000,12000,20000,40000,Infinity],names=['<3k','3–5k','5–8k','8–12k','12–20k','20–40k','40k+'];const fin=rows.filter(r=>numMaybe(r.total)!=null&&num(r.total)>0),bc=names.map((n,i)=>({key:n,value:fin.filter(r=>{const v=num(r.total);return v>=buckets[i]&&v<buckets[i+1]}).length}));$('#checkDist').innerHTML=barsHTML(bc,'value',integer,20);$('#leadTime').innerHTML=barsHTML(collectionsLag(rows),'value',integer,20);const days=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];$('#weekdayChart').innerHTML=barsHTML(days.map((d,i)=>({key:d,value:rows.filter(r=>orderDate(r)?.getUTCDay()===i).length})),'value',integer,20);const hours=[...Array(24)].map((_,h)=>({key:String(h).padStart(2,'0')+':00',value:rows.filter(r=>timeHour(r.callTime)===h).length}));$('#hourChart').innerHTML=barsHTML(hours,'value',integer,24);renderTeamPerformance(rows)}/* CRM_END:renderPerformance-dc373758dc06 */
 /* CRM_UNIT:setRange-7d4c663b6060 */
 function setRange(x,now=new Date()){const todayDate=new Date(now);todayDate.setHours(23,59,59,999);const dates=state.orders.map(r=>orderDate(r)).filter(d=>d&&d<=todayDate).sort((a,b)=>a-b);if(!dates.length)return;const max=dates.at(-1),min=dates[0];let from=min;if(x==='30')from=new Date(max.getTime()-29*86400000);if(x==='90')from=new Date(max.getTime()-89*86400000);if(x==='month')from=new Date(Date.UTC(max.getUTCFullYear(),max.getUTCMonth(),1));$('#fromDate').value=iso(from);$('#toDate').value=iso(max);refresh()}/* CRM_END:setRange-7d4c663b6060 */

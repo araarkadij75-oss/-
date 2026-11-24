@@ -5783,7 +5783,11 @@
         "renderPerformance-dc373758dc06": {
           "globals": [
             "Array",
+            "Date",
             "Infinity",
+            "Map",
+            "Math",
+            "Set",
             "String"
           ],
           "crossDomain": [
@@ -5804,8 +5808,32 @@
               "domain": "integrations"
             },
             {
+              "symbol": "canonicalKey",
+              "domain": "orders"
+            },
+            {
+              "symbol": "canonicalMasterSelection",
+              "domain": "staff"
+            },
+            {
               "symbol": "collectionsLag",
               "domain": "finance"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
+              "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentUser",
+              "domain": "staff"
+            },
+            {
+              "symbol": "derivedStage",
+              "domain": "orders"
             },
             {
               "symbol": "esc",
@@ -5824,11 +5852,19 @@
               "domain": "core"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isServiceMaster",
               "domain": "staff"
             },
             {
               "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "norm",
               "domain": "core"
             },
             {
@@ -5844,6 +5880,14 @@
               "domain": "orders"
             },
             {
+              "symbol": "orderDispatcherName",
+              "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
               "symbol": "pct",
               "domain": "core"
             },
@@ -5852,8 +5896,16 @@
               "domain": "orders"
             },
             {
+              "symbol": "state",
+              "domain": "core"
+            },
+            {
               "symbol": "timeHour",
               "domain": "orders"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             },
             {
               "symbol": "truthReview",
@@ -7892,6 +7944,10 @@
             {
               "symbol": "renderFinance",
               "domain": "finance"
+            },
+            {
+              "symbol": "renderMasterMetrics",
+              "domain": "analytics"
             },
             {
               "symbol": "renderMasterShifts",
@@ -14038,7 +14094,11 @@
         "renderPerformance-dc373758dc06": {
           "globals": [
             "Array",
+            "Date",
             "Infinity",
+            "Map",
+            "Math",
+            "Set",
             "String"
           ],
           "crossDomain": [
@@ -14059,8 +14119,32 @@
               "domain": "integrations"
             },
             {
+              "symbol": "canonicalKey",
+              "domain": "orders"
+            },
+            {
+              "symbol": "canonicalMasterSelection",
+              "domain": "staff"
+            },
+            {
               "symbol": "collectionsLag",
               "domain": "finance"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
+              "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentUser",
+              "domain": "staff"
+            },
+            {
+              "symbol": "derivedStage",
+              "domain": "orders"
             },
             {
               "symbol": "esc",
@@ -14079,11 +14163,19 @@
               "domain": "core"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isServiceMaster",
               "domain": "staff"
             },
             {
               "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "norm",
               "domain": "core"
             },
             {
@@ -14099,6 +14191,14 @@
               "domain": "orders"
             },
             {
+              "symbol": "orderDispatcherName",
+              "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
               "symbol": "pct",
               "domain": "core"
             },
@@ -14107,8 +14207,16 @@
               "domain": "orders"
             },
             {
+              "symbol": "state",
+              "domain": "core"
+            },
+            {
               "symbol": "timeHour",
               "domain": "orders"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             },
             {
               "symbol": "truthReview",
@@ -16125,6 +16233,10 @@
             {
               "symbol": "renderFinance",
               "domain": "finance"
+            },
+            {
+              "symbol": "renderMasterMetrics",
+              "domain": "analytics"
             },
             {
               "symbol": "renderMasterShifts",
@@ -21617,7 +21729,11 @@
         "renderPerformance-dc373758dc06": {
           "globals": [
             "Array",
+            "Date",
             "Infinity",
+            "Map",
+            "Math",
+            "Set",
             "String"
           ],
           "crossDomain": [
@@ -21638,8 +21754,32 @@
               "domain": "integrations"
             },
             {
+              "symbol": "canonicalKey",
+              "domain": "orders"
+            },
+            {
+              "symbol": "canonicalMasterSelection",
+              "domain": "staff"
+            },
+            {
               "symbol": "collectionsLag",
               "domain": "finance"
+            },
+            {
+              "symbol": "collectRecordedCash",
+              "domain": "finance"
+            },
+            {
+              "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentUser",
+              "domain": "staff"
+            },
+            {
+              "symbol": "derivedStage",
+              "domain": "orders"
             },
             {
               "symbol": "esc",
@@ -21658,11 +21798,19 @@
               "domain": "core"
             },
             {
+              "symbol": "iso",
+              "domain": "core"
+            },
+            {
               "symbol": "isServiceMaster",
               "domain": "staff"
             },
             {
               "symbol": "money",
+              "domain": "core"
+            },
+            {
+              "symbol": "norm",
               "domain": "core"
             },
             {
@@ -21678,6 +21826,14 @@
               "domain": "orders"
             },
             {
+              "symbol": "orderDispatcherName",
+              "domain": "orders"
+            },
+            {
+              "symbol": "parseDate",
+              "domain": "core"
+            },
+            {
               "symbol": "pct",
               "domain": "core"
             },
@@ -21686,8 +21842,16 @@
               "domain": "orders"
             },
             {
+              "symbol": "state",
+              "domain": "core"
+            },
+            {
               "symbol": "timeHour",
               "domain": "orders"
+            },
+            {
+              "symbol": "today",
+              "domain": "core"
             },
             {
               "symbol": "truthReview",
@@ -23623,6 +23787,10 @@
             {
               "symbol": "renderFinance",
               "domain": "finance"
+            },
+            {
+              "symbol": "renderMasterMetrics",
+              "domain": "analytics"
             },
             {
               "symbol": "renderMasterShifts",
