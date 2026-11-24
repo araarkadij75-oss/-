@@ -82,17 +82,22 @@ function own_pay_projection(array $actor,array $orders,array $reports,array $led
   if(!isset($days[$date]))$days[$date]=['date'=>$date,'cashCents'=>0,'earnedCents'=>$role==='master'?0:200000,'orderIds'=>[]];
   $closed=!empty($r['_cashClosedAt'])||!empty($r['_cashClosedOn'])||($r['_status']??'')==='Выполнен';
   $entries=$r['_cashReceipts']??[];
+  $refund=0;
+  if(!empty($r['_cashRefunds'])){
+   try{fin_check_order_refunds($r);}catch(InvalidArgumentException $e){$warnings['invalid_cash_refunds']=true;continue;}
+   foreach($r['_cashRefunds'] as $entry)if($entry['date']<=$cutoff)$refund+=$entry[$role==='master'?'masterCents':'companyCents'];
+  }
   if($role!=='master'&&$entries!==[]){
    try{fin_check_order_receipts($r);}catch(InvalidArgumentException $e){$warnings['invalid_cash_receipts']=true;continue;}
    $cash=0;foreach($entries as $entry)if($entry['date']<=$cutoff)$cash+=$entry['cents'];
-   if($cash>0){$days[$date]['cashCents']+=$cash;$days[$date]['orderIds'][]=$id;}
+   if($cash>0){$days[$date]['cashCents']+=($cash-$refund);$days[$date]['orderIds'][]=$id;}
    continue;
   }
   if(!$closed)continue;
   $cashDate=own_pay_cash_date($r);if($cashDate!==''&&($cashDate<$date||$cashDate>$cutoff)){if($cashDate<$date)$warnings['cash_before_intake']=true;continue;}
   try{$cash=own_pay_money($r[$role==='master'?'masterAmount':'companyShare']??0);}catch(InvalidArgumentException $e){$warnings['invalid_amount']=true;continue;}
   if($cash===0)continue;if($cashDate==='')$warnings['missing_cash_date']=true;
-  $days[$date]['cashCents']+=$cash;$days[$date]['orderIds'][]=$id;
+  $days[$date]['cashCents']+=($cash-$refund);$days[$date]['orderIds'][]=$id;
  }
  if($role==='master'){
   foreach($days as &$d){$d['earnedCents']=$d['cashCents'];unset($d['cashCents']);}unset($d);ksort($days);

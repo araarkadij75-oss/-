@@ -14,6 +14,23 @@
   }
   return !closed||total===cashCents;
  }
+ function refundFlows(order){
+  const refunds=order._cashRefunds;
+  if(!Array.isArray(refunds)||!refunds.length||refunds.length>100)return null;
+  const split=order._cashReceipts;
+  const receipts=Array.isArray(split)&&split.length?split:(order.closed&&validDate(order.cashDate)?[{date:order.cashDate,cents:order.cashCents}]:[]);
+  if(!receipts.length||!validReceipts(receipts,order.intakeDate,order.cashCents,order.closed))return null;
+  const net=new Map(receipts.map(r=>[r.date,r.cents])),ids=new Set();let masterRefunded=0;
+  for(const r of refunds){
+   if(!r||typeof r.id!=='string'||!r.id.trim()||ids.has(r.id)||!validDate(r.date)||r.date<order.intakeDate||!money(r.companyCents)||!money(r.masterCents)||(!r.companyCents&&!r.masterCents))return null;
+   ids.add(r.id);masterRefunded+=r.masterCents;
+   if(!Number.isSafeInteger(masterRefunded)||(money(order.masterCents)&&masterRefunded>order.masterCents))return null;
+   net.set(r.date,(net.get(r.date)||0)-r.companyCents);
+  }
+  const entries=[...net].sort(([a],[b])=>a.localeCompare(b)).map(([date,cents])=>({date,cents}));
+  let balance=0;for(const e of entries){balance+=e.cents;if(!money(balance))return null}
+  return entries;
+ }
  function calculate({orders=[],days=[],payments=[],cutoff,snapshotDate}={}){
   if(!validDate(cutoff))throw new Error('invalid_cutoff');
   const warnings=[],groups=new Map(),people=new Map(),seenOrders=new Map(),seenPayments=new Map();
@@ -27,9 +44,11 @@
    if(o.duplicateOf)continue;
    if(!validDate(o.intakeDate)){warn('missing_or_invalid_intake_date',id);continue}
    if(o.intakeDate>cutoff)continue;
-   const split=o._cashReceipts;
+   const refunds=o._cashRefunds!=null&&!(Array.isArray(o._cashRefunds)&&!o._cashRefunds.length);
+   const split=refunds?refundFlows(o):o._cashReceipts;
+   if(refunds&&!split){warn('invalid_cash_refunds',id);continue}
    if(split!=null&&!(Array.isArray(split)&&split.length===0)){
-    if(!validReceipts(split,o.intakeDate,o.cashCents,o.closed)){warn('invalid_cash_receipts',id);continue}
+    if(!refunds&&!validReceipts(split,o.intakeDate,o.cashCents,o.closed)){warn('invalid_cash_receipts',id);continue}
     const posted=split.filter(entry=>entry.date<=cutoff);
     if(!posted.length)continue;
     const g=group(o.person,o.intakeDate),total=posted.reduce((n,e)=>n+e.cents,0);
@@ -56,7 +75,7 @@
   const events=[],resultDays=[];
   for(const g of [...groups.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.person.localeCompare(b.person))){
    let cumulative=0,previous=200000;events.push({person:g.person,intakeDate:g.date,date:g.date,amountCents:200000,kind:'daily_minimum'});
-   for(const [date,cash] of [...g.receipts].sort((a,b)=>(a[0]||'9999').localeCompare(b[0]||'9999'))){cumulative+=cash;const next=entitlement(cumulative),increase=next-previous;if(increase>0)events.push({person:g.person,intakeDate:g.date,date,amountCents:increase,kind:date?'cash_increment':'undated_increment'});previous=next}
+   for(const [date,cash] of [...g.receipts].sort((a,b)=>(a[0]||'9999').localeCompare(b[0]||'9999'))){cumulative+=cash;const next=entitlement(cumulative),increase=next-previous;if(increase!==0)events.push({person:g.person,intakeDate:g.date,date,amountCents:increase,kind:increase<0?'cash_refund':date?'cash_increment':'undated_increment'});previous=next}
    const lateCashCents=[...g.receipts].reduce((sum,[date,cents])=>date>g.date?sum+cents:sum,0),undatedCashCents=g.receipts.get('')||0;
    g.entitlementCents=entitlement(g.cashCents);person(g.person).earnedCents+=g.entitlementCents;resultDays.push({person:g.person,date:g.date,lateCashCents,undatedCashCents,cashCents:g.cashCents,entitlementCents:g.entitlementCents,orderIds:g.orderIds.sort()});
   }
@@ -77,6 +96,7 @@
     if(!prior){events.push({person:b.person,intakeDate:d.date,date:d.date,amountCents:200000,kind:'daily_minimum'});earned=200000}
     const receipts=d.orderIds.flatMap(id=>{
      const o=ordersById.get(id);if(!o||o.person!==b.person||o.intakeDate!==d.date)return [];
+     if(Array.isArray(o._cashRefunds)&&o._cashRefunds.length)return (refundFlows(o)||[]).map(e=>({cashDate:e.date,cashCents:e.cents}));
      if(Array.isArray(o._cashReceipts)&&o._cashReceipts.length)return o._cashReceipts.map(e=>({cashDate:e.date,cashCents:e.cents}));
      return [o];
     }).filter(o=>validDate(o.cashDate)&&o.cashDate<=cutoff).sort((a,z)=>a.cashDate.localeCompare(z.cashDate));
@@ -85,7 +105,9 @@
     // reconciliation date. Only undated cash already credited seeds the replay.
     const knownBefore=receipts.filter(o=>o.cashDate<=b.date).reduce((s,o)=>s+o.cashCents,0);
     cash=prior?Math.max(0,prior.cashCents-knownBefore):0;
-    for(const o of receipts){cash+=o.cashCents;const next=entitlement(cash);if(next>earned)events.push({person:b.person,intakeDate:d.date,date:o.cashDate,amountCents:next-earned,kind:'cash_increment'});earned=Math.max(earned,next)}
+    const dated=new Map();for(const o of receipts)dated.set(o.cashDate,(dated.get(o.cashDate)||0)+o.cashCents);
+    const preBaselineCap=receipts.some(r=>r.cashDate<=b.date&&r.cashCents<0)?entitlement(cash+knownBefore):Infinity;
+    for(const [date,amount] of dated){cash+=amount;const next=Math.min(date<=b.date?preBaselineCap:Infinity,entitlement(cash));if(next>earned||(amount<0&&date>b.date&&next<earned)){events.push({person:b.person,intakeDate:d.date,date,amountCents:next-earned,kind:next<earned?'cash_refund':'cash_increment'});earned=next}}
     const target=d.entitlementCents??d.earnedCents;if(target!==earned)unallocated.push({person:b.person,intakeDate:d.date,date:'',amountCents:target-earned,kind:'baseline_difference'});
    }
   }
@@ -108,5 +130,5 @@
   for(const g of cycles){g.openingCents=balances.get(g.person)||0;g.accruedCents=g.ownCents+g.lateCents;g.balanceCents=g.openingCents+g.accruedCents-g.paidCents;balances.set(g.person,g.balanceCents);g.dueCents=Math.max(0,g.balanceCents);g.finished=g.end<=cutoff}
   return {cycles,unallocated};
  }
- root.PayrollIntakeAccounting={calculate,settlementSequence,validReceipts};
+ root.PayrollIntakeAccounting={calculate,settlementSequence,validReceipts,refundFlows};
 })(typeof window!=='undefined'?window:globalThis);

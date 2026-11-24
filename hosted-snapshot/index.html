@@ -987,6 +987,19 @@ function analyticsCashCents(rows){return collectRecordedCash(rows,{basis:$('#dat
 function collectRecordedCash(rows,{basis='callDate',cutoff=today(),from='',to=''}={}){
  const result=[],seen=new Set(),date=v=>{const d=parseDate(v||'');return d?iso(d):''};
  for(const r of rows||[]){const id=String(r.orderId||'').trim();if(!id||r._duplicateOf||seen.has(id))continue;seen.add(id);
+  if(r._cashRefunds!=null&&!(Array.isArray(r._cashRefunds)&&!r._cashRefunds.length)){
+   const intakeDate=date(r.callDate),cashDate=shiftCashRecordedDate(r);
+   const movements=window.PayrollIntakeAccounting.refundFlows({...r,intakeDate,cashDate,cashCents:Math.round(numMaybe(r.companyShare)*100),masterCents:Math.round(numMaybe(r.masterAmount)*100),closed:!!(derivedStage(r)==='Выполнен'||r._cashClosedAt||r._cashClosedOn)});
+   if(!movements)continue;
+   const posted=movements.filter(e=>e.date<=cutoff),selected=basis==='callDate'?intakeDate:date(r[basis]);
+   const inside=d=>d&&d<=cutoff&&(!from||d>=from)&&(!to||d<=to);
+   if(basis==='closeDate'){
+    for(const e of posted)if(inside(e.date))result.push({order:r,id,intakeDate,date:e.date,cashDate:e.date,receiptDate:e.date,cashCents:e.cents});
+   }else if(posted.length&&inside(selected)){
+    result.push({order:r,id,intakeDate,date:selected,cashDate,cashCents:posted.reduce((s,e)=>s+e.cents,0)});
+   }
+   continue;
+  }
   if (Array.isArray(r._cashReceipts) && r._cashReceipts.length) {
     const intakeDate=date(r.callDate), selectedDate=basis==='callDate'?intakeDate:date(r[basis]);
     const expected=Math.round(numMaybe(r.companyShare)*100), dates=new Set();
@@ -1582,7 +1595,7 @@ function payrollIntakeSnapshot(cutoff=today(),snapshotDate=today()){
  // A planned calendar date alone is not evidence of a worked day.
  for(const r of state.orders||[]){if(r._duplicateOf)continue;const date=iso(parseDate(r.callDate||'')),person=orderPayrollShift(r);if(date>=anchor&&date<=cutoff&&['sergey','artem'].includes(person))days.push({date,person})}
  for(const r of reports)if(r.date>=anchor&&r.date<=cutoff)days.push({date:r.date,person:payrollShiftKey(r)});
- const orders=(state.orders||[]).filter(r=>!r._duplicateOf).map(r=>({id:String(r.orderId||r._id||''),person:orderPayrollShift(r),intakeDate:iso(parseDate(r.callDate||'')),cashDate:shiftCashRecordedDate(r),cashCents:Math.round(num(r.companyShare)*100),_cashReceipts:r._cashReceipts,closed:payrollOrderCashRecorded(r),duplicateOf:r._duplicateOf||''})).filter(r=>r.intakeDate>=anchor&&r.intakeDate<=cutoff);
+ const orders=(state.orders||[]).filter(r=>!r._duplicateOf).map(r=>({id:String(r.orderId||r._id||''),person:orderPayrollShift(r),intakeDate:iso(parseDate(r.callDate||'')),cashDate:shiftCashRecordedDate(r),cashCents:Math.round(num(r.companyShare)*100),_cashRefunds:r._cashRefunds,masterCents:Math.round(num(r.masterAmount)*100),_cashReceipts:r._cashReceipts,closed:payrollOrderCashRecorded(r),duplicateOf:r._duplicateOf||''})).filter(r=>r.intakeDate>=anchor&&r.intakeDate<=cutoff);
  // Owner confirmed that all existing confirmed reports were paid. The cutover
  // is fixed: confirming a NEW report must never silently register a payment.
  const paidCutover='2026-11-02T10:59:27.607Z';

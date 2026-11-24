@@ -18,6 +18,19 @@ function hasRecordedCashSurrenderOn(r,date){return collectRecordedCash([r],{basi
 function collectRecordedCash(rows,{basis='callDate',cutoff=today(),from='',to=''}={}){
  const result=[],seen=new Set(),date=v=>{const d=parseDate(v||'');return d?iso(d):''};
  for(const r of rows||[]){const id=String(r.orderId||'').trim();if(!id||r._duplicateOf||seen.has(id))continue;seen.add(id);
+  if(r._cashRefunds!=null&&!(Array.isArray(r._cashRefunds)&&!r._cashRefunds.length)){
+   const intakeDate=date(r.callDate),cashDate=shiftCashRecordedDate(r);
+   const movements=window.PayrollIntakeAccounting.refundFlows({...r,intakeDate,cashDate,cashCents:Math.round(numMaybe(r.companyShare)*100),masterCents:Math.round(numMaybe(r.masterAmount)*100),closed:!!(derivedStage(r)==='Выполнен'||r._cashClosedAt||r._cashClosedOn)});
+   if(!movements)continue;
+   const posted=movements.filter(e=>e.date<=cutoff),selected=basis==='callDate'?intakeDate:date(r[basis]);
+   const inside=d=>d&&d<=cutoff&&(!from||d>=from)&&(!to||d<=to);
+   if(basis==='closeDate'){
+    for(const e of posted)if(inside(e.date))result.push({order:r,id,intakeDate,date:e.date,cashDate:e.date,receiptDate:e.date,cashCents:e.cents});
+   }else if(posted.length&&inside(selected)){
+    result.push({order:r,id,intakeDate,date:selected,cashDate,cashCents:posted.reduce((s,e)=>s+e.cents,0)});
+   }
+   continue;
+  }
   if (Array.isArray(r._cashReceipts) && r._cashReceipts.length) {
     const intakeDate=date(r.callDate), selectedDate=basis==='callDate'?intakeDate:date(r[basis]);
     const expected=Math.round(numMaybe(r.companyShare)*100), dates=new Set();

@@ -34,6 +34,7 @@ window.installMasterAIProfitBridge = (dependencies) => {
      const intake=dateOf(r.callDate),cash=shiftCashRecordedDate(r)||'',closed=derivedStage(r)==='Выполнен'||!!(r._cashClosedAt||r._cashClosedOn);
      const split=Array.isArray(r._cashReceipts)&&r._cashReceipts.length>0;
      const rawDates=split?r._cashReceipts.map(e=>e?.date||''):[cash];
+     if(Array.isArray(r._cashRefunds))rawDates.push(...r._cashRefunds.map(e=>e?.date||''));
      const dates=rawDates.filter(d=>d&&dateOf(d)===d&&(!intake||d>=intake));
      const row={intake,cash,person:orderPayrollShift(r),amount:numMaybe(r.companyShare),closed,split,dates,uncertainDate:(closed||split)&&dates.length!==rawDates.length};
      const id=String(r.orderId||r._id||'');
@@ -84,6 +85,7 @@ window.installMasterAIProfitBridge = (dependencies) => {
      const key=entry.person+'|'+entry.date;
      const day=salaryDays.get(key)||{date:entry.date,person:entry.person,amountCents:0,confirmed:entry.date<current};
      day.amountCents+=entry.amountCents;
+     if(entry.kind==='cash_refund')day.hasRefundAdjustment=true;
      if(scopes.some(s=>affectsEntry(s,entry)))day.confirmed=false;
      salaryDays.set(key,day);
     }

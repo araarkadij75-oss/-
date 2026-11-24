@@ -105,3 +105,26 @@ test('production profit clock rolls over at Moscow midnight and passes the obser
  assert.deepEqual(cutoffs,[['2026-10-21','2026-10-21'],['2026-10-20','2026-10-21']]);
  assert.equal(r.periodSections.today.to,'2026-10-21');
 });
+test('dated customer refunds reverse only company cash and only the excess above the original day floor',()=>{
+ const refund={id:'refund-1',date:'2026-10-20',companyCents:150000,masterCents:150000};
+ const row=order('refund-order','2026-10-19',22500,{callDate:'2026-10-19',masterAmount:2500,_cashRefunds:[refund]});
+ const m=model([row,row]);
+ const cutoff='2026-10-20';
+ const ledger=m.collectRecordedCash([row,row],{basis:'closeDate',cutoff});
+ assert.deepEqual(Array.from(ledger,e=>[e.date,e.cashCents]),[['2026-10-19',2250000],['2026-10-20',-150000]]);
+ assert.equal(m.collectRecordedCash([row],{basis:'callDate',cutoff:'2026-10-19'})[0].cashCents,2250000);
+ assert.equal(m.collectRecordedCash([row],{basis:'callDate',cutoff})[0].cashCents,2100000);
+ const snap=m.payrollIntakeSnapshot(cutoff,cutoff);
+ assert.equal(snap.days[0].entitlementCents,210000);
+ assert.equal(snap.events.find(e=>e.kind==='cash_refund').amountCents,-15000);
+ const account=m.ctx.window.PayrollIntakeAccounting;
+ const cycle=baseline=>account.settlementSequence({...snap,baselines:[{person:'sergey',date:baseline.date,days:[{date:'2026-10-19',cashCents:baseline.cash}]}]},{anchor:'2026-10-19',first:'sergey'}).cycles;
+ assert.equal(cycle({date:'2026-10-19',cash:2250000}).flatMap(c=>c.events).reduce((s,e)=>s+e.amountCents,0),-15000);
+ assert.equal(cycle({date:'2026-10-20',cash:2100000}).flatMap(c=>c.events).reduce((s,e)=>s+e.amountCents,0),0);
+ const api=m.ctx.window;
+ vm.runInContext(fs.readFileSync(new URL('hosted-snapshot/profit-accounting.js',root),'utf8'),m.ctx);
+ const profit=api.ProfitAccounting.calculate({from:cutoff,to:cutoff,orders:[{id:'o',date:cutoff,closed:true,cash:-1500}],salaries:[{person:'sergey',date:cutoff,amount:-150,hasRefundAdjustment:true,confirmed:true}]});
+ assert.equal(profit.profit,-1350);
+ assert.equal(account.refundFlows({...snap.orders[0],_cashRefunds:[refund,refund]}),null);
+ assert.equal(account.refundFlows({...snap.orders[0],_cashRefunds:[{...refund,companyCents:2300000}]}),null);
+});

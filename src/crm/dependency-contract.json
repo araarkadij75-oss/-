@@ -3138,7 +3138,8 @@
             "Math",
             "Number",
             "Set",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -8678,10 +8679,6 @@
               "domain": "ui"
             },
             {
-              "symbol": "today",
-              "domain": "core"
-            },
-            {
               "symbol": "uniqueShiftReports",
               "domain": "payroll"
             }
@@ -11780,7 +11777,8 @@
             "Math",
             "Number",
             "Set",
-            "String"
+            "String",
+            "window"
           ],
           "crossDomain": [
             {
@@ -16976,10 +16974,6 @@
               "domain": "ui"
             },
             {
-              "symbol": "today",
-              "domain": "core"
-            },
-            {
               "symbol": "uniqueShiftReports",
               "domain": "payroll"
             }
@@ -19874,7 +19868,8 @@
             "Number",
             "Set",
             "String",
-            "shiftCashRecordedDate"
+            "shiftCashRecordedDate",
+            "window"
           ],
           "crossDomain": [
             {
@@ -24497,10 +24492,6 @@
             {
               "symbol": "switchTab",
               "domain": "ui"
-            },
-            {
-              "symbol": "today",
-              "domain": "core"
             }
           ]
         },
