@@ -207,3 +207,16 @@ test('settlement baseline replaces pre-cutoff payments and preserves later recei
  const deps={state,window:{PayrollIntakeAccounting:globalThis.PayrollIntakeAccounting,MasterAICloud:{profile:{id:'owner'}}},today:()=> '2026-11-06',payrollSchedule:()=>({anchor:'2026-10-31'}),uniqueShiftReports:r=>r,payrollAccountingReport:()=>true,payrollShiftKey:r=>r.shift,orderPayrollShift:r=>r.dispatcher,iso,parseDate,shiftCashRecordedDate:r=>r.closeDate,num,payrollOrderCashRecorded:()=>true};
  const run=new Function(...Object.keys(deps),source+';return payrollIntakeSnapshot')(...Object.values(deps));const result=run();assert.equal(result.people[0].paidCents,210000);assert.equal(result.people[0].dueCents,40000);assert.equal(result.payments.length,2);assert.equal(result.baselines.length,1);
 });
+test('two-day share preview uses live intake cash for both days once, with private fields only for owner',()=>{
+ const s=fs.readFileSync(new URL('../src/crm/payroll/owner-dispatcher.js',import.meta.url),'utf8');
+ const fn=s.slice(s.indexOf('function shiftHistoryCycles('),s.indexOf('function previewShiftReport('));
+ const run=new Function('state','payrollSchedule','payrollScheduledShift','iso','parseDate','orderPayrollShift','payrollShiftKey','esc','money','shiftName',fn+';return shiftHistoryCycles')(
+  {orders:[{orderId:'a',callDate:'2026-11-02'},{orderId:'a',callDate:'2026-11-02'},{orderId:'b',callDate:'2026-11-03'}]},()=>({anchor:'2026-11-02',first:'artem'}),date=>['2026-11-02','2026-11-03'].includes(date)?'artem':'sergey',String,String,()=>'artem',r=>r.shift,String,String,String);
+ const reports=['02','03'].map(day=>({date:'2026-11-'+day,id:day,shift:'artem',orderIds:['overlap'],orders:1,deferredCash:0}));
+ const days=reports.map((r,i)=>({date:r.date,person:'artem',cashCents:i?4149000:2910000,lateCashCents:i?2381500:2535000,entitlementCents:i?414900:291000}));
+ const html=run(reports,{days},()=>''),text=html.match(/data-share-text="([^"]*)"/)[1];
+ assert.equal((html.match(/data-share-shift=/g)||[]).length,1);
+ assert.match(text,/Принято: 2 · Заказы в отчётах: 1 · Касса 70590 · из неё поздняя 49165 · начислено 7059/);
+ for(const d of days)assert.ok(text.includes(d.date+' · Принято: 1 · В отчёте: 1'));
+ assert.doesNotMatch(run(reports,null,()=>''),/начислено|поздняя/);
+});
