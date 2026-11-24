@@ -180,3 +180,26 @@ foreach([['expectedUpdatedAt'=>'old'],['companyShareCents'=>700000],['before'=>[
  try{fin_plan_receipts($order,array_replace($body,$stale),'2026-11-06');throw new RuntimeException('Stale split accepted');}catch(UnexpectedValueException $e){}
 }
 try{fin_plan_receipts($order,$body,'2026-11-05');throw new RuntimeException('Future receipt accepted');}catch(InvalidArgumentException $e){}
+function fin_expect_coverage_error(array $rows, array $stored, string $code): void {
+    try { fin_covered_expenses($rows,$stored); }
+    catch (UnexpectedValueException $e) { fin_check($e->getMessage()===$code,'Incorrect coverage error'); return; }
+    throw new RuntimeException('Expected '.$code);
+}
+$daily = array_replace($a,['externalId'=>'b2bhelp-day:2026-10-31','amountCents'=>1000]);
+$daily2 = array_replace($daily,['date'=>'2026-11-01','externalId'=>'b2bhelp-day:2026-11-01','amountCents'=>500]);
+$debit = array_replace($a,['externalId'=>'expense1','amountCents'=>1200]);
+$credit = array_replace($a,['externalId'=>'refund1','amountCents'=>200,'kind'=>'refund']);
+$covered = fin_covered_expenses([$debit,$credit,$debit],[$daily]);
+fin_check(count($covered)===2 && isset($covered[fin_id($debit)],$covered[fin_id($credit)]),'Duplicate and refund matched exactly once');
+fin_expect_coverage_error([$debit],[$daily],'expense_coverage_mismatch');
+fin_expect_coverage_error([array_replace($debit,['account'=>''])],[$daily],'expense_account_required');
+fin_check(fin_covered_expenses([array_replace($debit,['account'=>'another'])],[$daily])===[],'Independent account');
+fin_check(fin_covered_expenses([$debit],[array_replace($daily,['active'=>false])])===[],'Voided daily summary');
+$period = array_replace($a,['externalId'=>'stats1','amountCents'=>1500,'periodFrom'=>$daily['date'],'periodTo'=>$daily2['date'],'date'=>$daily2['date']]);
+fin_expect_coverage_error([$period],[$daily],'expense_partial_coverage');
+fin_check(count(fin_covered_expenses([$period],[$daily,$daily2]))===1,'Fully covered report');
+fin_expect_coverage_error([$debit,$credit,$period],[$daily,$daily2],'expense_partial_coverage');
+fin_check(fin_overlap($daily,$debit)&&fin_overlap($debit,$daily),'Cannot restore or add overlapping summaries');
+fin_check(!fin_overlap($daily,array_replace($debit,['date'=>'2026-10-30'])),'Uncovered date allowed');
+fin_reject(fn()=>fin_normalize(array_replace($daily,['account'=>''])),'Blank marker account');
+fin_reject(fn()=>fin_normalize(array_replace($daily,['date'=>'2026-10-30'])),'Daily marker date mismatch');

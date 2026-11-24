@@ -171,10 +171,71 @@ function fin_normalize(array $row): array {
         if ($normalized['periodFrom'] > $normalized['periodTo'] || $date !== $normalized['periodTo']) throw new InvalidArgumentException('invalid_period');
     }
     if (array_key_exists('statisticId', $row)) $normalized['statisticId'] = fin_text($row['statisticId'], 200);
+    if ($source === 'avito' && str_starts_with($normalized['externalId'], 'b2bhelp-day:') &&
+        (!fin_daily_summary($normalized) || $normalized['account'] === '' || $kind !== 'expense' || isset($normalized['periodFrom']))) throw new InvalidArgumentException('invalid_daily_summary');
     return $normalized;
 }
+function fin_daily_summary(array $row): bool {
+    return ($row['source'] ?? '') === 'avito' && ($row['externalId'] ?? '') === 'b2bhelp-day:' . $row['date'];
+}
+
+// Keep daily ledger entries authoritative. A matching detailed statement is a
+// verification; ambiguous or incomplete statements must not change the ledger.
+function fin_covered_expenses(array $rows, array $existing): array {
+    $days = [];
+    foreach ($existing as $prior) {
+        if (($prior['active'] ?? true) && fin_daily_summary($prior)) $days[$prior['account']][$prior['date']] = $prior['amountCents'];
+    }
+    if (!$days) return [];
+    $groups = [];
+    foreach ($rows as $row) {
+        if ($row['source'] !== 'avito' || fin_daily_summary($row)) continue;
+        $account = $row['account'];
+        $from = $row['periodFrom'] ?? $row['date'];
+        $to = $row['periodTo'] ?? $row['date'];
+        if ($account === '') {
+            foreach ($days as $calendar) foreach ($calendar as $date => $_) {
+                if ($date >= $from && $date <= $to) throw new UnexpectedValueException('expense_account_required');
+            }
+            continue;
+        }
+        $calendar = $days[$account] ?? [];
+        $coverage = array_filter($calendar, static fn($date) => $date >= $from && $date <= $to, ARRAY_FILTER_USE_KEY);
+        if (!$coverage) continue;
+        $length = (new DateTimeImmutable($from))->diff(new DateTimeImmutable($to))->days + 1;
+        if (count($coverage) !== $length) throw new UnexpectedValueException('expense_partial_coverage');
+        $key = $from . '|' . $to . '|' . (isset($row['periodFrom']) ? 'period' : 'day');
+        $id = fin_id($row);
+        if (isset($groups[$account][$key]['rows'][$id]) && $groups[$account][$key]['rows'][$id] !== $row) throw new UnexpectedValueException('expense_conflict');
+        $groups[$account][$key]['rows'][$id] = $row;
+        $groups[$account][$key]['days'] = $coverage;
+    }
+    $skip = [];
+    foreach ($groups as $sets) {
+        $used = [];
+        foreach ($sets as $group) {
+            if (array_intersect_key($used, $group['days'])) throw new UnexpectedValueException('expense_partial_coverage');
+            $used += $group['days'];
+            $net = 0;
+            foreach ($group['rows'] as $id => $row) {
+                $net += $row['kind'] === 'refund' ? -$row['amountCents'] : $row['amountCents'];
+                $skip[$id] = true;
+            }
+            if ($net !== array_sum($group['days'])) throw new UnexpectedValueException('expense_coverage_mismatch');
+        }
+    }
+    return $skip;
+}
 function fin_overlap(array $existing, array $row): bool {
-    if (($existing['active'] ?? true) === false || ($existing['source'] ?? '') !== 'avito' || ($row['source'] ?? '') !== 'avito' || ($existing['account'] ?? '') !== ($row['account'] ?? '')) return false;
+    if (($existing['active'] ?? true) === false || ($existing['source'] ?? '') !== 'avito' || ($row['source'] ?? '') !== 'avito') return false;
+    if (fin_daily_summary($existing) || fin_daily_summary($row)) {
+        $daily = fin_daily_summary($existing) ? $existing : $row;
+        $other = fin_daily_summary($existing) ? $row : $existing;
+        if ($daily['date'] < ($other['periodFrom'] ?? $other['date']) || $daily['date'] > ($other['periodTo'] ?? $other['date'])) return false;
+        if (($other['account'] ?? '') === '') throw new UnexpectedValueException('expense_account_required');
+        return $daily['account'] === $other['account'];
+    }
+    if (($existing['account'] ?? '') !== ($row['account'] ?? '')) return false;
     $ep = isset($existing['periodFrom'], $existing['periodTo']);
     $rp = isset($row['periodFrom'], $row['periodTo']);
     if (!$ep && !$rp) return false;
@@ -251,6 +312,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
         $inserted = 0;
         $duplicates = 0;
         $now = gmdate('c');
+        $covered = fin_covered_expenses($normalized, $existing);
         foreach ($normalized as $row) {
             $id = fin_id($row);
             if (isset($map[$id])) {
@@ -258,6 +320,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
                 $duplicates++;
                 continue;
             }
+            if (isset($covered[$id])) continue;
             foreach ($map as $prior) if (fin_overlap($prior, $row)) throw new UnexpectedValueException('expense_overlap');
             if (count($map) >= 20000) throw new LengthException('expense_capacity');
             $data = $row + ['id' => $id, 'active' => true, 'createdAt' => $now, 'updatedAt' => $now, 'createdBy' => $actor['uid'], 'updatedBy' => $actor['uid']];
@@ -278,7 +341,7 @@ function fin_mutate(PDO $pdo, array $actor, array $body): array {
         }
         if ($writes) tg_write_many($pdo, $writes, (string)$actor['uid'], 'owner', $op === 'import' ? 'finance_import' : 'finance_active_changed');
         $pdo->commit();
-        return ['ok' => true, 'inserted' => $inserted, 'duplicates' => $duplicates, 'expenses' => array_values($map)];
+        return ['ok' => true, 'inserted' => $inserted, 'covered' => count($covered), 'duplicates' => $duplicates, 'expenses' => array_values($map)];
     } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         throw $e;
@@ -513,7 +576,7 @@ try {
     tg_reply(200, fin_mutate($pdo, $actor, $body));
 } catch (InvalidArgumentException $e) { tg_reply(400, ['ok' => false, 'error' => $e->getMessage()]);
 } catch (DomainException $e) { tg_reply(403, ['ok' => false, 'error' => $e->getMessage()]);
-} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => in_array($e->getMessage(),['expense_overlap','payment_conflict','payment_reference_exists','order_changed_refresh'],true) ? $e->getMessage() : 'expense_conflict']);
+} catch (UnexpectedValueException $e) { tg_reply(409, ['ok' => false, 'error' => in_array($e->getMessage(),['expense_overlap','expense_account_required','expense_partial_coverage','expense_coverage_mismatch','payment_conflict','payment_reference_exists','order_changed_refresh'],true) ? $e->getMessage() : 'expense_conflict']);
 } catch (OutOfBoundsException $e) { tg_reply(404, ['ok' => false, 'error' => in_array($e->getMessage(),['order_not_found','payment_not_found'],true)?$e->getMessage():'expense_not_found']);
 } catch (LengthException $e) { tg_reply(413, ['ok' => false, 'error' => 'expense_capacity']);
 } catch (Throwable $e) { tg_reply(503, ['ok' => false, 'error' => 'finance_service_unavailable']); }
