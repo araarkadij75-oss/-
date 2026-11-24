@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.122-profit-period';
+const CACHE='eliteservice-18.17.123-order-refunds';
 const SHELL=[
   './',
   './index.html',
@@ -12,10 +12,10 @@ const SHELL=[
   './firestore-regru.js',
   './telegram-ui.js?v=20261031-telegram9',
   './avito-profit.js?v=20261031-profit2',
-  './profit-accounting.js?v=20261121-receipts1',
-  './profit-bridge.js?v=20261125-period1',
-  './payroll-intake-accounting.js?v=20261124-paycycle3',
-  './profit-ui.js?v=20261125-period1',
+  './profit-accounting.js?v=20261125-refunds1',
+  './profit-bridge.js?v=20261125-refunds1',
+  './payroll-intake-accounting.js?v=20261125-refunds1',
+  './profit-ui.js?v=20261125-refunds1',
   './own-payroll.js?v=order-links',
   './sheet-order-ui.js?v=1',
   './visual-refinement.css?v=20261124-cash-details',
