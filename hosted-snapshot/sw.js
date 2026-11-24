@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.119-cash-details';
+const CACHE='eliteservice-18.17.120-dispatcher-reload';
 const SHELL=[
   './',
   './index.html',
