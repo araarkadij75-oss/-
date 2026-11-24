@@ -55,12 +55,12 @@ function sheet_api(string $token,string $suffix,?array $body=null):array {
     return sheet_http('https://sheets.googleapis.com/v4/spreadsheets/'.ORDER_BOOK.$suffix,$body===null?null:json_encode($body,JSON_THROW_ON_ERROR),['Authorization: Bearer '.$token,'Content-Type: application/json']);
 }
 function sheet_snapshot(string $token):array {
-    $fields='sheets(properties(sheetId,title),developerMetadata(metadataKey,metadataValue,location(dimensionRange)))';
-    $book=sheet_api($token,'?fields='.rawurlencode($fields));
+    $fields='sheets(properties(sheetId,title),data(rowMetadata(developerMetadata(metadataKey,metadataValue,location(dimensionRange)))))';
+    $book=sheet_api($token,'?fields='.rawurlencode($fields) . '&ranges='.rawurlencode("'".ORDER_TAB."'!A:A"));
     foreach ($book['sheets']??[] as $tab) {
         if (($tab['properties']['title']??'')!==ORDER_TAB) continue;
         $sheetId=(int)$tab['properties']['sheetId']; $verified=[];
-        foreach ($tab['developerMetadata']??[] as $meta) {
+        foreach ($tab['data'][0]['rowMetadata']??[] as $dimension) foreach ($dimension['developerMetadata']??[] as $meta) {
             $range=$meta['location']['dimensionRange']??[];
             if (($meta['metadataKey']??'')!==ORDER_META_KEY || ($range['dimension']??'')!=='ROWS' || ($range['sheetId']??0)!==$sheetId) continue;
             $verified[$meta['metadataValue']][]=(int)($range['startIndex']??0)+1;
@@ -74,6 +74,13 @@ function sheet_snapshot(string $token):array {
 function sheet_values(string $token,string $range,string $render='UNFORMATTED_VALUE'):array {
     return sheet_api($token,'/values/'.rawurlencode("'".ORDER_TAB."'!".$range).'?valueRenderOption='.$render)['values']??[];
 }
+function sheet_matches_order(array $order,array $cells,array $row):bool {
+    foreach ([16=>'cleanCheck',18=>'masterAmount',19=>'companyShare'] as $column=>$key) {
+        $amount=sheet_order_amount($order[$key]??null);
+        if ($amount!==null) $cells[$column]=['userEnteredValue'=>['numberValue'=>$amount]];
+    }
+    return sheet_order_readback($cells,$row);
+}
 function sheet_id(mixed $value):string {
     if (!is_string($value) || !preg_match('/^[A-Za-z0-9._-]{1,128}$/D',$value)) throw new InvalidArgumentException('invalid_order_id');
     return $value;
@@ -83,7 +90,7 @@ function sheet_existing(array $order,array $verified,array $rows):?int {
     if (count($ids)>1) throw new UnexpectedValueException('sheet_row_conflict');
     if ($ids) {
         $actual=$rows[$ids[0]-1]??[];
-        if (!sheet_order_readback(sheet_order_cells($order,$rows),$actual)) throw new UnexpectedValueException('sheet_row_changed');
+        if (!sheet_matches_order($order,sheet_order_cells($order,$rows),$actual)) throw new UnexpectedValueException('sheet_row_changed');
         return $ids[0];
     }
     return sheet_order_find($order,$rows);
@@ -158,10 +165,11 @@ function sheet_dispatch(PDO $pdo,array $actor,array $input):array {
         $template=sheet_values($token,'A'.($index+1).':W'.($index+1),'FORMULA')[0]??[];
         foreach ([16,18,19] as $c) if (!str_starts_with((string)($template[$c]??''),'=')) throw new UnexpectedValueException('sheet_template_changed');
         $cells=sheet_order_cells($order,$rows);
+        if (!isset($cells[1],$cells[2])) throw new UnexpectedValueException('Укажите направление и город заказа.');
         sheet_api($token,':batchUpdate',['requests'=>sheet_insert_requests($id,$sheetId,$index,$cells,sheet_order_color((string)($order['_status']??'')))]);
         [, $confirmed,$after]=sheet_snapshot($token);
         $found=$confirmed[$id]??[];
-        if (count($found)!==1 || !sheet_order_readback($cells,$after[$found[0]-1]??[])) throw new UnexpectedValueException('sheet_readback_failed');
+        if (count($found)!==1 || !sheet_matches_order($order,$cells,$after[$found[0]-1]??[])) throw new UnexpectedValueException('sheet_readback_failed');
         return ['ok'=>true,'verified'=>true,'orderId'=>$id,'row'=>$found[0]];
     } finally { $q=$pdo->prepare('SELECT RELEASE_LOCK(?)'); $q->execute([$lock]); }
 }
@@ -183,4 +191,5 @@ try {
     $code=$e->getMessage();
     tg_reply(503,['ok'=>false,'error'=>in_array($code,['sheet_not_configured','sheet_access_unavailable','sheet_layout_changed','sheet_busy'],true)?$code:'sheet_service_unavailable']);
 }
+
 
