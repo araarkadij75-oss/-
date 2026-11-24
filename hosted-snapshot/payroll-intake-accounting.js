@@ -95,7 +95,14 @@
    if(!validPayment(p)||recordedPayments.has(String(p.id)))continue;
    recordedPayments.add(String(p.id));
    if(p.date>cutoff||p.kind==='settlement_baseline')continue;
-   const g=bucket(p.person,p.date);g.paidCents+=p.amountCents;g.payments.push(p);
+   // Show an actual payout at the latest scheduled settlement reached by its
+   // issue date. A receipt may accrue on the next shift, a payment already made
+   // must not appear as a deduction from that future shift.
+   let end=Date.parse(p.date+'T00:00:00Z');
+   while(end>=start&&(scheduled(end)!==p.person||scheduled(end+day)===p.person))end-=day;
+   // Before the first scheduled settlement, an advance belongs to the first cycle.
+   const g=bucket(p.person,end>=start?iso(end):p.date);
+   g.paidCents+=p.amountCents;g.payments.push(p);
   }
   const balances=new Map();const cycles=[...groups.values()].sort((a,b)=>a.end.localeCompare(b.end)||a.person.localeCompare(b.person));
   for(const g of cycles){g.openingCents=balances.get(g.person)||0;g.accruedCents=g.ownCents+g.lateCents;g.balanceCents=g.openingCents+g.accruedCents-g.paidCents;balances.set(g.person,g.balanceCents);g.dueCents=Math.max(0,g.balanceCents);g.finished=g.end<=cutoff}

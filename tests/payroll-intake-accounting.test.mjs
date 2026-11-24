@@ -15,6 +15,32 @@ test('cycle balance deducts the same valid unique payments as the employee ledge
  assert.equal(cycles[0].dueCents,snapshot.people[0].dueCents);
 });
 
+test('24 November payouts settle preceding shifts without paying the first day of the new cycle',()=>{
+ const days=[d('2026-11-20'),d('2026-11-21'),d('2026-11-24'),
+  {person:'artem',date:'2026-11-22'},{person:'artem',date:'2026-11-23'}];
+ const sergey=p('sergey-receipt','2026-11-24',400000);
+ const artem={...p('artem-receipt','2026-11-24',400000),person:'artem'};
+ const payments=[sergey,artem,{...artem}];
+ const result=calculate({cutoff:'2026-11-24',days,payments});
+ const {cycles}=globalThis.PayrollIntakeAccounting.settlementSequence({...result,payments},{anchor:'2026-11-20',first:'sergey'});
+ assert.deepEqual(cycles.map(c=>[c.person,c.end,c.paidCents,c.dueCents]),[
+  ['sergey','2026-11-21',400000,0],['artem','2026-11-23',400000,0],['sergey','2026-11-25',0,200000]
+ ]);
+ assert.deepEqual(cycles.flatMap(c=>c.payments),[sergey,artem]);
+ for(const person of result.people)assert.equal(cycles.filter(c=>c.person===person.person).at(-1).dueCents,person.dueCents);
+});
+
+test('a payment on a scheduled settlement belongs to that day; an initial advance is preserved',()=>{
+ const a=p('advance','2026-11-20',100000),b=p('settlement','2026-11-25',450000);
+ const payments=[a,b],days=['20','21','24','25'].map(n=>d('2026-11-'+n));
+ const r=calculate({days,payments,cutoff:'2026-11-25'});
+ const {cycles}=globalThis.PayrollIntakeAccounting.settlementSequence({...r,payments},{anchor:'2026-11-20',first:'sergey'});
+ assert.deepEqual(cycles.map(c=>[c.end,c.payments.map(p=>p.id)]),[
+  ['2026-11-21',['advance']],['2026-11-25',['settlement']]
+ ]);
+ assert.equal(cycles.at(-1).dueCents,r.people[0].dueCents);
+});
+
 test('partial settlement retains unpaid dated receipts before reconciliation and omitted days',()=>{
  const orders=[o('a','2026-10-21','2026-10-22',2924500),o('b','2026-10-21','2026-10-24',1100000),o('c','2026-10-30','2026-11-02',2837000)];
  const snapshot=calculate({orders,cutoff:'2026-11-06',payments:[p('credit','2026-11-03',292450)]});

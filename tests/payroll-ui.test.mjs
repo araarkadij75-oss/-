@@ -30,7 +30,7 @@ test('cycle details retain order actions and mark missing settlement date as unr
  assert.match(body,/<th>Принят<\/th><th>Сдан<\/th>/);
  assert.match(body,/o.cashDate\|\|'Нет даты'/);
  assert.match(body,/Ожидает подтверждённой сдачи/);
- assert.match(body,/остаток по отдельным циклам не распределяется/);
+ assert.match(body,/Текущий остаток показан за весь период/);
  assert.match(body,/p\.paidCents\/100/);
  assert.match(body,/p\.dueCents\/100/);
 });
@@ -40,8 +40,8 @@ function renderHarness(month='2026-10',person='all'){
  const script=ownerSource;
  const ast=parse(script,{ecmaVersion:'latest',sourceType:'module'});
  const functions=names.map(n=>{const node=ast.body.find(x=>x.type==='FunctionDeclaration'&&x.id.name===n);assert.ok(node,n);return script.slice(node.start,node.end)}).join('\n');
- const days=[{date:'2026-10-31',person:'sergey',cashCents:2500000,earnedCents:250000,orderIds:['late-order','undated-order']},{date:'2026-11-01',person:'sergey',cashCents:1500000,earnedCents:200000},{date:'2026-10-29',person:'artem',cashCents:3000000,earnedCents:300000,orderIds:['artem-order']}];
- const snapshot={cutoff:'2026-11-02',baselines:[],payments:[],events:[],days,people:[{person:'sergey',earnedCents:450000,paidCents:400000,dueCents:50000,overpaidCents:0},{person:'artem',earnedCents:300000,paidCents:350000,dueCents:0,overpaidCents:50000}],orders:[{id:'late-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-02',cashCents:2500000,closed:true},{id:'undated-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'',cashCents:100000,closed:true},{id:'invalid-receipt-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-10-30',cashCents:500000,closed:true},{id:'duplicate-order',duplicateOf:'late-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-02',cashCents:2500000,closed:true},{id:'artem-order',person:'artem',intakeDate:'2026-10-29',cashDate:'2026-10-29',cashCents:3000000,closed:true}],warnings:[]};
+ const days=[{date:'2026-10-31',person:'sergey',cashCents:2500000,earnedCents:250000,orderIds:['late-order','undated-order','split-order']},{date:'2026-11-01',person:'sergey',cashCents:1500000,earnedCents:200000},{date:'2026-10-29',person:'artem',cashCents:3000000,earnedCents:300000,orderIds:['artem-order']}];
+ const snapshot={cutoff:'2026-11-02',baselines:[],payments:[],events:[],days,people:[{person:'sergey',earnedCents:450000,paidCents:400000,dueCents:50000,overpaidCents:0},{person:'artem',earnedCents:300000,paidCents:350000,dueCents:0,overpaidCents:50000}],orders:[{id:'split-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-04',cashCents:1100000,closed:false,_cashReceipts:[{date:'2026-11-01',cents:700000},{date:'2026-11-04',cents:400000}]},{id:'late-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-02',cashCents:2500000,closed:true},{id:'undated-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'',cashCents:100000,closed:true},{id:'invalid-receipt-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-10-30',cashCents:500000,closed:true},{id:'duplicate-order',duplicateOf:'late-order',person:'sergey',intakeDate:'2026-10-31',cashDate:'2026-11-02',cashCents:2500000,closed:true},{id:'artem-order',person:'artem',intakeDate:'2026-10-29',cashDate:'2026-10-29',cashCents:3000000,closed:true}],warnings:[]};
  const nodes={};const before=JSON.stringify(snapshot);const context={state:{payrollPaymentsOwner:'owner',payrollPaymentsStatus:'loaded',payrollPayments:[]},window:{PayrollIntakeAccounting:globalThis.PayrollIntakeAccounting,MasterAICloud:{connected:true,profile:{id:'owner'}}},crypto:{randomUUID:()=> 'fixed-test-id'},$:id=>nodes[id]||(nodes[id]={value:id.includes('Month')?month:id.includes('Person')?person:'',innerHTML:'',insertAdjacentHTML(position,text){this.innerHTML=position==='afterbegin'?text+this.innerHTML:this.innerHTML+text},dataset:{},querySelectorAll:()=>[],querySelector:()=>({}),reportValidity:()=>true}),currentUser:()=>({role:'owner'}),ownerPreviewActive:()=>false,today:()=> '2026-11-02',payrollIntakeSnapshot:()=>snapshot,renderHistoricalPayroll(){},bindBackfill(){},payrollSchedule:()=>({anchor:'2026-10-31',first:'sergey'}),payrollScheduledShift:d=>['2026-10-31','2026-11-01'].includes(d)?'sergey':'artem',iso:d=>d.toISOString().slice(0,10),money:n=>Number(n).toFixed(2),integer:String,esc:String};
  vm.runInNewContext(functions+';renderDailyPayrollReconciliation();renderPayrollCycleRegister();renderPendingPayroll();',context);assert.equal(JSON.stringify(snapshot),before,'render must not change accounting data');return nodes;
 }
@@ -89,4 +89,12 @@ test('archive describes its real date range and never claims a current unfinishe
  assert.match(row('late-order'),/В кассе дня приёма/);
  assert.match(row('invalid-receipt-order'),/Ожидает подтверждённой сдачи/);
  assert.doesNotMatch(row('invalid-receipt-order'),/В кассе дня приёма|Касса учтена/);
+});
+
+test('payroll shows the overall balance first and only posted instalments at the cutoff',()=>{
+ const html=renderHarness('2026-10','sergey')['#payrollCycleRegisterTable'].innerHTML;
+ assert.ok(html.indexOf('Остаток к выплате за весь период')<html.indexOf('График выплат за месяц'));
+ assert.ok(html.indexOf('График выплат за месяц')<html.indexOf('Начисления и сдачи по заказам'));
+ const row=html.split('data-owner-shift-order="split-order"')[1].split('</tr>')[0];
+ assert.match(row,/2026-11-01 · 7000\.00/);assert.match(row,/В кассе дня приёма/);assert.doesNotMatch(row,/11000\.00|2026-11-04/);
 });
