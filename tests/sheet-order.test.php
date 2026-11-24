@@ -9,13 +9,14 @@ function check_sheet_send(bool $ok,string $message):void {
 $id='261124-001';
 $cells=[7=>['userEnteredValue'=>['stringValue'=>'=literal']],17=>['userEnteredValue'=>['numberValue'=>450]]];
 $requests=sheet_insert_requests($id,19,100,$cells,['red'=>1,'green'=>0.6,'blue'=>0]);
-check_sheet_send($requests[0]['insertDimension']['range']['startIndex']===100,'Insert before template');
-check_sheet_send($requests[1]['copyPaste']['source']['startRowIndex']===101,'Template has moved after insertion');
-check_sheet_send($requests[1]['copyPaste']['destination']['endColumnIndex']===23,'All 23 columns transfer');
-check_sheet_send($requests[2]['copyPaste']['pasteType']==='PASTE_DATA_VALIDATION','Keep dropdowns');
-check_sheet_send($requests[3]['repeatCell']['fields']==='userEnteredFormat.backgroundColor','Keep remaining format');
-check_sheet_send($requests[4]['updateCells']['rows'][0]['values'][0]===$cells[7],'Untrusted customer text stays literal');
-check_sheet_send($requests[5]['updateCells']['start']['columnIndex']===17,'No overwriting financial template next to R');
+check_sheet_send(count($requests)===5,'Only two format changes, two order fields and one marker');
+check_sheet_send($requests[0]['repeatCell']['range']['endColumnIndex']===12,'First color span stops before M');
+check_sheet_send($requests[1]['repeatCell']['range']['startColumnIndex']===13,'Second color span starts at N');
+check_sheet_send($requests[0]['repeatCell']['fields']==='userEnteredFormat.backgroundColor','Keep template formatting and validation');
+check_sheet_send($requests[2]['updateCells']['rows'][0]['values'][0]===$cells[7],'Untrusted customer text stays literal');
+check_sheet_send($requests[3]['updateCells']['start']['columnIndex']===17,'No overwriting financial template next to R');
+try { sheet_insert_requests($id,19,100,[12=>['userEnteredValue'=>['stringValue'=>'x']]]);throw new LogicException('Protected input accepted'); }
+catch (UnexpectedValueException $expected) {}
 $metadata=end($requests)['createDeveloperMetadata']['developerMetadata'];
 check_sheet_send($metadata['metadataValue']===$id && $metadata['location']['dimensionRange']['startIndex']===100,'Attach marker to actual row');
 check_sheet_send($metadata['metadataId']===sheet_metadata_id($id),'Retries use same atomic marker');
@@ -50,3 +51,4 @@ try {
     rmdir($web);rmdir($fixture);putenv('ELITESERVICE_SHEETS_CREDENTIALS');
 }
 echo "Sheet certificate issuance, isolation, and readback checks passed.\n";
+
