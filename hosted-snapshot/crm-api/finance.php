@@ -53,7 +53,15 @@ function fin_order_plan(array $order, array $input, array $policy, bool $fixed):
     $bonusOn = is_numeric($review) ? (float)$review != 0 : in_array($reviewKey, ['1','да','yes','true','+','есть','хороший','хорошо','получен','получили'], true);
     $savedAmounts = array_filter(['cleanCheck','masterAmount','companyShare'], static fn($k) => isset($order[$k]) && $order[$k] !== '');
     $manual = ($order['_autoFinance'] ?? null) === false || (!empty($savedAmounts) && ($order['_autoFinance'] ?? null) !== true);
-    if ($manual) {
+    // Imported blank orders may carry zero placeholders and a manual-mode flag.
+    $firstCheck = trim((string)($order['total'] ?? '')) === '' && empty($order['_cashReceipts']);
+    if ($firstCheck) {
+        foreach (['parts','cleanCheck','masterAmount','companyShare'] as $key) {
+            $stored = trim((string)($order[$key] ?? ''));
+            if ($stored !== '' && fin_order_money($stored) !== 0) { $firstCheck = false; break; }
+        }
+    }
+    if ($manual && !$firstCheck) {
         if ($total !== fin_order_money($order['total'] ?? '') || $parts !== fin_order_money(($order['parts'] ?? '') === '' ? '0' : $order['parts']) || (string)$review !== (string)($order['review'] ?? '') || (string)($input['master'] ?? '') !== (string)($order['master'] ?? '')) throw new DomainException('manual_finance_owner_required');
         if (count($savedAmounts) !== 3) throw new DomainException('manual_finance_incomplete');
         return [];
