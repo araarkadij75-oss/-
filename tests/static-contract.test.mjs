@@ -916,7 +916,7 @@ test('master and dispatcher name choices stay canonical across CRM roles and imp
     assert.match(html,/r\.master=canonicalMasterSelection\(r\.master\);r\.dispatcher=canonicalDispatcherSelection\(r\.dispatcher\);return r/);
     assert.ok(html.includes("canonicalMasterSelection(r.master)||'—'"));
     assert.ok(html.includes("canonicalDispatcherSelection(r.dispatcher)||'—'"));
-    assert.ok(html.includes('const next=canonicalMasterSelection(value)'));
+    assert.match(html,/const next\s*=\s*canonicalMasterSelection\(value\)/);
   }
 });
 

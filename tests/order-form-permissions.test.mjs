@@ -100,3 +100,41 @@ test('shift assignment control excludes terminal orders in current and legacy sn
   assert.equal(result.unassigned,2,file+'/'+name);assert.equal(result.cancelled,1);assert.equal(result.refused,1);
  }
 });
+
+test('owner inline assignment persists only the selected order and reports server failures', async () => {
+  const source = fs.readFileSync(new URL('../src/crm/orders/owner.js', import.meta.url), 'utf8');
+  const unit = source.split('/* CRM_UNIT:quickSetMaster-258c12e87798 */')[1].split('/* CRM_END:')[0];
+  const original = { _id: 9, orderId: '261124-001', master: '', total: 10000, closeDate: '' };
+  const state = { orders: [original], audit: [] };
+  const writes = [];
+  const messages = [];
+  let reject = true;
+  const context = {
+    state, SECURE_CLOUD_REQUIRED: true, can: () => true, ownerRolePreview: () => false,
+    currentRole: () => 'owner', currentUser: () => ({ id: 'u', name: 'Владелец' }),
+    isStaffOrderLocked: () => false, canonicalMasterSelection: value => value.trim(),
+    isReviewWorkflow: () => false, renderOrders() {}, renderDashboard() {}, refillFilters() {},
+    log: (...message) => state.audit.push(message), toast: message => messages.push(message),
+    dbWrite: () => assert.fail('inline edit must not sync the entire database'),
+    window: { MasterAICloud: { async saveOrderConfirmed(order, role) {
+      assert.equal(role, 'owner');
+      if (reject) throw new Error('offline');
+      writes.push(structuredClone(order));
+    } } },
+  };
+  vm.runInNewContext(unit, context);
+  assert.equal(await context.quickSetMaster('9', 'Мастер'), false);
+  assert.match(messages.at(-1), /не сохранено/);
+  assert.equal(state.orders[0], original);
+  assert.equal(state.audit.length, 0);
+  reject = false;
+  assert.equal(await context.quickSetMaster('9', 'Мастер'), true);
+  assert.equal(await context.quickSetMaster('9', 'Мастер'), true);
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0].master, 'Мастер');
+  assert.equal(writes[0].total, 10000);
+  assert.equal(state.orders[0].master, 'Мастер');
+  assert.equal(state.audit.length, 1);
+  assert.equal(await context.quickSetMaster('9', ''), true);
+  assert.equal(writes[1].master, '');
+});
