@@ -76,6 +76,14 @@ function sheet_http(string $url, ?string $body, array $headers): array {
     curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>22,CURLOPT_HTTPHEADER=>$headers]);
     if ($body!==null) curl_setopt_array($ch,[CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>$body]);
     $raw=curl_exec($ch); $status=curl_getinfo($ch,CURLINFO_HTTP_CODE); curl_close($ch);
+    if ($status===400 && str_ends_with($url,':batchUpdate') && is_string($raw)) {
+        $message=json_decode($raw,true)['error']['message']??'';
+        if (stripos($message,'protect')!==false) throw new UnexpectedValueException('Таблица запретила запись в защищённую область.');
+        if (stripos($message,'validation')!==false) throw new UnexpectedValueException('Значение заказа не прошло проверку ячейки исходной таблицы.');
+        if (preg_match('/requests\[(\d+)\]\.([a-zA-Z]+)/',$message,$match)) {
+            throw new UnexpectedValueException('Таблица отклонила операцию '.(int)$match[1].' ('.$match[2].').');
+        }
+    }
     if (!is_string($raw) || $status<200 || $status>=300) throw new RuntimeException(in_array($status,[401,403,404],true)?'sheet_access_unavailable':'sheet_service_unavailable');
     $result=json_decode($raw,true);
     if (!is_array($result)) throw new RuntimeException('sheet_service_unavailable');
@@ -152,15 +160,16 @@ function sheet_metadata_id(string $orderId):int {
 }
 function sheet_insert_requests(string $id,int $sheetId,int $index,array $cells,?array $color=null):array {
     $target=['sheetId'=>$sheetId,'startRowIndex'=>$index,'endRowIndex'=>$index+1,'startColumnIndex'=>0,'endColumnIndex'=>23];
-    $source=array_merge($target,['startRowIndex'=>$index+1,'endRowIndex'=>$index+2]);
     $dim=['sheetId'=>$sheetId,'dimension'=>'ROWS','startIndex'=>$index,'endIndex'=>$index+1];
-    $requests=[
-        ['insertDimension'=>['range'=>$dim,'inheritFromBefore'=>false]],
-        ['copyPaste'=>['source'=>$source,'destination'=>$target,'pasteType'=>'PASTE_NORMAL']],
-        ['copyPaste'=>['source'=>$source,'destination'=>$target,'pasteType'=>'PASTE_DATA_VALIDATION']]
-    ];
+    $requests=[];
+    // The existing row already owns native formats, validation and formulas.
+    // M (salary scheme) is protected by the owner; never write or format it.
+    if (isset($cells[12])) throw new UnexpectedValueException('Схему оплаты в защищённом столбце М нужно сверить владельцу.');
     if ($color!==null) {
-        $requests[]=['repeatCell'=>['range'=>$target,'cell'=>['userEnteredFormat'=>['backgroundColor'=>$color]],'fields'=>'userEnteredFormat.backgroundColor']];
+        foreach ([[0,12],[13,23]] as [$left,$right]) {
+            $range=array_replace($target,['startColumnIndex'=>$left,'endColumnIndex'=>$right]);
+            $requests[]=['repeatCell'=>['range'=>$range,'cell'=>['userEnteredFormat'=>['backgroundColor'=>$color]],'fields'=>'userEnteredFormat.backgroundColor']];
+        }
     }
     foreach ($cells as $column=>$value) {
         $requests[]=['updateCells'=>['start'=>['sheetId'=>$sheetId,'rowIndex'=>$index,'columnIndex'=>$column],'rows'=>[['values'=>[$value]]],'fields'=>'userEnteredValue']];
@@ -215,6 +224,13 @@ function sheet_dispatch(PDO $pdo,array $actor,array $input):array {
         if ($existing!==null) return ['ok'=>true,'verified'=>true,'orderId'=>$id,'row'=>$existing];
         $index=sheet_order_template_index($rows);
         $template=sheet_values($token,'A'.($index+1).':W'.($index+1),'FORMULA')[0]??[];
+        // Check the exact candidate again after selecting it; a person may have
+        // filled a row directly in Sheets since we took the workbook snapshot.
+        foreach ($template as $col=>$value) {
+            if (in_array($col,[1,2,16,18,19],true)) continue;
+            if (sheet_order_text($value)!=='') throw new UnexpectedValueException('Строка шаблона уже занята. Повторите проверку.');
+        }
+        if (!sheet_order_same($template[1]??'','ПК') || !sheet_order_same($template[2]??'','СПБ')) throw new UnexpectedValueException('sheet_template_changed');
         foreach ([16,18,19] as $c) if (!str_starts_with((string)($template[$c]??''),'=')) throw new UnexpectedValueException('sheet_template_changed');
         $cells=sheet_order_cells($order,$rows);
         if (!isset($cells[1],$cells[2])) throw new UnexpectedValueException('Укажите направление и город заказа.');
@@ -251,6 +267,7 @@ try {
     $code=$e->getMessage();
     tg_reply(503,['ok'=>false,'error'=>in_array($code,['sheet_not_configured','sheet_access_unavailable','sheet_layout_changed','sheet_busy'],true)?$code:'sheet_service_unavailable']);
 }
+
 
 
 
