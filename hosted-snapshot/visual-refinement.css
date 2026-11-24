@@ -1230,3 +1230,89 @@ body.role-no-money .orders-table-wrap .table th.finance-col { display:none!impor
 #cycleSharePreview h3 { margin: 0; font-size: 1.15rem; }
 #cycleSharePreview > div { display: flex; flex-wrap: wrap; gap: .45rem; }
 #cycleSharePreview [role="status"]:empty { margin: 0; }
+/* One navigation system for the owner, dispatcher and master workspaces. */
+.app nav.tabs {
+  --nav-work: #195184;
+  --nav-insights: #54388b;
+  --nav-pay: #176345;
+  --nav-check: #83451d;
+  --nav-admin: #40556b;
+  gap: .25rem;
+  padding: .35rem;
+  align-items: stretch;
+}
+html[data-atmosphere="space"] .app nav.tabs {
+  --nav-work: #a9d7ff;
+  --nav-insights: #d5c4ff;
+  --nav-pay: #a7e7cd;
+  --nav-check: #ffd5ae;
+  --nav-admin: #cbd9eb;
+}
+.app nav.tabs .tab[data-tab]:not([hidden]) {
+  --nav-icon-color: var(--nav-work);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.25rem;
+  padding: .36rem .62rem;
+  border-radius: .55rem;
+  white-space: normal;
+  line-height: 1.28;
+  letter-spacing: normal;
+}
+.app nav.tabs .tab[hidden] { display: none; }
+.app nav.tabs .tab:is([data-tab="dashboard"],[data-tab="performance"],[data-tab="mastermetrics"],[data-tab="reports"]):not([hidden]) {
+  --nav-icon-color: var(--nav-insights);
+}
+.app nav.tabs .tab:is([data-tab="mypayroll"],[data-tab="payrollcycles"],[data-tab="finance"],[data-tab="profit"]):not([hidden]) {
+  --nav-icon-color: var(--nav-pay);
+}
+.app nav.tabs .tab:is([data-tab="quality"],[data-tab="myquality"],[data-tab="diagnostics"],[data-tab="ai"]):not([hidden]) {
+  --nav-icon-color: var(--nav-check);
+}
+.app nav.tabs .tab:is([data-tab="settings"],[data-tab="import"]):not([hidden]) {
+  --nav-icon-color: var(--nav-admin);
+}
+.app nav.tabs .tab[data-tab]::before {
+  content: "";
+  flex: 0 0 1.05rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  background-color: var(--nav-icon-color);
+  mask: var(--nav-icon) center / contain no-repeat;
+}
+.app nav.tabs .tab.active[data-tab]::before { background-color: currentColor; }
+.app nav.tabs .tab:is(:hover,:focus-visible):not(.active) {
+  box-shadow: inset 0 -2px var(--nav-icon-color);
+}
+@media (pointer: coarse) {
+  .app nav.tabs .tab[data-tab]:not([hidden]) { min-height: 44px; }
+}
+@media (max-width: 600px) {
+  .app nav.tabs { gap: .2rem; }
+  .app nav.tabs .tab[data-tab]:not([hidden]) { padding-inline: .45rem; }
+}
+@media (forced-colors: active) {
+  .app nav.tabs .tab[data-tab]::before { forced-color-adjust: none; background-color: ButtonText; }
+  .app nav.tabs .tab.active[data-tab] { outline: 2px solid Highlight; }
+}
+.app nav.tabs [data-tab="orders"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M8%205H5v16h14V5h-3%20M9%203h6v4H9z%20M8%2012h8%20M8%2016h5%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="dashboard"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%204h7v7H3z%20M14%204h7v4h-7z%20M14%2012h7v8h-7z%20M3%2015h7v5H3z%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="performance"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%204v16h18%20M6%2015l4-5%204%202%206-7%20M16%205h4v4%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="mastermetrics"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%2013h5v7H3z%20M10%208h5v12h-5z%20M17%204h4v16h-4z%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="mastershifts"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M4%206h16v15H4z%20M8%203v6%20M16%203v6%20M4%2011h16%20M8%2015h2%20M14%2015h2%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="shiftclose"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M4%2013a8%208%200%201%201%206%207%20M12%206v6l3%202%20M3%2018l2%202%204-5%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="reports"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M5%203h11l3%203v15H5z%20M15%203v5h4%20M8%2016v-3%20M12%2016v-6%20M16%2016v-4%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="mypayroll"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%207h18v12H3z%20M3%2011h18%20M7%2015h3%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="payrollcycles"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%207h18v12H3z%20M3%2010h18%20M7%2014h3%20M14%2015l1%201%203-3%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="finance"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M4%206h14V3L4%206v14h17V8H4%20M16%2012h5v5h-5z%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="profit"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M4%206h14V3L4%206v14h17V8H4%20M16%2012h5v5h-5z%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="quality"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M12%202l8%203v6c0%205-4%208-8%2011-4-3-8-6-8-11V5z%20M8%2011l3%203%205-6%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="myquality"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M12%202l8%203v6c0%205-4%208-8%2011-4-3-8-6-8-11V5z%20M12%207v6%20M12%2016v.1%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="ai"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M5%205h14v14H5z%20M9%202v3%20M15%202v3%20M9%2019v3%20M15%2019v3%20M2%209h3%20M2%2015h3%20M19%209h3%20M19%2015h3%20M9%209h6v6H9z%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="diagnostics"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M2%2013h5l3-8%204%2014%203-7h5%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="import"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M6%203v12%20M3%2012l3%203%203-3%20M18%2021V9%20M15%2012l3-3%203%203%20M3%2020h8%20M13%204h8%22%2F%3E%3C%2Fsvg%3E"); }
+.app nav.tabs [data-tab="settings"] { --nav-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M3%206h8%20M15%206h6%20M3%2012h2%20M9%2012h12%20M3%2018h10%20M17%2018h4%20M11%204h4v4h-4z%20M5%2010h4v4H5z%20M13%2016h4v4h-4z%22%2F%3E%3C%2Fsvg%3E"); }
