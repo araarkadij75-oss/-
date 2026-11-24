@@ -4471,6 +4471,8 @@
       "file": "analytics/shared.js",
       "domain": "analytics",
       "symbols": [
+        "dailyIntakeCount",
+        "renderDispatcherIntakeMeter",
         "renderMasterMetrics",
         "renderPerformance"
       ],

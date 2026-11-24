@@ -46,6 +46,28 @@ for(const receipt of trendCash){
  const x=m.get(key);x.share=(Math.round(x.share*100)+receipt.cashCents)/100;
 }const keys=[...m.keys()].sort();$('#moneyTrend').innerHTML=lineSVG([{name:'Оборот',values:keys.map(k=>({label:k,v:m.get(k).total}))},{name:'Касса компании',values:keys.map(k=>({label:k,v:m.get(k).share}))}]);renderDailyCash(rows);$('#moneyFlow').innerHTML=barsHTML([{key:'Общая сумма',value:k.total},{key:'З/Ч',value:k.parts},{key:'Чистый чек',value:k.cleanS},{key:'Мастер',value:k.masterS},{key:'Касса / сдача',value:k.share}]);const gm=group(rows.filter(r=>!isServiceMaster(r.master)),'master'),metric=$('#topMasterMetric')?.value||'share';for(const x of gm)x.rankValue=financeMetric(x,metric);$('#topMasters').innerHTML=barsHTML(gm,'rankValue',metric==='n'?integer:['margin','reviewRate','masterRate','revenueMargin','fixedShare'].includes(metric)?pct:money,15);$('#topCities').innerHTML=barsHTML(group(rows.map(r=>({...r,city:spbArea(r)})),'city',r=>num(r.total)));$('#topDirections').innerHTML=barsHTML(group(rows,'direction',r=>num(r.total)));bindBarsToFilter('topMasters','masterFilter','master');bindBarsToFilter('topDirections','dirFilter','direction');renderDrillBanner()}/* CRM_END:renderDashboard-40a515c112f2 */
 /* CRM_UNIT:renderPerformance-dc373758dc06 */
+function dailyIntakeCount(day, dispatcherName){
+ const ids=new Set();
+ for(const order of state.orders){
+  if(!order.orderId||order._duplicateOf||iso(parseDate(order.callDate))!==day)continue;
+  if(dispatcherName&&norm(orderDispatcherName(order))!==norm(dispatcherName))continue;
+  ids.add(order.orderId);
+ }
+ return ids.size;
+}
+function renderDispatcherIntakeMeter(){
+ const meter=$('#dispatcherIntakeMeter');
+ if(!meter)return;
+ meter.hidden=currentRole()!=='dispatcher_logistic';
+ if(meter.hidden)return;
+ const count=dailyIntakeCount(today()),filled=Math.min(count,10);
+ meter.querySelector('strong').textContent=count+' / 10';
+ const bar=meter.querySelector('[role="progressbar"]');
+ bar.setAttribute('aria-valuenow',filled);
+ bar.setAttribute('aria-valuetext',count+' из 10');
+ bar.style.setProperty('--filled',filled*10+'%');
+ meter.querySelector('small').textContent=count>=10?'Цель достигнута':'До цели: '+(10-count);
+}
 function renderMasterMetrics(){
  const day=today(), monday=new Date(day+'T12:00:00Z');
  monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
@@ -54,13 +76,12 @@ function renderMasterMetrics(){
  period.onchange=rank.onchange=renderMasterMetrics;
  const start=period.value==='week'?week:month, user=currentUser(), personal=currentRole()==='dispatcher_logistic';
  const masters=new Map(),names=new Map(),seen=new Set(),cohort=[],assigned=new Map();
- let intake=0;
+ const intake=dailyIntakeCount(day,personal?user.name:null);
  for(const r of state.orders){
   if(r._duplicateOf||!r.orderId||seen.has(r.orderId))continue;
   const parsed=parseDate(r.callDate);if(!parsed)continue;
   const date=iso(parsed);if(date>day||date<(week<month?week:month))continue;
   seen.add(r.orderId);
-  if(date===day&&(!personal||norm(orderDispatcherName(r))===norm(user.name)))intake++;
   if(!r.master||isServiceMaster(r.master))continue;
   if(!names.has(r.master))names.set(r.master,canonicalMasterSelection(r.master));
   const name=names.get(r.master),key=canonicalKey(name,'master');

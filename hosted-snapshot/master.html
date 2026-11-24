@@ -938,6 +938,28 @@ for(const receipt of trendCash){
  if(!m.has(key))m.set(key,{total:0,clean:0,master:0,share:0});
  const x=m.get(key);x.share=(Math.round(x.share*100)+receipt.cashCents)/100;
 }const keys=[...m.keys()].sort();$('#moneyTrend').innerHTML=lineSVG([{name:'Оборот',values:keys.map(k=>({label:k,v:m.get(k).total}))},{name:'Касса компании',values:keys.map(k=>({label:k,v:m.get(k).share}))}]);renderDailyCash(rows);$('#moneyFlow').innerHTML=barsHTML([{key:'Общая сумма',value:k.total},{key:'З/Ч',value:k.parts},{key:'Чистый чек',value:k.cleanS},{key:'Мастер',value:k.masterS},{key:'Касса / сдача',value:k.share}]);const gm=group(rows.filter(r=>!isServiceMaster(r.master)),'master'),metric=$('#topMasterMetric')?.value||'share';for(const x of gm)x.rankValue=financeMetric(x,metric);$('#topMasters').innerHTML=barsHTML(gm,'rankValue',metric==='n'?integer:['margin','reviewRate','masterRate','revenueMargin','fixedShare'].includes(metric)?pct:money,15);$('#topCities').innerHTML=barsHTML(group(rows.map(r=>({...r,city:spbArea(r)})),'city',r=>num(r.total)));$('#topDirections').innerHTML=barsHTML(group(rows,'direction',r=>num(r.total)));bindBarsToFilter('topMasters','masterFilter','master');bindBarsToFilter('topDirections','dirFilter','direction');renderDrillBanner()}
+function dailyIntakeCount(day, dispatcherName){
+ const ids=new Set();
+ for(const order of state.orders){
+  if(!order.orderId||order._duplicateOf||iso(parseDate(order.callDate))!==day)continue;
+  if(dispatcherName&&norm(orderDispatcherName(order))!==norm(dispatcherName))continue;
+  ids.add(order.orderId);
+ }
+ return ids.size;
+}
+function renderDispatcherIntakeMeter(){
+ const meter=$('#dispatcherIntakeMeter');
+ if(!meter)return;
+ meter.hidden=currentRole()!=='dispatcher_logistic';
+ if(meter.hidden)return;
+ const count=dailyIntakeCount(today()),filled=Math.min(count,10);
+ meter.querySelector('strong').textContent=count+' / 10';
+ const bar=meter.querySelector('[role="progressbar"]');
+ bar.setAttribute('aria-valuenow',filled);
+ bar.setAttribute('aria-valuetext',count+' из 10');
+ bar.style.setProperty('--filled',filled*10+'%');
+ meter.querySelector('small').textContent=count>=10?'Цель достигнута':'До цели: '+(10-count);
+}
 function renderMasterMetrics(){
  const day=today(), monday=new Date(day+'T12:00:00Z');
  monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
@@ -946,13 +968,12 @@ function renderMasterMetrics(){
  period.onchange=rank.onchange=renderMasterMetrics;
  const start=period.value==='week'?week:month, user=currentUser(), personal=currentRole()==='dispatcher_logistic';
  const masters=new Map(),names=new Map(),seen=new Set(),cohort=[],assigned=new Map();
- let intake=0;
+ const intake=dailyIntakeCount(day,personal?user.name:null);
  for(const r of state.orders){
   if(r._duplicateOf||!r.orderId||seen.has(r.orderId))continue;
   const parsed=parseDate(r.callDate);if(!parsed)continue;
   const date=iso(parsed);if(date>day||date<(week<month?week:month))continue;
   seen.add(r.orderId);
-  if(date===day&&(!personal||norm(orderDispatcherName(r))===norm(user.name)))intake++;
   if(!r.master||isServiceMaster(r.master))continue;
   if(!names.has(r.master))names.set(r.master,canonicalMasterSelection(r.master));
   const name=names.get(r.master),key=canonicalKey(name,'master');
@@ -1071,7 +1092,7 @@ function refreshLiveQuality(){
  onNavigate:()=>{if(stillAllowed())switchTab(owner?'ai':'myquality')},openOrder:id=>{if(!stillAllowed())return;const row=state.orders.find(r=>String(r.orderId)===String(id));if(!row)return;if(staff&&(api.responsiblePerson(row)!==api.staffPerson(window.MasterAICloud.profile)||!api.inScope(row)||row._duplicateOf))return;openOrder(row)}});liveQualityMonitor.identityKey=key}
  liveQualityMonitor.refresh()
 }
-function refresh(){try{refreshLiveQuality()}catch(e){console.error('render quality monitor',e)};const tab=$('.tab.active')?.dataset.tab||'orders';const jobs=[['filters',refillFilters],['drill',renderDrillBanner]];const panels={orders:[['orders',renderOrders]],dashboard:[['dashboard',renderDashboard]],mastermetrics:[["master metrics",()=>renderMasterMetrics()]],performance:[['performance',()=>renderPerformance(filterRows())]],shiftclose:[['shifts',renderShiftClose]],mastershifts:[['master shifts',renderMasterShifts],['team performance',()=>renderTeamPerformance(filterRows())]],reports:[['reports',renderShiftReports]],quality:[['quality',renderQuality]],ai:[['ai',renderAI]],finance:[['finance',()=>renderFinance()]],settings:[['settings',renderSettings]],import:[['schema',renderSchema]],diagnostics:[['colors',renderColorAudit]]};jobs.push(...(panels[tab]||[]));for(const [name,fn] of jobs)try{fn()}catch(e){console.error('render '+name,e)}}
+function refresh(){try{refreshLiveQuality()}catch(e){console.error('render quality monitor',e)};const tab=$('.tab.active')?.dataset.tab||'orders';const jobs=[['filters',refillFilters],['drill',renderDrillBanner]];const panels={orders:[['orders',renderOrders]],dashboard:[['dashboard',renderDashboard]],mastermetrics:[["master metrics",()=>renderMasterMetrics()]],performance:[['performance',()=>renderPerformance(filterRows())]],shiftclose:[['shifts',renderShiftClose]],mastershifts:[['master shifts',renderMasterShifts],['team performance',()=>renderTeamPerformance(filterRows())]],reports:[['reports',renderShiftReports]],quality:[['quality',renderQuality]],ai:[['ai',renderAI]],finance:[['finance',()=>renderFinance()]],settings:[['settings',renderSettings]],import:[['schema',renderSchema]],diagnostics:[['colors',renderColorAudit]]};if($('#dispatcherIntakeMeter'))jobs.push(['intake meter',()=>renderDispatcherIntakeMeter()]);jobs.push(...(panels[tab]||[]));for(const [name,fn] of jobs)try{fn()}catch(e){console.error('render '+name,e)}}
 function autoStatusFromVisit(){const vd=parseDate($('#f_visitDate').value),td=parseDate(today()),cur=$('#f_status').value;if(vd&&td&&vd>td&&(cur==='В работе'||!cur)){$('#f_status').value='Будущая дата';syncStatusPalette()}else if(vd&&td&&vd<=td&&cur==='Будущая дата'){$('#f_status').value='В работе';syncStatusPalette()}}
 
 function wireLabels(){$$('.field').forEach(f=>{const l=f.querySelector('label'),e=f.querySelector('input[id],select[id],textarea[id]');if(l&&e&&!l.htmlFor)l.htmlFor=e.id})}

@@ -17,7 +17,7 @@ function refreshHarness(role, {tab = 'orders', failing = ''} = {}) {
   const calls = [], errors = [];
   const context = {
     console: {error: (...args) => errors.push(args)},
-    $: () => ({dataset: {tab}}),
+    $: selector => selector === '.tab.active' ? {dataset: {tab}} : null,
     filterRows: () => [],
     refreshLiveQuality() {
       calls.push('qualityMonitor');
