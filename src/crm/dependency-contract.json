@@ -5809,6 +5809,7 @@
             "Infinity",
             "Map",
             "Math",
+            "Object",
             "Set",
             "String"
           ],
@@ -14141,6 +14142,7 @@
             "Infinity",
             "Map",
             "Math",
+            "Object",
             "Set",
             "String"
           ],
@@ -21780,6 +21782,7 @@
             "Infinity",
             "Map",
             "Math",
+            "Object",
             "Set",
             "String"
           ],
