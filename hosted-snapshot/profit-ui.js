@@ -67,12 +67,13 @@
     });
     $('#profitPeriodBody').innerHTML = html.join('');
     const notes = [];
+    if (result.basis === 'intake' && sections.completed) notes.push('Строка завершённых дней показывает состояние на конец периода. В верхних карточках также учтены более поздние сдачи по тем же заказам.');
     if (sections.today) {
       notes.push('За сегодня показаны текущие начисления и внесённые расходы. Итог изменится при новых сдачах или добавлении расходов.');
       if (sections.today.ads === 0) notes.push('Чистый расход на рекламу за сегодня в реестре равен нулю. Полноту данных нужно сверить с отчётом рекламного кабинета.');
     }
     if (rows.length > 1 && fields.some(key => rows.reduce((sum, [part]) => sum + Math.round(part[key] * 100), 0) !== Math.round(result[key] * 100))) {
-      notes.push('Сумма строк отличается от общего итога. В расшифровке указаны операции, которые нельзя распределить между частями периода.');
+      if (result.basis !== 'intake') notes.push('Сумма строк отличается от общего итога. В расшифровке указаны операции, которые нельзя распределить между частями периода.');
     }
     $('#profitPeriodHint').textContent = notes.join(' ');
     $('#profitPeriodHint').hidden = !notes.length;
