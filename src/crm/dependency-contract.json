@@ -3041,7 +3041,9 @@
           ]
         },
         "renderOrders-e4044ce1a8b6": {
-          "globals": [],
+          "globals": [
+            "window"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -11681,7 +11683,9 @@
           ]
         },
         "renderOrders-4a614bc9b2fb": {
-          "globals": [],
+          "globals": [
+            "window"
+          ],
           "crossDomain": [
             {
               "symbol": "$",

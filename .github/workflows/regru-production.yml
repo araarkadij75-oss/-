@@ -62,6 +62,8 @@ jobs:
           php -l hosted-snapshot/crm-api/finance.php
           php -l hosted-snapshot/crm-api/own-payroll.php
           php tests/own-payroll.test.php
+          php tests/sheet-order.test.php
+          php tests/sheet-order-map.test.php
           php tests/finance-api.test.php
           php -n tests/telegram-transport.test.php
       - run: npm run gate:static

@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.120-dispatcher-reload';
+const CACHE='eliteservice-18.17.121-sheet-orders';
 const SHELL=[
   './',
   './index.html',
@@ -17,6 +17,7 @@ const SHELL=[
   './payroll-intake-accounting.js?v=20261124-paycycle3',
   './profit-ui.js?v=20261124-expenses1',
   './own-payroll.js?v=order-links',
+  './sheet-order-ui.js?v=1',
   './visual-refinement.css?v=20261124-cash-details',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
   './quality-monitor.js?v=20261124-refund1',
