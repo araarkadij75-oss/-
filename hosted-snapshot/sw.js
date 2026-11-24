@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.121-sheet-orders';
+const CACHE='eliteservice-18.17.122-profit-period';
 const SHELL=[
   './',
   './index.html',
@@ -13,9 +13,9 @@ const SHELL=[
   './telegram-ui.js?v=20261031-telegram9',
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261121-receipts1',
-  './profit-bridge.js?v=20261121-receipts1',
+  './profit-bridge.js?v=20261125-period1',
   './payroll-intake-accounting.js?v=20261124-paycycle3',
-  './profit-ui.js?v=20261124-expenses1',
+  './profit-ui.js?v=20261125-period1',
   './own-payroll.js?v=order-links',
   './sheet-order-ui.js?v=1',
   './visual-refinement.css?v=20261124-cash-details',
