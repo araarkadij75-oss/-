@@ -43,6 +43,15 @@ function quality_who(array $r): string {
     $value = trim((string)($r['approvedForName'] ?? $r['shiftName'] ?? $r['dispatcher'] ?? ''));
     return match($value) {'Сергей','сергей','СЕРГЕЙ','Смена Сергея'=>'sergey','Артём','Артем','артём','артем','АРТЁМ','АРТЕМ','Смена Артёма','Смена Артема'=>'artem',default=>$value};
 }
+function quality_confirmed_refund(array $order): float {
+    $receipt = $order['_sourceReconciliation'] ?? null;
+    if (!is_array($receipt) || empty($receipt['actorUid']) || empty($receipt['appliedAt']) ||
+        (int)($receipt['sourceRow'] ?? 0) <= 0 || !preg_match('/^[0-9a-f]{32}$/D', (string)($receipt['auditId'] ?? ''))) return 0;
+    if (quality_number($order['companyShare'] ?? null) !== 0.0) return 0;
+    $pattern = '/ · ВОЗВРАТ\. Владелец подтвердил (\d{2}\.\d{2}\.\d{4}) полный возврат ([\d\s]+(?:[.,]\d{1,2})?) ₽; остаток кассы заказа 0 ₽\.$/uD';
+    if (!preg_match($pattern, trim((string)($receipt['sourceSpreadsheet'] ?? '')), $match) || !quality_date($match[1])) return 0;
+    return quality_number($match[2]) ?? 0;
+}
 function quality_scope_start(?string $now=null): string {return (new DateTimeImmutable($now??'now'))->setTimezone(new DateTimeZone('Europe/Moscow'))->modify('-14 days')->format('Y-m-d');}
 function quality_in_scope(array $r,string $scopeStart): bool {
     $date=quality_date($r['callDate']??'')?:quality_date($r['_createdAt']??'')?:quality_date($r['visitDate']??'');
@@ -78,7 +87,7 @@ function quality_analyze(array $orders, array $reports, ?string $now=null): arra
             if(trim((string)($r['companyShare']??''))==='')$add('closed_cash',$id);
         }
         $n=[];foreach(['total','parts','masterAmount','companyShare'] as $field){$n[$field]=quality_number($r[$field]??null);if(trim((string)($r[$field]??''))!==''&&$n[$field]===null)$add('invalid_'.$field,$id,'error');}
-        if($n['total']!==null&&$n['masterAmount']!==null&&$n['companyShare']!==null&&($n['parts']!==null||trim((string)($r['parts']??''))==='')&&abs($n['masterAmount']+$n['companyShare']-($n['total']-($n['parts']??0)))>1)$add('finance_mismatch',$id,'error');
+        if($n['total']!==null&&$n['masterAmount']!==null&&$n['companyShare']!==null&&($n['parts']!==null||trim((string)($r['parts']??''))==='')&&abs($n['masterAmount']+$n['companyShare']+quality_confirmed_refund($r)-($n['total']-($n['parts']??0)))>1)$add('finance_mismatch',$id,'error');
     }
     usort($reports,static fn($a,$b)=>strcmp((string)($a['closedAt']??''),(string)($b['closedAt']??'')));$unique=[];
     $priority=static fn($r)=>empty($r['closureOnly'])&&empty($r['draft'])&&(!empty($r['ownerConfirmed'])||!empty($r['dataHash']))?1:0;

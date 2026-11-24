@@ -102,7 +102,7 @@ test('cancelled and refused orders never require a master assignment',()=>{
  }
 });
 
- test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261106-quality5"));assert.ok(!source.includes("20261101-quality2"));}});
+ test("quality module import and service worker share the scope-aware cache key",()=>{for(const file of ["src/crm/bootstrap/shared.js","hosted-snapshot/sw.js"]){const source=fs.readFileSync(file,"utf8");assert.ok(source.includes("quality-monitor.js?v=20261124-refund1"));assert.ok(!source.includes("20261101-quality2"));}});
 
 test('rolling scope advances at Moscow midnight, retains boundary, future and unknown dates',()=>{
  const rows=[order({orderId:'old',callDate:'2026-10-22'}),order({orderId:'boundary',callDate:'2026-10-23'}),order({orderId:'future',callDate:'2027-01-01'}),order({orderId:'unknown',callDate:'',visitDate:''})];
@@ -135,4 +135,11 @@ test('dispatcher integration uses authenticated identity, strips amounts and rec
  const ctx={state,window:{MasterAICloud:cloud,MasterAIQualityMonitor:api},navigator:{onLine:true},$,ownerPreviewActive:()=>preview,openOrder:r=>opened.push(r.orderId),switchTab(){},liveQualityMonitor:null};vm.createContext(ctx);vm.runInContext(code+';globalThis.run=refreshLiveQuality',ctx);ctx.run();assert.equal(options.getServerStatus,undefined);assert.ok(options.getSnapshot().orders.every(r=>r.orderId==='S'&&!('companyShare' in r)));options.openOrder('A');options.openOrder('S');assert.deepEqual(opened,['S']);state.orders[0].dispatcher='Артём';options.openOrder('S');assert.deepEqual(opened,['S']);
  const stale=options;cloud.profile={id:'a',uid:'uid-a',role:'dispatcher_logistic',name:'Артём',shift:'artem'};state.session.user={id:'a',role:'dispatcher_logistic'};assert.equal(stale.getSnapshot().orders.length,0);stale.openOrder('A');assert.deepEqual(opened,['S']);ctx.run();assert.equal(destroyed,1);assert.ok(options.getSnapshot().orders.every(r=>r.dispatcher==='Артём'));
  cloud.profile={id:'owner',uid:'uid-owner',role:'owner'};state.session.user={id:'owner',role:'owner'};preview=true;ctx.run();assert.equal(destroyed,2);assert.equal($('#myQualityPanel').hidden,true);
+});
+test('owner-confirmed full refund reconciles only the documented cash difference',()=>{
+ const receipt={auditId:'a'.repeat(32),sourceRow:1968,actorUid:'owner',appliedAt:'2026-11-24T16:24:09+03:00',sourceSpreadsheet:'Текущие заказы ВСЕ · Лист1 · ВОЗВРАТ. Владелец подтвердил 24.11.2026 полный возврат 2 100 ₽; остаток кассы заказа 0 ₽.'};
+ const sample=order({total:3000,parts:'',masterAmount:900,companyShare:'0',_sourceReconciliation:receipt});
+ const mismatch=o=>analyze({orders:[o]}).issues.some(x=>x.code==='finance_mismatch');
+ assert.equal(mismatch(sample),false);
+ for(const change of [{masterAmount:950},{companyShare:50},{_sourceReconciliation:null},{_sourceReconciliation:{...receipt,sourceSpreadsheet:'ВОЗВРАТ'}},{_sourceReconciliation:{...receipt,actorUid:''}}])assert.equal(mismatch({...sample,...change}),true);
 });
