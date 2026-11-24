@@ -1064,3 +1064,17 @@ body.role-no-money .orders-table-wrap .table th.finance-col { display:none!impor
  .app .quality-monitor-item .btn { min-width:0; }
  .app .quality-monitor-filter { width:100%!important; margin-right:0; }
 }
+
+/* Keep order status visible across workspace themes. */
+#orderBody .status-yellow, .app .mobile-order-card.status-yellow { --status-surface:#ffe5a2; --status-edge:#9b6000; }
+#orderBody .status-blue, .app .mobile-order-card.status-blue { --status-surface:#cfe2ff; --status-edge:#225eab; }
+#orderBody .status-gray, .app .mobile-order-card.status-gray { --status-surface:#dde3ec; --status-edge:#525f74; }
+#orderBody .status-purple, .app .mobile-order-card.status-purple { --status-surface:#e7d7fa; --status-edge:#7543a1; }
+#orderBody .status-green, .app .mobile-order-card.status-green { --status-surface:#c9ecd9; --status-edge:#227249; }
+#orderBody .status-red, .app .mobile-order-card.status-red { --status-surface:#ffd6da; --status-edge:#af293e; }
+#orderBody .status-orange, .app .mobile-order-card.status-orange { --status-surface:#ffdfbf; --status-edge:#a34e12; }
+#orderBody tr.order-status-row:not(.selected-row)[class*="status-"]:not(.status-neutral) > td { background:var(--status-surface)!important; }
+#orderBody tr.order-status-row > td:first-child { box-shadow:inset 4px 0 var(--status-edge,transparent); }
+#orderBody .status-pill[class*="status-"] { color:var(--status-edge); border:1px solid currentColor; background:#fff!important; font-weight:700; }
+#orderBody tr:focus-within > td, #orderBody tr.selected-row > td { border-block-color:var(--material-accent,#245c91)!important; }
+.app .mobile-order-card:not(.selected-card):not(.status-neutral)[class*="status-"] { background:var(--status-surface)!important; border-inline-start:4px solid var(--status-edge)!important; }
