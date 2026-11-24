@@ -6801,6 +6801,11 @@
     }
   },
   "externalModules": {
+    "sheet-order-ui.js": {
+      "source": "hosted-snapshot/sheet-order-ui.js",
+      "domain": "integrations",
+      "build": "standalone"
+    },
     "telegram-ui.js": {
       "source": "hosted-snapshot/telegram-ui.js",
       "domain": "integrations",

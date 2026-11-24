@@ -1329,3 +1329,10 @@ html[data-atmosphere="space"] .app nav.tabs {
 .metric-ledger ul{list-style:none;padding:0;margin:.2rem 0;max-height:13rem;overflow:auto}
 .metric-ledger li{display:flex;gap:.55rem;justify-content:space-between;white-space:nowrap;font-variant-numeric:tabular-nums}
 .metric-help{margin:.5rem 0}.metric-help summary{cursor:pointer}
+
+/* Worksheet status stays with the order number on desktop and mobile. */
+.sheet-order-slot { display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-block-start:4px; max-width:100%; }
+.sheet-order-slot .sheet-order-label { font-size:11px; font-weight:600; line-height:1.3; white-space:normal; color:inherit; }
+.sheet-order-slot[data-state="verified"] .sheet-order-label { padding:2px 5px; border-radius:5px; background:#d6f6e6; color:#125438; }
+.sheet-order-slot[data-state="uncertain"] .sheet-order-label { color:#7a4013; background:#fff3d8; border-radius:4px; padding:2px 5px; }
+.sheet-order-slot .sheet-order-action { height:auto; min-height:26px; min-width:0; max-width:100%; font:inherit; font-size:11px; line-height:1.25; padding:3px 6px; white-space:normal; overflow-wrap:break-word; }
