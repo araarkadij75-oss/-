@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.114-status-clarity-v1';
+const CACHE='eliteservice-18.17.114-payroll-links-v1';
 const SHELL=[
   './',
   './index.html',
@@ -16,7 +16,7 @@ const SHELL=[
   './profit-bridge.js?v=20261121-receipts1',
   './payroll-intake-accounting.js?v=20261124-cycle1',
   './profit-ui.js?v=20261121-receipts1',
-  './own-payroll.js',
+  './own-payroll.js?v=order-links',
   './visual-refinement.css?v=20261124-status',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
   './quality-monitor.js?v=20261106-quality5',
