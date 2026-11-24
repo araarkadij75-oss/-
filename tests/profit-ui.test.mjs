@@ -41,3 +41,29 @@ test('Mount transfers an already active legacy finance view after handlers are r
 });
 
 test('Finance UI is removed when owner connection is lost',()=>{const line=source.split('\n').find(x=>x.includes('const owner ='));let data={connected:true,role:'owner'};const check=vm.runInNewContext(line+';owner',{snapshot:()=>data});assert.equal(check(),true);data.connected=false;assert.equal(check(),false);data={connected:true,role:'master'};assert.equal(check(),false)});
+
+test('Finance period opens on cash dates and follows Moscow midnight',()=>{
+  assert.match(source, /id="profitBasis" class="select"><option value="cash">/);
+  const from=source.indexOf('  function moscowDate('),to=source.indexOf('  function renderPeriodSections(',from);
+  const date=vm.runInNewContext(source.slice(from,to)+';moscowDate',{Intl});
+  assert.equal(date(new Date('2026-11-24T21:00:00Z')),'2026-11-25');
+  assert.equal(date(new Date('2026-11-24T20:59:59Z')),'2026-11-24');
+});
+
+test('Period breakdown keeps current estimates distinct and flags cross-day expense coverage',()=>{
+  const nodes = Object.fromEntries(['#profitPeriodSections','#profitPeriodBody','#profitPeriodHint'].map(key=>[key,{}]));
+  const from=source.indexOf('  function renderPeriodSections('),to=source.indexOf('  function render() {',from);
+  const render=vm.runInNewContext(source.slice(from,to)+';renderPeriodSections',{$:key=>nodes[key],money:n=>n+' ₽',esc:s=>String(s).replaceAll('<','&lt;')});
+  const completed={from:'2026-11-01',to:'2026-11-24',companyCash:10000,salary:2000,ads:1900,other:0,profit:6100};
+  const today={from:'2026-11-25',to:'2026-11-25',companyCash:5000,salary:2000,ads:0,other:20,profit:2980,issues:['Сверить <расход>']};
+  render({companyCash:15000,salary:4000,ads:1900,other:20,profit:9080,periodSections:{completed,today}});
+  assert.match(nodes['#profitPeriodBody'].innerHTML,/Завершённые дни.*01.11.2026 – 24.11.2026.*6100 ₽/);
+  assert.match(nodes['#profitPeriodBody'].innerHTML,/Сегодня · день открыт.*2980 ₽.*&lt;расход/);
+  assert.match(nodes['#profitPeriodHint'].textContent,/Чистый расход на рекламу/);
+  assert.doesNotMatch(nodes['#profitPeriodHint'].textContent,/Сумма строк отличается/);
+  render({companyCash:15000,salary:4000,ads:2100,other:20,profit:8880,periodSections:{completed,today}});
+  assert.match(nodes['#profitPeriodHint'].textContent,/Сумма строк отличается/);
+  render({...completed,periodSections:{completed,today:null}});
+  assert.doesNotMatch(nodes['#profitPeriodBody'].innerHTML,/Сегодня/);
+  assert.equal(nodes['#profitPeriodHint'].hidden,true);
+});

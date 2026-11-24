@@ -10,3 +10,98 @@ test('real payroll ledger and profit bridge preserve paid report and exclude sem
 
 test('duplicate is excluded consistently from both daily order list and money ledger',()=>{const m=model([order('a','2026-10-19',2400),order('b','2026-10-19',2400,{_duplicateOf:'a'})]);assert.equal(m.payrollSettlementLedger().length,1);assert.equal(m.shiftOrders('2026-10-19',{id:'s',name:'Сергей',shift:'sergey'}).length,1);});
 test('Today, salary ledger and profit agree on timestamp-only receipt',()=>{const row=order('receipt','2026-10-19',8600,{_status:'В работе',_cashClosedAt:'2026-10-19T10:00:00Z'}),m=model([row]);assert.equal(m.hasRecordedCashSurrenderOn(row,'2026-10-19'),true);assert.equal(m.payrollSettlementLedger()[0].cash,8600);const window={MasterAICloud:{connected:true},addEventListener(){}};vm.runInNewContext(fs.readFileSync(new URL('hosted-snapshot/profit-accounting.js',root),'utf8'),{window,Date});vm.runInNewContext(fs.readFileSync(new URL('hosted-snapshot/profit-bridge.js',root),'utf8'),{window,Date});window.installMasterAIProfitBridge({...m,state:m.state,currentRole:()=> 'owner',ownerPreviewActive:()=>false,today:()=> '2026-10-20'});window.MasterAIProfitBridge.setReports([]);assert.equal(window.MasterAIProfitBridge.calculate('2026-10-19','2026-10-19',[],'cash').cash,8600);});
+
+function reportBridge(rows, now) {
+ const m=model(rows);
+ m.ctx.today=()=>now;
+ const window={MasterAICloud:{connected:true},addEventListener(){}};
+ for(const file of ['profit-accounting.js','profit-bridge.js']){
+  vm.runInNewContext(fs.readFileSync(new URL('hosted-snapshot/'+file,root),'utf8'),{window,Date});
+ }
+ window.installMasterAIProfitBridge({...m,currentRole:()=> 'owner',ownerPreviewActive:()=>false,today:()=>now});
+ window.MasterAIProfitBridge.setReports([]);
+ return window.MasterAIProfitBridge;
+}
+
+test('closed-period intake freezes late portions while cash days show each actual receipt once',()=>{
+ const b=reportBridge([
+  order('split','2026-10-20',24500,{callDate:'2026-10-19',_cashReceipts:[
+   {date:'2026-10-19',cents:2000000},{date:'2026-10-20',cents:450000}]}),
+  order('new','2026-10-20',7000,{callDate:'2026-10-20',dispatcher:'Артём'})
+ ],'2026-10-20');
+ const intake=b.calculate('2026-10-19','2026-10-20',[],'intake');
+ assert.equal(intake.cash,31500);
+ assert.equal(intake.salary,4450);
+ assert.equal(intake.periodSections.completed.asOf,'2026-10-19');
+ assert.equal(intake.periodSections.completed.cash,20000);
+ assert.equal(intake.periodSections.completed.salaryConfirmed,2000);
+ assert.equal(intake.periodSections.completed.salaryEstimated,0);
+ assert.equal(intake.periodSections.today.cash,7000);
+ const cash=b.calculate('2026-10-19','2026-10-20',[],'cash');
+ assert.equal(cash.periodSections.today.cash,11500);
+ assert.equal(cash.periodSections.today.salary,2450);
+ assert.equal(cash.periodSections.today.profit+cash.periodSections.completed.profit,cash.profit);
+ const past=b.calculate('2026-10-19','2026-10-19',[],'cash');
+ assert.equal(past.asOf,'2026-10-19');
+ assert.equal(past.cash,20000);
+ assert.equal(past.periodSections.today,null);
+});
+
+test('unknown dispatcher is flagged on affected intake and receipt dates, not unrelated closed days',()=>{
+ const b=reportBridge([
+  order('bad','2026-10-21',1000,{callDate:'2026-10-19',dispatcher:'Неизвестный'}),
+  order('old','2026-10-19',20500,{callDate:'2026-10-19'}),
+  order('valid','2026-10-20',26000,{callDate:'2026-10-20',dispatcher:'Артём'})
+ ],'2026-10-22');
+ for(const basis of ['cash','intake']){
+  const clean=b.calculate('2026-10-20','2026-10-20',[],basis);
+  assert.equal(clean.salaryConfirmed,2600);
+  assert.equal(clean.salaryEstimated,0);
+  assert.equal(clean.warnings.length,0);
+ }
+ const affected=b.calculate('2026-10-19','2026-10-19',[],'intake');
+ assert.equal(affected.salaryEstimated,2050);
+ assert.match(affected.warnings.join(' '),/неизвестным ответственным/);
+ const late=b.calculate('2026-10-21','2026-10-21',[],'cash');
+ assert.match(late.warnings.join(' '),/распознанного диспетчера/);
+ assert.equal(late.cash,1000);
+});
+
+test('undated cash is visible today without retroactively inventing an earlier payment',()=>{
+ const b=reportBridge([order('undated','',24000,{callDate:'2026-10-20'})],'2026-10-22');
+ const intake=b.calculate('2026-10-20','2026-10-20',[],'intake');
+ assert.equal(intake.cash,24000);
+ assert.equal(intake.salaryConfirmed,2400);
+ assert.equal(intake.periodSections.completed.cash,0);
+ assert.equal(intake.periodSections.completed.salary,2000);
+ assert.match(intake.periodSections.completed.warnings.join(' '),/дата поступления неизвестна/);
+ const earlier=b.calculate('2026-10-19','2026-10-19',[],'cash');
+ assert.equal(earlier.cash,0);
+ assert.equal(earlier.warnings.length,0);
+ const later=b.calculate('2026-10-21','2026-10-21',[],'cash');
+ assert.match(later.warnings.join(' '),/Без даты нельзя определить/);
+});
+
+test('a newly accepted open order with no dispatcher explains the missing daily salary only on its intake day',()=>{
+ const b=reportBridge([order('unknown','',0,{callDate:'2026-10-20',dispatcher:'',_status:'В работе'})],'2026-10-20');
+ const r=b.calculate('2026-10-19','2026-10-20',[],'intake');
+ assert.equal(r.periodSections.completed.warnings.length,0);
+ assert.equal(r.periodSections.today.salary,0);
+ assert.match(r.periodSections.today.warnings.join(' '),/Принятых заявок без установленного диспетчера: 1/);
+});
+
+test('production profit clock rolls over at Moscow midnight and passes the observation day to payroll',()=>{
+ const window={MasterAICloud:{connected:true},addEventListener(){}};
+ class Clock extends Date {constructor(...args){super(...(args.length?args:['2026-10-20T21:00:02Z']));}}
+ for(const file of ['profit-accounting.js','profit-bridge.js']){
+  vm.runInNewContext(fs.readFileSync(new URL('hosted-snapshot/'+file,root),'utf8'),{window,Date:Clock});
+ }
+ const cutoffs=[];
+ const m=model([]);
+ window.installMasterAIProfitBridge({...m,currentRole:()=> 'owner',ownerPreviewActive:()=>false,today:undefined,
+  payrollIntakeSnapshot:(cutoff,observed)=>{cutoffs.push([cutoff,observed]);return {days:[],events:[],warnings:[]};}});
+ window.MasterAIProfitBridge.setReports([]);
+ const r=window.MasterAIProfitBridge.calculate('2026-10-20','2026-10-21',[],'intake');
+ assert.deepEqual(cutoffs,[['2026-10-21','2026-10-21'],['2026-10-20','2026-10-21']]);
+ assert.equal(r.periodSections.today.to,'2026-10-21');
+});
