@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.117-intake-meter';
+const CACHE='eliteservice-18.17.118-master-totals';
 const SHELL=[
   './',
   './index.html',
