@@ -51,3 +51,9 @@ test('PHP rolling scope uses Moscow midnight and preserves future and unknown re
  const code=`define('ELITESERVICE_QUALITY_LIBRARY',true);require ${JSON.stringify(path.replaceAll('\\','/'))};$rows=[['callDate'=>'2026-10-22'],['callDate'=>'2026-10-23'],['callDate'=>'2027-01-01'],[]];echo json_encode([quality_analyze($rows,[],'2026-11-06T20:59:59Z'),quality_analyze($rows,[],'2026-11-06T21:00:00Z'),quality_scope_start('2027-01-01T00:00:00Z')]);`;
  const r=spawnSync(php,['-r',code],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);const [a,b,c]=JSON.parse(r.stdout);assert.equal(a.scopeStart,'2026-10-23');assert.equal(a.orderCount,3);assert.equal(b.scopeStart,'2026-10-24');assert.equal(b.orderCount,2);assert.equal(c,'2026-12-18');
 });
+test('confirmed receipt offsets only its exact refund in the server audit',{skip:!available},()=>{
+ const code=`define('ELITESERVICE_QUALITY_LIBRARY',true);require ${JSON.stringify(path.replaceAll('\\','/'))};
+ $r=['orderId'=>'A','callDate'=>'2026-11-10','total'=>3000,'masterAmount'=>900,'companyShare'=>0,'_sourceReconciliation'=>['auditId'=>str_repeat('a',32),'sourceRow'=>1968,'actorUid'=>'owner','appliedAt'=>'2026-11-24T16:24:09+03:00','sourceSpreadsheet'=>'Лист1 · ВОЗВРАТ. Владелец подтвердил 24.11.2026 полный возврат 2 100 ₽; остаток кассы заказа 0 ₽.']];
+ foreach ([$r,array_merge($r,['masterAmount'=>950]),array_merge($r,['_sourceReconciliation'=>null])] as $row) echo (quality_analyze([$row],[],'2026-11-24T12:00:00Z')['counts']['finance_mismatch']??0);`;
+ const result=spawnSync(php,['-r',code],{encoding:'utf8'});assert.equal(result.status,0,result.stderr);assert.equal(result.stdout,'011');
+});

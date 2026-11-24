@@ -19,7 +19,7 @@ const SHELL=[
   './own-payroll.js?v=order-links',
   './visual-refinement.css?v=20261124-cash-details',
   './workspace-atmosphere.js?v=20261104-expanded-cards1',
-  './quality-monitor.js?v=20261106-quality5',
+  './quality-monitor.js?v=20261124-refund1',
   './premium-v181721.css',
 ];
 
