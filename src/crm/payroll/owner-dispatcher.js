@@ -45,6 +45,7 @@ function shiftSnapshot(date=today(),profile=currentUser(),reserved=new Set(),val
 function subscribeShiftCenter(){window.MasterAICloud?.subscribeShiftReports?.(reports=>{state.shiftReports=reports||[];renderShiftClose();renderWeeklyReports()});window.MasterAICloud?.subscribeWeeklyReports?.(rows=>{state.weeklyShiftReports=rows||[];renderWeeklyReports()});window.MasterAICloud?.subscribeMasterShifts?.(rows=>{const incoming=rows||[],incomingIds=new Set(incoming.map(x=>x.date));mergeMasterShiftCache([...state.masterShifts.filter(x=>!incomingIds.has(x.date)),...incoming],weekDates());fillDatalists();if(!masterWeekDirty)renderMasterShifts();renderRecentMasters()});loadMasterWeek()}/* CRM_END:subscribeShiftCenter-65cb1a7c09e6 */
 /* CRM_UNIT:shareShiftReport-ea312222b8dd */
 function shiftHistoryCycles(rows,snapshot,renderDay){
+ if(rows.length && !state.orders?.length && !state.session?.cloudEmpty)return '<div class="notice" role="status">Ожидаем данные заказов для сверки смены. Отчёт появится после загрузки.</div>';
  const {anchor,first}=payrollSchedule(),groups=new Map(),intakes=new Map();
  for(const order of state.orders||[]){
   const id=order.orderId||order._id;if(!id||order._duplicateOf)continue;
