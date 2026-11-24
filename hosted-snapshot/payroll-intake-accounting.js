@@ -2,6 +2,7 @@
  'use strict';
  const validDate=s=>{if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s};
  const money=n=>Number.isSafeInteger(n)&&n>=0;
+ const validPayment=p=>p&&p.id&&typeof p.person==='string'&&p.person.trim()&&validDate(p.date)&&money(p.amountCents);
  const entitlement=cash=>Math.max(200000,Math.round(cash/10));
  function validReceipts(entries,intakeDate,cashCents,closed){
   if(!Array.isArray(entries)||entries.length>100||!validDate(intakeDate)||!money(cashCents))return false;
@@ -48,7 +49,7 @@
    g.cashCents+=o.cashCents;g.orderIds.push(id);g.receipts.set(undated?'':o.cashDate,(g.receipts.get(undated?'':o.cashDate)||0)+o.cashCents);
   }
   for(const p of payments){
-   if(!p||!p.id||typeof p.person!=='string'||!p.person.trim()||!validDate(p.date)||!money(p.amountCents)){warn('invalid_payment',p?.id);continue}
+   if(!validPayment(p)){warn('invalid_payment',p?.id);continue}
    const id=String(p.id);if(seenPayments.has(id)){warn(JSON.stringify(seenPayments.get(id))===JSON.stringify(p)?'duplicate_payment_id':'conflicting_payment_id',id);continue}seenPayments.set(id,p);
    if(p.date>cutoff)continue;const target=person(p.person);if(!Number.isSafeInteger(target.paidCents+p.amountCents)){warn('payment_overflow',id);continue}target.paidCents+=p.amountCents;
   }
@@ -88,7 +89,13 @@
    }
   }
   for(const e of events){if(!validDate(e.date)){unallocated.push(e);continue}const g=bucket(e.person,e.date);g.events.push(e);if(e.intakeDate>=g.start&&e.intakeDate<=g.end)g.ownCents+=e.amountCents;else g.lateCents+=e.amountCents}
-  for(const p of snapshot.payments||[]){if(p.date>cutoff||p.kind==='settlement_baseline')continue;const g=bucket(p.person,p.date);g.paidCents+=p.amountCents;g.payments.push(p)}
+  const recordedPayments=new Set();
+  for(const p of snapshot.payments||[]){
+   if(!validPayment(p)||recordedPayments.has(String(p.id)))continue;
+   recordedPayments.add(String(p.id));
+   if(p.date>cutoff||p.kind==='settlement_baseline')continue;
+   const g=bucket(p.person,p.date);g.paidCents+=p.amountCents;g.payments.push(p);
+  }
   const balances=new Map();const cycles=[...groups.values()].sort((a,b)=>a.end.localeCompare(b.end)||a.person.localeCompare(b.person));
   for(const g of cycles){g.openingCents=balances.get(g.person)||0;g.accruedCents=g.ownCents+g.lateCents;g.balanceCents=g.openingCents+g.accruedCents-g.paidCents;balances.set(g.person,g.balanceCents);g.dueCents=Math.max(0,g.balanceCents);g.finished=g.end<=cutoff}
   return {cycles,unallocated};

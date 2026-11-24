@@ -653,7 +653,7 @@ return cloud;
 </script>
 <script type="module">
 async function loadOptionalFeature(name,loader){try{return await loader()}catch(error){console.error('Optional CRM module: '+name,error);const notice=document.createElement('div');notice.className='notice warn';notice.setAttribute('role','status');notice.textContent='Модуль «'+name+'» не загрузился. Остальные разделы доступны. Обновите страницу, чтобы повторить подключение.';document.querySelector('.app')?.prepend(notice);return null}}
-await loadOptionalFeature('Расчёт зарплаты',()=>import('./payroll-intake-accounting.js?v=20261121-receipts1'));
+await loadOptionalFeature('Расчёт зарплаты',()=>import('./payroll-intake-accounting.js?v=20261124-cycle1'));
 await loadOptionalFeature('Финансы',()=>import('./profit-bridge.js?v=20261121-receipts1'));
 await loadOptionalFeature('Контроль данных',()=>import('./quality-monitor.js?v=20261106-quality5'));
 const PRESETS={directions:["ПК","ТВ","БТ"],cities:["СПб"],dispatchers:[],masters:["Дорошенко Юрий","Власов Роман","Савченков Никита","Максим Петренко","Пак Семён","Костромин Николай","Журавлёв Ярослав","Есментов Юрий","Федотенко Василий","Артем Куриди","Лившиц Михаил","Ульянцев Алексей","Владимир Иванович","Семёнов Роман"]};
