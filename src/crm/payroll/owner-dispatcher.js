@@ -44,7 +44,31 @@ function shiftSnapshot(date=today(),profile=currentUser(),reserved=new Set(),val
 /* CRM_UNIT:subscribeShiftCenter-65cb1a7c09e6 */
 function subscribeShiftCenter(){window.MasterAICloud?.subscribeShiftReports?.(reports=>{state.shiftReports=reports||[];renderShiftClose();renderWeeklyReports()});window.MasterAICloud?.subscribeWeeklyReports?.(rows=>{state.weeklyShiftReports=rows||[];renderWeeklyReports()});window.MasterAICloud?.subscribeMasterShifts?.(rows=>{const incoming=rows||[],incomingIds=new Set(incoming.map(x=>x.date));mergeMasterShiftCache([...state.masterShifts.filter(x=>!incomingIds.has(x.date)),...incoming],weekDates());fillDatalists();if(!masterWeekDirty)renderMasterShifts();renderRecentMasters()});loadMasterWeek()}/* CRM_END:subscribeShiftCenter-65cb1a7c09e6 */
 /* CRM_UNIT:shareShiftReport-ea312222b8dd */
-async function shareShiftReport(r){r=r||state.shiftReports[0];if(!r){toast('Сначала закройте смену');return}if(r.closureOnly)r=shiftSnapshot(r.date,currentUser());const text=shiftReportText(r);try{if(navigator.share)await navigator.share({title:'Отчёт по смене',text});else{await navigator.clipboard.writeText(text);toast('Отчёт скопирован')}}catch(e){if(e?.name!=='AbortError'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));a.download=`shift-${r.date}.txt`;a.click();URL.revokeObjectURL(a.href)}}}/* CRM_END:shareShiftReport-ea312222b8dd */
+function shiftHistoryCycles(rows,snapshot,renderDay){
+ const {anchor,first}=payrollSchedule(),groups=new Map();
+ const offset=(date,n)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+ for(const r of rows){
+  const person=payrollShiftKey(r)||r.shift||r.id;
+  let start=r.date,end=r.date;
+  if(/^\d{4}-\d\d-\d\d$/.test(start)&&payrollScheduledShift(start,anchor,first)===person){
+   const prev=offset(start,-1);if(payrollScheduledShift(prev,anchor,first)===person)start=prev;
+   end=offset(start,1);
+  }
+  const key=JSON.stringify([person,start]);
+  if(!groups.has(key))groups.set(key,{person,start,end,reports:[]});
+  groups.get(key).reports.push(r);
+ }
+ return [...groups.values()].sort((a,b)=>String(b.start).localeCompare(String(a.start))).slice(0,20).map(g=>{
+  const reports=g.reports.sort((a,b)=>String(a.date).localeCompare(String(b.date))),days=snapshot?.days.filter(d=>d.person===g.person&&reports.some(r=>r.date===d.date))||[];
+  const dates=[...new Set(reports.map(r=>r.date))],ids=reports.map(r=>r.id).join('|');
+  const orders=reports.reduce((n,r)=>n+(r.closureOnly?(r.orderIds||[]).length:Number(r.orders)||0),0);
+  const totals=days.length?['Касса '+money(days.reduce((n,d)=>n+d.cashCents,0)/100),'из неё поздняя '+money(days.reduce((n,d)=>n+(d.lateCashCents||0),0)/100),'начислено '+money(days.reduce((n,d)=>n+d.entitlementCents,0)/100)]:[];
+  const range=g.start===g.end?g.start:g.start+' — '+g.end;
+  const stateLabel=g.start===g.end?'Вне графика':dates.length===2?'Оба дня закрыты':'Закрыт 1 из 2 дней';
+  return '<article class="shift-report-card"><div class="shift-report-title"><div><b>'+esc(reports[0].shiftName||shiftName(g.person))+' · '+esc(range)+'</b><span>'+stateLabel+' · Заказы: '+orders+(totals.length?' · '+totals.join(' · '):'')+'</span></div><button type="button" class="btn small secondary" data-share-shift="'+esc(ids)+'">Поделиться сменой</button></div><details><summary>Отчёты по дням</summary>'+reports.map(renderDay).join('')+'</details></article>';
+ }).join('');
+}
+async function shareShiftReport(r){r=r||state.shiftReports[0];if(!r){toast('Сначала закройте смену');return}const reports=Array.isArray(r)?r:[r];if(!reports.length)return;const heading=Array.isArray(r)?String(arguments[1]||'Отчёт за смену')+'\n\n':'';const text=heading+reports.map(day=>day.closureOnly?(day.shiftName||shiftName(day.shift))+' · '+day.date+' · День закрыт, заказов: '+(day.orderIds||[]).length:shiftReportText(day)).join('\n\n');r=reports[0];try{if(navigator.share)await navigator.share({title:'Отчёт по смене',text});else{await navigator.clipboard.writeText(text);toast('Отчёт скопирован')}}catch(e){if(e?.name!=='AbortError'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));a.download=`shift-${r.date}.txt`;a.click();URL.revokeObjectURL(a.href)}}}/* CRM_END:shareShiftReport-ea312222b8dd */
 /* CRM_UNIT:renderShiftReports-f6c11424f0a2 */
 
 function renderShiftReports(){renderWeeklyReports()}/* CRM_END:renderShiftReports-f6c11424f0a2 */

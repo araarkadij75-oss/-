@@ -4243,6 +4243,7 @@
       "file": "payroll/owner-dispatcher.js",
       "domain": "payroll",
       "symbols": [
+        "shiftHistoryCycles",
         "shareShiftReport"
       ],
       "roles": [

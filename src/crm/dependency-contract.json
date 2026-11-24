@@ -4920,6 +4920,7 @@
         },
         "renderShiftClose-0c2972d31b20": {
           "globals": [
+            "Boolean",
             "String"
           ],
           "crossDomain": [
@@ -5050,15 +5051,27 @@
         },
         "shareShiftReport-ea312222b8dd": {
           "globals": [
+            "Array",
             "Blob",
+            "Date",
+            "JSON",
+            "Map",
+            "Number",
+            "Set",
+            "String",
             "URL",
+            "arguments",
             "document",
             "navigator"
           ],
           "crossDomain": [
             {
-              "symbol": "currentUser",
-              "domain": "staff"
+              "symbol": "esc",
+              "domain": "core"
+            },
+            {
+              "symbol": "money",
+              "domain": "core"
             },
             {
               "symbol": "state",
@@ -13108,6 +13121,7 @@
         },
         "renderShiftClose-91849dc4d2a9": {
           "globals": [
+            "Boolean",
             "String"
           ],
           "crossDomain": [
@@ -13248,15 +13262,27 @@
         },
         "shareShiftReport-ea312222b8dd": {
           "globals": [
+            "Array",
             "Blob",
+            "Date",
+            "JSON",
+            "Map",
+            "Number",
+            "Set",
+            "String",
             "URL",
+            "arguments",
             "document",
             "navigator"
           ],
           "crossDomain": [
             {
-              "symbol": "currentUser",
-              "domain": "staff"
+              "symbol": "esc",
+              "domain": "core"
+            },
+            {
+              "symbol": "money",
+              "domain": "core"
             },
             {
               "symbol": "state",
