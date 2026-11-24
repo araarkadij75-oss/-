@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.114-cash-receipts-v1';
+const CACHE='eliteservice-18.17.114-payroll-cycle-v2';
 const SHELL=[
   './',
   './index.html',
@@ -14,7 +14,7 @@ const SHELL=[
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261121-receipts1',
   './profit-bridge.js?v=20261121-receipts1',
-  './payroll-intake-accounting.js?v=20261121-receipts1',
+  './payroll-intake-accounting.js?v=20261124-cycle1',
   './profit-ui.js?v=20261121-receipts1',
   './own-payroll.js',
   './visual-refinement.css?v=20261106-layout7',
