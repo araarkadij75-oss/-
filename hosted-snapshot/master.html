@@ -377,7 +377,7 @@ html,body,button,input,select,textarea,table{font-family:Arial,Helvetica,sans-se
 @media(min-width:901px) and (max-width:1299px){.orders-head{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
 @media(min-width:601px) and (max-width:900px){.orders-head .color-audit{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1400px){.tabs{flex-wrap:wrap;overflow:visible}.tab{flex:0 0 auto}}
-</style><link rel="stylesheet" href="./visual-refinement.css?v=20261125-ranking-palette"><style id="order-date-readability-v1">
+</style><link rel="stylesheet" href="./visual-refinement.css?v=20261125-master-ledger"><style id="order-date-readability-v1">
 /* Keep each calendar date readable at desktop/tablet desktop widths. */
 .orders-table-wrap .call-stamp b{white-space:nowrap;word-break:normal;overflow-wrap:normal}
 .orders-table-wrap .table th:nth-child(4),.orders-table-wrap .table td:nth-child(4){width:82px;padding-left:4px;padding-right:4px}
@@ -986,36 +986,41 @@ function renderMasterMetrics(){
   if(!r.master||isServiceMaster(r.master))return null;
   if(!names.has(r.master))names.set(r.master,canonicalMasterSelection(r.master));
   const name=names.get(r.master),key=canonicalKey(name,'master');
-  if(!masters.has(key))masters.set(key,{name,week:0,month:0,orders:0,done:0,good:0,checks:0,total:0,receipts:0,cents:0,wages:0,missingWages:0,deposited:0,groups:{current:[],older:[],unknown:[]},averageEntries:[],wageEntries:[],checkEntries:[]});
+  if(!masters.has(key))masters.set(key,{name,orders:0,done:0,good:0,checks:0,total:0,receipts:0,cents:0,wages:0,missingWages:0,deposited:0,groups:{current:0,older:0,unknown:0},ledger:new Map()});
   return masters.get(key);
+ }
+ function addOrder(master,order,date){
+  const id=String(order.orderId).trim();
+  if(!master.ledger.has(id))master.ledger.set(id,{id,date,stage:derivedStage(order),check:null,wage:null,cash:null,payments:[]});
+  return master.ledger.get(id);
  }
  const intake=dailyIntakeCount(day,personal?user.name:null);
  for(const r of state.orders){
-  if(r._duplicateOf||!r.orderId||seen.has(r.orderId))continue;
+  const id=String(r.orderId||'').trim();
+  if(r._duplicateOf||!id||seen.has(id))continue;
   const parsed=parseDate(r.callDate);if(!parsed)continue;
-  const date=iso(parsed);if(date>day||date<(week<month?week:month))continue;
-  seen.add(r.orderId);
+  const date=iso(parsed);if(date>day||date<start)continue;
+  seen.add(id);
   const m=masterFor(r);if(!m)continue;
-  if(date>=week)m.week++;
-  if(date>=month)m.month++;
-  if(date<start)continue;
   cohort.push(r);assigned.set(r,m);m.orders++;
-  if(derivedStage(r)==='Выполнен'){
+  const item=addOrder(m,r,date);
+  if(item.stage==='Выполнен'){
    const wage=numMaybe(r.masterAmount);if(wage==null)m.missingWages++;else m.wages+=Math.round(wage*100);
-   m.wageEntries.push({id:r.orderId,date,cashCents:wage==null?null:Math.round(wage*100)});
+   item.wage=wage;
    m.done++;if(truthReview(r.review))m.good++;
-   const amount=num(r.total);if(amount>0){m.total+=amount;m.checks++;m.checkEntries.push({id:r.orderId,date,cashCents:Math.round(amount*100)})}
+   const amount=num(r.total);if(amount>0){m.total+=amount;m.checks++;item.check=amount}
   }
  }
  for(const receipt of collectRecordedCash(cohort,{basis:'callDate',cutoff:day})){
-  const m=assigned.get(receipt.order);m.receipts++;m.cents+=receipt.cashCents;m.averageEntries.push(receipt);
+  const m=assigned.get(receipt.order);m.receipts++;m.cents+=receipt.cashCents;m.ledger.get(receipt.id).cash=receipt.cashCents;
  }
  for(const receipt of collectRecordedCash(state.orders,{basis:'closeDate',cutoff:day,from:start,to:day})){
   const m=masterFor(receipt.order);if(!m)continue;
   const group=!receipt.intakeDate?'unknown':receipt.intakeDate<start?'older':'current';
-  m.groups[group].push(receipt);m.deposited+=receipt.cashCents;
+  addOrder(m,receipt.order,receipt.intakeDate).payments.push(receipt);
+  m.groups[group]+=receipt.cashCents;m.deposited+=receipt.cashCents;
  }
- const rows=[...masters.values()].filter(m=>m.orders||m.deposited);
+ const rows=[...masters.values()].filter(m=>m.ledger.size);
  for(const m of rows)m.completion=m.orders?100*m.done/m.orders:null;
  for(const m of rows){m.avg=m.checks?m.total/m.checks:null;m.cash=m.receipts?m.cents/100/m.receipts:null;m.reviews=m.done?100*m.good/m.done:null}
  rows.sort((a,b)=>{
@@ -1024,20 +1029,44 @@ function renderMasterMetrics(){
   return (direction.value==='asc'?left-right:right-left)||b.orders-a.orders||a.name.localeCompare(b.name,'ru');
  });
  $('#intakeGoal').innerHTML='<strong>'+(personal?'Принято вами сегодня':'Принято сегодня командой')+': '+intake+' / 10</strong> <progress aria-label="Дневной ориентир" max="10" value="'+Math.min(intake,10)+'"></progress> '+(intake>=10?'Ориентир достигнут':'Осталось до цели: '+(10-intake));
- function breakdown(title,amount,entries,dateLabel){
-  const label=title?'<small>'+title+'</small>':'';
-  if(!entries.length)return '<span class="metric-zero">'+label+amount+'</span>';
-  const lines=entries.map(e=>'<li><span>'+esc(e.id)+'</span><time>'+esc(e.date||'—')+'</time><b>'+(e.cashCents==null?'Нет суммы':money(e.cashCents/100))+'</b></li>').join('');
-  return '<details class="metric-detail"><summary>'+label+'<b>'+amount+'</b></summary><div class="metric-ledger"><small>Заказ · '+dateLabel+' · сумма</small><ul>'+lines+'</ul></div></details>';
+ const body=$('#metricRows');
+ const previous=body.querySelector('.metric-master-toggle[aria-expanded="true"]')?.dataset.master;
+ function figure(value,basis=''){
+  return '<span class="metric-value">'+value+'</span>'+(basis?'<small class="metric-basis">'+basis+'</small>':'');
  }
- function cashGroups(m){
-  const groups=[['current','Заказы периода'],['older','Старые заказы'],['unknown','Без даты приёма']];
-  const parts=groups.filter(([key])=>key!=='unknown'||m.groups.unknown.length).map(([key,title])=>{
-   const entries=m.groups[key];return breakdown(title,money(entries.reduce((sum,e)=>sum+e.cashCents,0)/100),entries,'сдача');
-  });
-  return '<div class="metric-cash">'+breakdown('Всего',money(m.deposited/100),Object.values(m.groups).flat().sort((a,b)=>a.date.localeCompare(b.date)),'сдача')+parts.join('')+'</div>';
+ function shortDate(value){return value?value.split('-').reverse().join('.'):'—'}
+ function ledgerHTML(m){
+  const groupTitles={current:'Заказы периода',older:'Старые заказы',unknown:'Без даты приёма'};
+  const split=Object.entries(m.groups).filter(([key,sum])=>key!=='unknown'||sum||[...m.ledger.values()].some(item=>!item.date&&item.payments.length)).map(([key,sum])=>'<span>'+groupTitles[key]+' <b>'+money(sum/100)+'</b></span>').join('');
+  const items=[...m.ledger.values()].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||a.id.localeCompare(b.id));
+  const entries=items.map(item=>{
+   const payments=item.payments.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(pay=>'<span class="metric-receipt-line"><time>'+shortDate(pay.date)+'</time> <b>'+money(pay.cashCents/100)+'</b></span>').join('');
+   return '<tr><th scope="row">'+esc(item.id)+'</th><td>'+shortDate(item.date)+'</td><td>'+esc(item.stage||'—')+'</td><td>'+(item.check==null?'—':money(item.check))+'</td><td>'+(item.wage==null?'—':money(item.wage))+'</td><td>'+(item.cash==null?'—':money(item.cash/100))+'</td><td>'+(payments||'—')+'</td></tr>';
+  }).join('');
+  return '<div class="metric-order-panel"><div class="metric-receipt-summary"><strong>Сдано за период: '+money(m.deposited/100)+'</strong>'+split+'</div><div class="metric-order-scroll"><table class="metric-order-table" aria-label="Заказы мастера '+esc(m.name)+'"><thead><tr><th>Заказ</th><th>Принят</th><th>Статус</th><th>Чек в расчёте</th><th>Начислено за период</th><th>Касса заказов периода</th><th>Сдачи за период</th></tr></thead><tbody>'+entries+'</tbody></table></div></div>';
  }
- $('#metricRows').innerHTML=rows.map((m,i)=>'<tr>'+[m[rank.value]==null?'—':i+1,esc(m.name),m.orders,m.done,m.completion==null?'—':pct(m.completion),breakdown('',money(m.wages/100),m.wageEntries,'приём')+(m.missingWages?' · без суммы: '+m.missingWages:''),cashGroups(m),m.avg==null?'—':breakdown('Чеков: '+m.checks,money(m.avg),m.checkEntries,'приём'),m.cash==null?'—':breakdown('Заказов: '+m.receipts,money(m.cash),m.averageEntries,'приём'),m.done?pct(m.reviews)+' ('+m.good+' из '+m.done+')':'—'].map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')||'<tr><td colspan="10">За этот период нет заказов или сдач мастеров.</td></tr>';
+ body.innerHTML=rows.map((m,i)=>{
+  const toggle='<button type="button" class="metric-master-toggle" data-master="'+esc(m.name)+'" data-index="'+i+'" aria-expanded="false" aria-label="Заказы мастера '+esc(m.name)+'">'+esc(m.name)+'</button>';
+  const values=[m[rank.value]==null?'—':i+1,toggle,m.orders,m.done,m.completion==null?'—':pct(m.completion),figure(money(m.wages/100),m.missingWages?'Без суммы: '+m.missingWages:''),figure(money(m.deposited/100)),figure(m.avg==null?'—':money(m.avg),m.checks?'Чеков: '+m.checks:''),figure(m.cash==null?'—':money(m.cash),m.receipts?'Заказов: '+m.receipts:''),m.done?figure(pct(m.reviews),m.good+' из '+m.done):'—'];
+  return '<tr class="metric-master-row">'+values.map(v=>'<td>'+v+'</td>').join('')+'</tr>';
+ }).join('')||'<tr><td colspan="10">За этот период нет заказов или сдач мастеров.</td></tr>';
+ function openLedger(button){
+  const row=button.closest('tr');
+  const detail=body.insertRow(row.sectionRowIndex+1);
+  detail.className='metric-order-detail';
+  const cell=detail.insertCell();
+  cell.colSpan=10;
+  cell.innerHTML=ledgerHTML(rows[Number(button.dataset.index)]);
+  button.setAttribute('aria-expanded','true');
+ }
+ body.onclick=event=>{
+  const button=event.target.closest('.metric-master-toggle');if(!button)return;
+  const wasOpen=button.getAttribute('aria-expanded')==='true';
+  body.querySelector('.metric-order-detail')?.remove();
+  body.querySelector('[aria-expanded="true"]')?.setAttribute('aria-expanded','false');
+  if(!wasOpen)openLedger(button);
+ };
+ if(previous){const button=[...body.querySelectorAll('.metric-master-toggle')].find(el=>el.dataset.master===previous);if(button)openLedger(button)}
 }
 function renderPerformance(rows=filterRows()){const metric=$('#masterSortMetric')?.value||'share',masters=group(rows.filter(r=>!isServiceMaster(r.master)),'master');masters.sort((a,b)=>financeMetric(b,metric)-financeMetric(a,metric));const fixed=rows.filter(r=>r._schemeKnown&&r._fixedMaster),grid=rows.filter(r=>r._schemeKnown&&!r._fixedMaster),unknown=rows.filter(r=>!r._schemeKnown),good=rows.filter(r=>truthReview(r.review)),cards=[['Сетка 30–50',grid.length,grid.length?analyticsCashCents(grid)/100/grid.length:0],['Фикс 50+',fixed.length,fixed.length?analyticsCashCents(fixed)/100/fixed.length:0],['Схема не задана',unknown.length,unknown.length?analyticsCashCents(unknown)/100/unknown.length:0],['Хороший отзыв',good.length,rows.length?good.length/rows.length*100:0],['Касса всего',rows.length,analyticsCashCents(rows)/100]];$('#schemeSummary').innerHTML=cards.map((x,i)=>`<button type="button" class="scheme-card kpi-click" data-scheme-card="${i}"><span class="muted">${x[0]}</span><b>${i===3?pct(x[2]):i===4?money(x[2]):integer(x[1])}</b><div class="metric-note">${i<3?'касса/заказ '+money(x[2]):i===3?integer(x[1])+' заявок':'по выбранному периоду'}</div></button>`).join('');$$('[data-scheme-card]').forEach(b=>b.onclick=()=>{const i=+b.dataset.schemeCard;if(i===0)applySimpleDrill('grid','Сетка мастеров');else if(i===1)applySimpleDrill('fixed','Фикс-мастера');else if(i===2)applySimpleDrill('unknown','Схема не задана');else if(i===3)setDrill('review','','Хорошие отзывы');else if(i===4)setDrill('cash','','Касса всего');});$('#masterPerf').innerHTML=`<div class="table-wrap"><table class="table" style="min-width:1450px"><thead><tr><th>Мастер</th><th class="num">Заказы</th><th class="num">Фин.</th><th class="num">Заполнение</th><th class="num">Оборот</th><th class="num">Средний чек</th><th class="num">Медианный чек</th><th class="num">Мастеру</th><th class="num">Мастеру/заказ</th><th class="num">Мастеру %</th><th class="num">Касса</th><th class="num">Касса/заказ</th><th class="num">Касса % чистого</th><th class="num">Касса % оборота</th><th class="num">Хор. отзывы</th><th class="num">Фикс</th></tr></thead><tbody>${masters.slice(0,100).map(x=>`<tr class="clickable-row" tabindex="0" data-master-row="${esc(x.key)}"><td><b>${esc(x.key)}</b></td><td class="num">${x.n}</td><td class="num">${x.finN}</td><td class="num">${pct(financeMetric(x,'coverage'))}</td><td class="num">${money(x.total)}</td><td class="num">${money(financeMetric(x,'avg'))}</td><td class="num">${money(financeMetric(x,'median'))}</td><td class="num">${money(x.master)}</td><td class="num">${money(financeMetric(x,'avgMaster'))}</td><td class="num">${pct(financeMetric(x,'masterRate'))}</td><td class="num"><b>${money(x.share)}</b></td><td class="num">${money(financeMetric(x,'avgShare'))}</td><td class="num">${pct(financeMetric(x,'margin'))}</td><td class="num">${pct(financeMetric(x,'revenueMargin'))}</td><td class="num">${pct(financeMetric(x,'reviewRate'))}</td><td class="num">${pct(financeMetric(x,'fixedShare'))}</td></tr>`).join('')}</tbody></table></div>`;$$('[data-master-row]').forEach(tr=>{const go=()=>setCanonicalFilter('masterFilter',tr.dataset.masterRow,'Мастер: '+tr.dataset.masterRow);tr.onclick=go;tr.onkeydown=e=>{if(e.key==='Enter')go()}});const disp=group(rows,'dispatcher',r=>num(r.companyShare));$('#dispatcherPerf').innerHTML=barsHTML(disp,'share',money,12);bindBarsToFilter('dispatcherPerf','dispFilter','dispatcher');const buckets=[0,3000,5000,8000,12000,20000,40000,Infinity],names=['<3k','3–5k','5–8k','8–12k','12–20k','20–40k','40k+'];const fin=rows.filter(r=>numMaybe(r.total)!=null&&num(r.total)>0),bc=names.map((n,i)=>({key:n,value:fin.filter(r=>{const v=num(r.total);return v>=buckets[i]&&v<buckets[i+1]}).length}));$('#checkDist').innerHTML=barsHTML(bc,'value',integer,20);$('#leadTime').innerHTML=barsHTML(collectionsLag(rows),'value',integer,20);const days=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];$('#weekdayChart').innerHTML=barsHTML(days.map((d,i)=>({key:d,value:rows.filter(r=>orderDate(r)?.getUTCDay()===i).length})),'value',integer,20);const hours=[...Array(24)].map((_,h)=>({key:String(h).padStart(2,'0')+':00',value:rows.filter(r=>timeHour(r.callTime)===h).length}));$('#hourChart').innerHTML=barsHTML(hours,'value',integer,24);renderTeamPerformance(rows)}
 function collectionsLag(rows){const m=new Map();for(const r of rows){const a=parseDate(r.callDate),b=parseDate(r.visitDate);if(!a||!b)continue;let d=Math.round((b-a)/86400000);const k=d<0?'ошибка: до звонка':d===0?'в тот же день':d===1?'1 день':d<=3?'2–3 дня':d<=7?'4–7 дней':d<=30?'8–30 дней':'аномалия: 31+ дней';m.set(k,(m.get(k)||0)+1)}return [...m].map(([key,value])=>({key,value}))}
