@@ -3950,10 +3950,6 @@
               "domain": "ui"
             },
             {
-              "symbol": "dbWrite",
-              "domain": "integrations"
-            },
-            {
               "symbol": "fillDatalists",
               "domain": "ui"
             },
@@ -8213,6 +8209,14 @@
             },
             {
               "symbol": "masterFixedMode",
+              "domain": "staff"
+            },
+            {
+              "symbol": "masterWeekDirty",
+              "domain": "staff"
+            },
+            {
+              "symbol": "masterWeekSaving",
               "domain": "staff"
             },
             {
@@ -12589,10 +12593,6 @@
               "domain": "ui"
             },
             {
-              "symbol": "dbWrite",
-              "domain": "integrations"
-            },
-            {
               "symbol": "fillDatalists",
               "domain": "ui"
             },
@@ -16524,6 +16524,14 @@
             },
             {
               "symbol": "masterFixedMode",
+              "domain": "staff"
+            },
+            {
+              "symbol": "masterWeekDirty",
+              "domain": "staff"
+            },
+            {
+              "symbol": "masterWeekSaving",
               "domain": "staff"
             },
             {
