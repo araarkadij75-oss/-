@@ -1336,3 +1336,27 @@ html[data-atmosphere="space"] .app nav.tabs {
 .sheet-order-slot[data-state="verified"] .sheet-order-label { padding:2px 5px; border-radius:5px; background:#d6f6e6; color:#125438; }
 .sheet-order-slot[data-state="uncertain"] .sheet-order-label { color:#7a4013; background:#fff3d8; border-radius:4px; padding:2px 5px; }
 .sheet-order-slot .sheet-order-action { height:auto; min-height:26px; min-width:0; max-width:100%; font:inherit; font-size:11px; line-height:1.25; padding:3px 6px; white-space:normal; overflow-wrap:break-word; }
+
+/* Master ranking: controls, order volume, money and reviews. */
+[data-panel="mastermetrics"] .master-ranking {min-width:0;padding:clamp(12px,1.4vw,24px)}
+.master-ranking .toolbar {display:flex;flex-wrap:wrap;align-items:end;gap:8px 16px;padding:12px;margin:12px 0;border:1px solid #b9cbd7;border-radius:12px;background:#f1f6fa}
+.master-ranking .toolbar label {display:grid;gap:4px;color:#354960;font:600 13px/1.4 system-ui}
+.master-ranking .toolbar select {max-width:100%;min-height:36px;border:1px solid #9eafbe;border-radius:7px;background:#fff;color:#172e43;padding:4px 10px;font:500 14px/1.4 system-ui}
+.master-ranking .metric-help {margin:8px 0 12px}
+.master-ranking .table-wrap {max-width:100%;overflow:auto;border:1px solid #b7c8d3;border-radius:10px}
+.master-ranking table.table {width:100%;min-width:62rem;font:400 13px/1.45 system-ui;font-variant-numeric:tabular-nums}
+.master-ranking table.table :is(th,td) {padding:8px;border-bottom:1px solid #cdd8e2}
+.master-ranking table.table .rank-groups th {color:white!important;background:#30435c!important;text-align:left;font-weight:650}
+.master-ranking table.table .rank-groups th:nth-child(2) {background:#315d88!important}
+.master-ranking table.table .rank-groups th:nth-child(3) {background:#24625c!important}
+.master-ranking table.table .rank-groups th:last-child {background:#584775!important}
+.master-ranking table.table tr:not(.rank-groups)>:is(:nth-child(3),:nth-child(6),:nth-child(10)) {border-inline-start:2px solid #bccbd7}
+.master-ranking table.table tbody td {color:#23374c;background:#fff!important}
+.master-ranking table.table tbody tr:nth-child(even) td {background:#f1f5f9!important}
+.master-ranking table.table tbody td:nth-child(2) {font-weight:650}
+.master-ranking .metric-detail>summary {align-items:center;gap:5px;padding:3px 6px;border:1px solid #bfcec9;background:#f2faf7;color:#174b40;border-radius:5px}
+.master-ranking .metric-detail>summary b {margin-inline-start:auto;white-space:nowrap}
+.master-ranking .metric-detail>summary::before {content:'▸'}
+.master-ranking .metric-detail[open]>summary::before {content:'▾'}
+.master-ranking .metric-ledger {background:white;color:#23374c;border:1px solid #c5d5d0;border-radius:6px;padding:6px}
+@media(max-width:600px){.master-ranking .toolbar label{flex:1 1 10rem}.master-ranking .toolbar select{width:100%}}
