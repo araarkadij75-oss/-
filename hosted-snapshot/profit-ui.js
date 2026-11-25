@@ -72,7 +72,7 @@
     if (sections.today) {
       if (result.basis === 'cash' && sections.today.companyCash === 0) notes.push('Касса сегодня — 0 ₽ по дате сдачи. Принятые заявки попадут в кассу после регистрации поступления.');
       notes.push('День открыт. Итог обновляется по мере сдачи денег и регистрации расходов.');
-      if (sections.today.ads === 0) notes.push('Реклама за сегодня по реестру — 0 ₽. Полноту расходов нужно сверить с отчётом.');
+      if (sections.today.ads === 0) notes.push('Чистый расход на рекламу за сегодня — 0 ₽. Полноту расходов нужно сверить с отчётом.');
     }
     if (rows.length > 1 && fields.some(key => rows.reduce((sum, [part]) => sum + Math.round(part[key] * 100), 0) !== Math.round(result[key] * 100))) {
       if (result.basis !== 'intake') notes.push('Сумма строк отличается от общего итога. В расшифровке указаны операции, которые нельзя распределить между частями периода.');
