@@ -104,14 +104,22 @@
       const price=count=>knownAds && count>0?money(d.ads/count):'—';
       return `<tr><th scope="row">${esc(d.date.split('-').reverse().join('.'))}</th><td>${money(d.cash)}</td><td><details data-day="${esc(d.date)}"${expandedDays.has(d.date) ? ' open' : ''}><summary aria-label="Расходы за ${esc(d.date)}">${money(costs)}</summary><dl>${breakdown}</dl></details></td><td><b class="day-result ${tone}">${money(d.profit)}</b></td><td>${margin}${hasPeriodCost ? '<small>Расход за период</small>' : ''}</td><td>${price(contacts)}<small><button type="button" class="btn small" data-contacts="${esc(d.date)}">Контакты: ${contacts??'ввести'}</button></small></td><td>${price(d.accepted)}<small>Заявок: ${d.accepted||0}</small></td><td>${d.checkCount?money(d.checkCents/100/d.checkCount):'—'}<small>С чеком: ${d.checkCount||0}</small></td></tr>`;
     }).join('') || '<tr><td colspan="8" class="empty">Нет операций за период.</td></tr>';
-    $('#profitDays').querySelectorAll('[data-contacts]').forEach(button=>button.onclick=()=>action(button,async()=>{
+    $('#profitDays').querySelectorAll('[data-contacts]').forEach(button=>button.onclick=()=>{
       const date=button.dataset.contacts, previous=state.contacts?.[date]??null;
-      const input=window.prompt('Сколько обращений поступило за '+date+'? Введите итог за весь день.',previous===null?'':String(previous));
-      if(input===null)return;
-      if(!/^\d{1,7}$/.test(input.trim())||Number(input)>1000000)throw new Error('Введите целое число от 0 до 1 000 000.');
-      const data=await api('set_daily_contacts',{date,previous,count:Number(input)});
-      state.contacts=data.contacts;render();notice('Количество обращений сохранено.');
-    }));
+      const form=document.createElement('form');
+      form.innerHTML='<input aria-label="Обращения за день" type="number" min="0" max="1000000" required style="width:6em"><button class="btn small">Сохранить</button>';
+      const field=form.querySelector('input');
+      field.value=previous===null?'':String(previous);
+      button.replaceWith(form);
+      field.focus();
+      form.onsubmit=event=>{
+        event.preventDefault();
+        action(form.querySelector('button'),async()=>{
+          const data=await api('set_daily_contacts',{date,previous,count:field.valueAsNumber});
+          state.contacts=data.contacts;render();notice('Количество обращений сохранено.');
+        });
+      };
+    });
     $('#profitStaff').innerHTML=(result.staff||[]).map(person=>`<tr><td><strong>${esc(person.name||person.person||'Сотрудник')}</strong></td><td class="num">${esc(Array.isArray(person.days)?person.days.length:person.days??'—')}</td><td class="num">${money(person.confirmed)}</td><td class="num">${money(person.estimated)}</td><td class="num"><strong>${money(person.total)}</strong></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Начислений сотрудникам за период нет.</td></tr>';
     const rows = state.expenses.filter(x => x.periodFrom&&x.periodTo ? x.periodFrom<=to&&x.periodTo>=from : x.date >= from && x.date <= to).sort((a,b) => String(b.date).localeCompare(String(a.date)));
     $('#profitExpenseBody').innerHTML = rows.length ? rows.map(x => `<tr class="${x.active === false ? 'profit-void' : ''}"><td>${x.periodFrom&&x.periodTo?`${esc(x.periodFrom)} — ${esc(x.periodTo)}<small>Расход за период, не за один день</small>`:esc(x.date)}</td><td>${esc(x.category || 'Расход')}</td><td>${esc(x.note || '—')}<small>${esc(x.externalId || '')}</small></td><td>${x.source === 'avito' ? 'Авито' : x.source === 'legacy' ? 'Ранее учтено' : 'Вручную'}</td><td class="num">${money((x.kind === 'refund' ? -1 : 1) * Number(x.amountCents) / 100)}</td><td>${x.active === false ? 'Исключено' : 'Учтено'}</td><td><button class="btn small" data-profit-void="${esc(x.id)}" data-active="${x.active === false ? 'true' : 'false'}">${x.active === false ? 'Восстановить' : 'Исключить'}</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty">За выбранный период расходов нет.</td></tr>';
