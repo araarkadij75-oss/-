@@ -3878,7 +3878,9 @@
           ]
         },
         "updateMasterWeekSummary-1bd0af8c6d38": {
-          "globals": [],
+          "globals": [
+            "Map"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -3887,23 +3889,16 @@
             {
               "symbol": "$$",
               "domain": "ui"
-            },
-            {
-              "symbol": "esc",
-              "domain": "core"
-            },
-            {
-              "symbol": "shiftWeekLabel",
-              "domain": "payroll"
-            },
-            {
-              "symbol": "weekDates",
-              "domain": "payroll"
             }
           ]
         },
         "renderMasterShifts-d2957c00853e": {
-          "globals": [],
+          "globals": [
+            "Boolean",
+            "Date",
+            "Intl",
+            "Set"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -3927,6 +3922,10 @@
             },
             {
               "symbol": "state",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
               "domain": "core"
             },
             {
@@ -12518,7 +12517,9 @@
           ]
         },
         "updateMasterWeekSummary-1bd0af8c6d38": {
-          "globals": [],
+          "globals": [
+            "Map"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -12527,23 +12528,16 @@
             {
               "symbol": "$$",
               "domain": "ui"
-            },
-            {
-              "symbol": "esc",
-              "domain": "core"
-            },
-            {
-              "symbol": "shiftWeekLabel",
-              "domain": "payroll"
-            },
-            {
-              "symbol": "weekDates",
-              "domain": "payroll"
             }
           ]
         },
         "renderMasterShifts-d2957c00853e": {
-          "globals": [],
+          "globals": [
+            "Boolean",
+            "Date",
+            "Intl",
+            "Set"
+          ],
           "crossDomain": [
             {
               "symbol": "$",
@@ -12567,6 +12561,10 @@
             },
             {
               "symbol": "state",
+              "domain": "core"
+            },
+            {
+              "symbol": "today",
               "domain": "core"
             },
             {
