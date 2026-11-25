@@ -87,7 +87,21 @@ function clearSelection(){state.selected.clear();renderOrders()}/* CRM_END:clear
 /* CRM_UNIT:selectAllFound-244de9878ed9 */
 function selectAllFound(){for(const r of currentOrderRows())state.selected.add(r._id);renderOrders()}/* CRM_END:selectAllFound-244de9878ed9 */
 /* CRM_UNIT:renderRecentMasters-295bed3506df */
-function renderRecentMasters(){const el=$('#recentMasters');if(!el)return;const counts=new Map();for(const r of state.orders){const v=canonicalMasterSelection(r.master);if(v&&!isServiceMaster(v))counts.set(v,(counts.get(v)||0)+1)}const duty=onDutyMasters(),all=aiEligibleMasters().sort((a,b)=>Number(duty.has(canonicalKey(b,'master')))-Number(duty.has(canonicalKey(a,'master')))||(counts.get(b)||0)-(counts.get(a)||0)||a.localeCompare(b,'ru'));el.innerHTML=all.map((v,i)=>{const working=duty.has(canonicalKey(v,'master'));return `<button type="button" class="quick-chip ${working?'on-duty':''} ${!working&&i<4?'master-favorite':''}" data-quick-master="${esc(v)}" title="${working?'Сегодня на смене · ':''}${counts.get(v)||0} заказов">${esc(v)}${working?` <small>На смене</small>`:i<4&&counts.get(v)?` <small>${counts.get(v)}</small>`:''}</button>`}).join('');$$('[data-quick-master]').forEach(b=>b.onclick=()=>{$('#f_master').value=b.dataset.quickMaster;$('#f_fixedMaster').checked=masterFixedMode(b.dataset.quickMaster);$$('[data-quick-master]').forEach(x=>x.classList.toggle('active',x===b));renderFormPreview(false)})}/* CRM_END:renderRecentMasters-295bed3506df */
+function renderRecentMasters(loadShift=false, confirmedDuty){
+  const el=$('#recentMasters');
+  if(!el)return;
+  const visitDate=$('#f_visitDate')?.value||today();
+  const cloud=window.MasterAICloud;
+  if(loadShift && cloud?.connected && cloud.getMasterWeek){
+    const request=String(Number(el.dataset.shiftRequest||0)+1);
+    el.dataset.shiftRequest=request;
+    cloud.getMasterWeek([visitDate]).then(rows=>{
+      if(el.dataset.shiftRequest!==request || ($('#f_visitDate')?.value||today())!==visitDate)return;
+      const masters=rows.find(row=>row.date===visitDate)?.masters||[];
+      renderRecentMasters(false,new Set(masters.map(name=>canonicalKey(name,'master'))));
+    }).catch(()=>{if(el.dataset.shiftRequest===request)toast('Не удалось сверить график на дату выезда')});
+  }
+  const counts=new Map();for(const r of state.orders){const v=canonicalMasterSelection(r.master);if(v&&!isServiceMaster(v))counts.set(v,(counts.get(v)||0)+1)}const duty=confirmedDuty??onDutyMasters(visitDate),all=aiEligibleMasters().sort((a,b)=>Number(duty.has(canonicalKey(b,'master')))-Number(duty.has(canonicalKey(a,'master')))||(counts.get(b)||0)-(counts.get(a)||0)||a.localeCompare(b,'ru'));el.innerHTML=all.map((v,i)=>{const working=duty.has(canonicalKey(v,'master'));return `<button type="button" class="quick-chip ${working?'on-duty':''} ${!working&&i<4?'master-favorite':''}" data-quick-master="${esc(v)}" title="${working?'На смене в дату выезда · ':''}${counts.get(v)||0} заказов">${esc(v)}${working?` <small>На смене</small>`:i<4&&counts.get(v)?` <small>${counts.get(v)}</small>`:''}</button>`}).join('');$$('[data-quick-master]').forEach(b=>b.onclick=()=>{$('#f_master').value=b.dataset.quickMaster;$('#f_fixedMaster').checked=masterFixedMode(b.dataset.quickMaster);$$('[data-quick-master]').forEach(x=>x.classList.toggle('active',x===b));renderFormPreview(false)})}/* CRM_END:renderRecentMasters-295bed3506df */
 /* CRM_UNIT:openBulkModal-d876cc4005bb */
 function openBulkModal(){if(!state.selected.size){toast('Сначала выберите заказы');return}syncSelectionUI();openModal('bulkModal')}/* CRM_END:openBulkModal-d876cc4005bb */
 /* CRM_UNIT:applyBulkChanges-4d9e7027575a */
