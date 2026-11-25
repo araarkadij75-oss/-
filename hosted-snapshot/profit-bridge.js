@@ -36,7 +36,7 @@ window.installMasterAIProfitBridge = (dependencies) => {
      const rawDates=split?r._cashReceipts.map(e=>e?.date||''):[cash];
      if(Array.isArray(r._cashRefunds))rawDates.push(...r._cashRefunds.map(e=>e?.date||''));
      const dates=rawDates.filter(d=>d&&dateOf(d)===d&&(!intake||d>=intake));
-     const row={intake,cash,person:orderPayrollShift(r),amount:numMaybe(r.companyShare),closed,split,dates,uncertainDate:(closed||split)&&dates.length!==rawDates.length};
+     const row={intake,cash,completed:derivedStage(r)==='Выполнен',check:numMaybe(r.total),person:orderPayrollShift(r),amount:numMaybe(r.companyShare),closed,split,dates,uncertainDate:(closed||split)&&dates.length!==rawDates.length};
      const id=String(r.orderId||r._id||'');
      if(id){if(!byId.has(id))byId.set(id,[]);byId.get(id).push(row)}
      return row;
@@ -122,7 +122,20 @@ window.installMasterAIProfitBridge = (dependencies) => {
      if(invalidDates)warnings.push('Заказов с противоречивой датой сдачи исключено: '+invalidDates+'. Исправьте дату перед расчётом.');
      if(futureCash)warnings.push('Будущая сдача ещё не включена в кассу: '+futureCash+'.');
      if(provisional)warnings.push('Текущий день и строки с замечаниями требуют сверки. Зарплата считается по дню приёма, выплаты повторно не вычитаются из прибыли.');
-     return {from:a,to:b,asOf:cutoff,...window.ProfitAccounting.calculate({from:a,to:b,orders,salaries,expenses,warnings}),basis};
+     const result=window.ProfitAccounting.calculate({from:a,to:b,orders,salaries,expenses,warnings});
+     const days=new Map(result.days.map(day=>[day.date,day]));
+     for(const [id,rows] of byId){
+      const row=rows[0];
+      if(rows.length!==1||!inside(row.intake))continue;
+      const day=days.get(row.intake)||{date:row.intake,cash:0,salary:0,ads:0,other:0,profit:0};
+      day.accepted=(day.accepted||0)+1;
+      if(row.completed && row.check>0){
+       day.checkCents=(day.checkCents||0)+Math.round(row.check*100);
+       day.checkCount=(day.checkCount||0)+1;
+      }
+      days.set(day.date,day);
+     }
+     return {from:a,to:b,asOf:cutoff,...result,days:[...days.values()].sort((x,y)=>x.date.localeCompare(y.date)),basis};
     }
     return period;
    }

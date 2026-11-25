@@ -618,7 +618,22 @@ try {
     if (in_array($body['op'] ?? '', ['payroll_payments_add','payroll_payments_void'], true)) tg_reply(200,fin_payments_mutate($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'cash_receipts') tg_reply(200,fin_save_receipts($pdo,$actor,$body));
     if (($body['op'] ?? '') === 'reconcile') tg_reply(200,fin_reconcile($pdo,$actor,$body));
-    if (($body['op'] ?? '') === 'list') tg_reply(200, ['ok' => true, 'expenses' => fin_list($pdo, $actor)] + fin_reports($pdo, $actor));
+    if (($body['op'] ?? '') === 'set_daily_contacts') {
+        $date = fin_refund_date($body['date'] ?? null);
+        if ($date === '') throw new InvalidArgumentException('invalid_date');
+        $count = $body['count'] ?? null;
+        if (!is_int($count) || $count < 0 || $count > 1000000) throw new InvalidArgumentException('invalid_contact_count');
+        $path = tg_path('financeMetrics', 'dailyContacts');
+        $pdo->beginTransaction();
+        $doc = tg_read($pdo,$path,true) ?: [];
+        $counts = $doc['counts'] ?? [];
+        if (($counts[$date] ?? null) !== ($body['previous'] ?? null) && ($counts[$date] ?? null) !== $count) throw new UnexpectedValueException('order_changed_refresh');
+        $counts[$date] = $count;
+        tg_write_many($pdo,[$path=>['counts'=>$counts]],(string)$actor['uid'],'owner','set_daily_contacts');
+        $pdo->commit();
+        tg_reply(200,['ok'=>true,'contacts'=>$counts]);
+    }
+    if (($body['op'] ?? '') === 'list') tg_reply(200, ['ok' => true, 'contacts' => tg_read($pdo,tg_path('financeMetrics','dailyContacts'))['counts'] ?? [], 'expenses' => fin_list($pdo, $actor)] + fin_reports($pdo, $actor));
     tg_reply(200, fin_mutate($pdo, $actor, $body));
 } catch (InvalidArgumentException $e) { tg_reply(400, ['ok' => false, 'error' => $e->getMessage()]);
 } catch (DomainException $e) { tg_reply(403, ['ok' => false, 'error' => $e->getMessage()]);

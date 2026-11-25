@@ -1,4 +1,4 @@
-const CACHE='eliteservice-18.17.123-order-refunds';
+const CACHE='eliteservice-18.17.123-acquisition';
 const SHELL=[
   './',
   './index.html',
@@ -13,9 +13,9 @@ const SHELL=[
   './telegram-ui.js?v=20261031-telegram9',
   './avito-profit.js?v=20261031-profit2',
   './profit-accounting.js?v=20261125-refunds1',
-  './profit-bridge.js?v=20261125-refunds1',
+  './profit-bridge.js?v=20261125-acquisition1',
   './payroll-intake-accounting.js?v=20261125-refunds1',
-  './profit-ui.js?v=20261125-refunds1',
+  './profit-ui.js?v=20261125-acquisition1',
   './own-payroll.js?v=order-links',
   './sheet-order-ui.js?v=1',
   './visual-refinement.css?v=20261124-cash-details',
