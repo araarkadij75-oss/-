@@ -7,7 +7,7 @@ window.installMasterAIProfitBridge = (dependencies) => {
  const clear=()=>{completeReports=null;reportsTruncated=false;if(!owner()){state.expenses=[]}};
  window.addEventListener('masterai:session',clear);
  window.MasterAIProfitBridge={
-  snapshot:()=>owner()?({role:currentRole(),userrole:currentRole(),userRole:currentRole(),connected:!!window.MasterAICloud?.connected,orders:state.orders,shiftReports:completeReports||state.shiftReports,settings:state.settings,expenses:state.expenses}):({role:currentRole(),userRole:currentRole(),connected:!!window.MasterAICloud?.connected}),
+  snapshot:()=>owner()?({role:currentRole(),userrole:currentRole(),userRole:currentRole(),connected:!!window.MasterAICloud?.connected,ordersReady:state.session?.financeOrdersReady===true && !state.session.cloudEmpty,orders:state.orders,shiftReports:completeReports||state.shiftReports,settings:state.settings,expenses:state.expenses}):({role:currentRole(),userRole:currentRole(),connected:!!window.MasterAICloud?.connected}),
   ensureXLSX:()=>ensureXLSX(),
   openTab:tab=>switchTab(tab),
   setReports:(reports,truncated=false)=>{requireOwner();completeReports=reports;reportsTruncated=truncated;state.shiftReports=reports},

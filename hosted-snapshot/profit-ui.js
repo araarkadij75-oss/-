@@ -85,6 +85,14 @@
     const from = $('#profitFrom').value, to = $('#profitTo').value;
     if (!from || !to || from > to) { notice('Укажите период: начальная дата должна быть не позже конечной.', true); return; }
     if (typeof bridge()?.calculate !== 'function') { notice('Расчёт прибыли ещё загружается. Нажмите «Обновить».', true); return; }
+    if (snapshot().ordersReady === false) {
+      for (const id of ['profitMetrics','profitDays','profitStaff','profitPeriodBody']) {
+        const el = $('#' + id);
+        if (el) el.textContent = '';
+      }
+      $('#profitCalculationNote').textContent = 'Ожидаем загрузку заказов из базы. После загрузки расчёт появится автоматически.';
+      return;
+    }
     let result;try{result=bridge().calculate(from,to,state.expenses,$('#profitBasis').value)}catch(e){notice(e.message,true);return}
     const provisional = !!result.periodSections?.today || Number(result.salaryEstimated)>0 || (result.issues||result.warnings||[]).length>0;
     const cards = [[$('#profitBasis').value==='intake'?'Касса заявок':'Касса поступлений', result.companyCash, $('#profitBasis').value==='intake'?'Заявки, принятые в выбранный период':'Деньги, сданные в выбранный период', 'blue'], ['Зарплата диспетчеров', result.salary, `По расчёту ${money(result.salaryConfirmed)} · предварительно ${money(result.salaryEstimated)}`, 'violet'], ['Реклама', result.ads, 'С учётом возвратов', 'amber'], ['Прочие расходы', result.other, 'Активные операции периода', 'amber'], [provisional ? 'Прибыль · предварительно' : 'Прибыль', result.profit, 'Касса − зарплата − расходы', Number(result.profit) < 0 ? 'red' : 'green']];
@@ -277,6 +285,9 @@
     if(!owner()) {const p=$('#profitPanel'),t=$('[data-tab="profit"]');if(p)p.remove();if(t)t.remove();state.expenses=[];state.parsed=null;state.selected.clear();return;}
     mount();const oldTab=$('[data-tab="finance"]');if(oldTab)oldTab.hidden=true;const oldPanel=$('[data-panel="finance"]');if(oldPanel)oldPanel.hidden=true;
   }
+  window.addEventListener('masterai:orders-ready', () => {
+    if (state.contacts && owner() && $('#profitPanel')?.classList.contains('active')) render();
+  });
   window.addEventListener('masterai:session',sessionCheck);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sessionCheck,{once:true});else sessionCheck();
   setInterval(sessionCheck,1000);
