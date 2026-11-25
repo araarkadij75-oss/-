@@ -145,6 +145,7 @@ fin_check(!fin_order_report_locked($lockOrder,['date'=>'2026-11-05','orderIds'=>
 fin_check(fin_order_report_locked($lockOrder,['lockedOrderIds'=>['TEST']],'TEST'),'Explicit lock list is authoritative without a date');
 fin_check(fin_order_report_locked($lockOrder,['paidOrderIds'=>['TEST']],'TEST'),'Previously accounted order remains locked');
 $pickup=array_replace($lockOrder,['_isPickup'=>true]);
+fin_check(!fin_order_report_locked($lockOrder, array_merge($lockReport,['lockedOrderIds'=>[]]), 'TEST'), 'Open intake stays editable with explicit lock list');
 fin_check(!fin_order_report_locked($pickup,$lockReport,'TEST'),'Open pickup in intake list stays editable');
 fin_check(fin_order_report_locked($pickup,['paidOrderIds'=>['TEST']],'TEST'),'Paid pickup remains locked');
 fin_check(fin_order_report_locked($pickup,['lockedOrderIds'=>['TEST']],'TEST'),'Explicitly locked pickup remains locked');

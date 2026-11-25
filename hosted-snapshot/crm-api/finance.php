@@ -81,6 +81,7 @@ function fin_order_plan(array $order, array $input, array $policy, bool $fixed):
 function fin_order_report_locked(array $order, array $report, string $id): bool {
     $ids = static fn(string $key): array => is_array($report[$key] ?? null) ? array_map('strval', $report[$key]) : [];
     if (in_array($id, $ids('lockedOrderIds'), true) || in_array($id, $ids('paidOrderIds'), true)) return true;
+    if (is_array($report['lockedOrderIds'] ?? null)) return false;
     // Merely appearing in the day's intake list must not freeze an open pickup.
     if (($order['_isPickup'] ?? false) === true || in_array($order['_status'] ?? '', ['Забор / техника у мастера','Забор / у мастера'], true)) return false;
     $date = static function (mixed $value): string {
