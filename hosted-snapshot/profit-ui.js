@@ -91,6 +91,7 @@
     const issues = result.issues || [];
     $('#profitCalculationNote').textContent = issues.length ? issues.map(x => typeof x === 'string' ? x : x.message || 'Требуется сверка').join(' · ') : 'Выплата мастеру уже учтена в кассе компании и повторно не вычитается.';
     $('#profitCalculationNote').className = 'notice ' + (issues.length ? 'warn' : '');
+    const expandedDays = new Set(Array.from($('#profitDays').querySelectorAll('details[open]'), detail => detail.dataset.day));
     const undivided = state.expenses.filter(e => e.active !== false && e.periodFrom && e.periodTo && e.periodFrom !== e.periodTo);
     $('#profitDays').innerHTML = [...(result.days || [])].sort((a,b) => b.date.localeCompare(a.date)).map(d => {
       const costs = d.salary + d.ads + d.other;
@@ -98,7 +99,7 @@
       const margin = d.cash > 0 && !hasPeriodCost ? (100 * d.profit / d.cash).toLocaleString('ru-RU', {maximumFractionDigits:1}) + ' %' : '—';
       const tone = d.profit < 0 ? 'loss' : d.profit > 0 ? 'gain' : '';
       const breakdown = [['Зарплата',d.salary],['Реклама',d.ads],['Прочие',d.other]].map(([label,amount]) => `<div><dt>${label}</dt><dd>${money(amount)}</dd></div>`).join('');
-      return `<tr><th scope="row">${esc(d.date.split('-').reverse().join('.'))}</th><td>${money(d.cash)}</td><td><details><summary aria-label="Расходы за ${esc(d.date)}">${money(costs)}</summary><dl>${breakdown}</dl></details></td><td><b class="day-result ${tone}">${money(d.profit)}</b></td><td>${margin}${hasPeriodCost ? '<small>Расход за период</small>' : ''}</td></tr>`;
+      return `<tr><th scope="row">${esc(d.date.split('-').reverse().join('.'))}</th><td>${money(d.cash)}</td><td><details data-day="${esc(d.date)}"${expandedDays.has(d.date) ? ' open' : ''}><summary aria-label="Расходы за ${esc(d.date)}">${money(costs)}</summary><dl>${breakdown}</dl></details></td><td><b class="day-result ${tone}">${money(d.profit)}</b></td><td>${margin}${hasPeriodCost ? '<small>Расход за период</small>' : ''}</td></tr>`;
     }).join('') || '<tr><td colspan="5" class="empty">Нет операций за период.</td></tr>';
     $('#profitStaff').innerHTML=(result.staff||[]).map(person=>`<tr><td><strong>${esc(person.name||person.person||'Сотрудник')}</strong></td><td class="num">${esc(Array.isArray(person.days)?person.days.length:person.days??'—')}</td><td class="num">${money(person.confirmed)}</td><td class="num">${money(person.estimated)}</td><td class="num"><strong>${money(person.total)}</strong></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Начислений сотрудникам за период нет.</td></tr>';
     const rows = state.expenses.filter(x => x.periodFrom&&x.periodTo ? x.periodFrom<=to&&x.periodTo>=from : x.date >= from && x.date <= to).sort((a,b) => String(b.date).localeCompare(String(a.date)));
@@ -167,6 +168,10 @@
     panel.innerHTML = `<style>
 #profitPanel .card.pad{padding:clamp(10px,1.2vw,18px)}
 #profitPanel summary{cursor:pointer;font-weight:650}
+#profitPeriodSections thead th:not(:first-child){text-align:right}
+#profitPanel .profit-daily table{table-layout:fixed!important}
+#profitPanel .profit-daily dl{max-width:16rem;margin-inline-start:auto!important;line-height:1.55;color:#213850;background:#eff4fa;border-radius:6px;padding:5px 8px}
+#profitPanel .profit-daily summary:focus-visible{outline:2px solid #3763ac;outline-offset:2px}
 #profitPanel .profit-daily .table-wrap{overflow-x:auto}
 #profitPanel .profit-daily table{width:100%;min-width:32rem;table-layout:auto;font-variant-numeric:tabular-nums}
 #profitPanel .profit-daily :is(th,td){text-align:right;padding:7px 12px;vertical-align:top;white-space:nowrap}
