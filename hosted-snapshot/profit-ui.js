@@ -1,7 +1,8 @@
 (() => {
   'use strict';
   const $ = s => document.querySelector(s);
-  const money = n => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(Number(n) || 0);
+  const rubles = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' });
+  const money = n => n == null || String(n).trim() === '' || !Number.isFinite(Number(n)) ? '—' : rubles.format(Number(n));
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   const fieldPreview = (key, value) => key === '_cashRefunds' && Array.isArray(value) ? value.map(r => r.date + ' · компания ' + money(r.companyCents / 100) + ' · мастер ' + money(r.masterCents / 100)).join(', ') : key === '_cashReceipts' && Array.isArray(value) ? value.map(r => r.date + ' · ' + money(r.cents / 100)).join(', ') : (value ?? 'Поле отсутствует');
   const state = { expenses: [], workbook: null, raw: [], parsed: null, selected: new Set(), busy: false, source: '' };
@@ -69,8 +70,9 @@
     const notes = [];
     if (result.basis === 'intake' && sections.completed) notes.push('Строка завершённых дней показывает состояние на конец периода. В верхних карточках также учтены более поздние сдачи по тем же заказам.');
     if (sections.today) {
-      notes.push('За сегодня показаны текущие начисления и внесённые расходы. Итог изменится при новых сдачах или добавлении расходов.');
-      if (sections.today.ads === 0) notes.push('Чистый расход на рекламу за сегодня в реестре равен нулю. Полноту данных нужно сверить с отчётом рекламного кабинета.');
+      if (result.basis === 'cash' && sections.today.companyCash === 0) notes.push('Касса сегодня — 0 ₽ по дате сдачи. Принятые заявки попадут в кассу после регистрации поступления.');
+      notes.push('День открыт. Итог обновляется по мере сдачи денег и регистрации расходов.');
+      if (sections.today.ads === 0) notes.push('Реклама за сегодня по реестру — 0 ₽. Полноту расходов нужно сверить с отчётом.');
     }
     if (rows.length > 1 && fields.some(key => rows.reduce((sum, [part]) => sum + Math.round(part[key] * 100), 0) !== Math.round(result[key] * 100))) {
       if (result.basis !== 'intake') notes.push('Сумма строк отличается от общего итога. В расшифровке указаны операции, которые нельзя распределить между частями периода.');
