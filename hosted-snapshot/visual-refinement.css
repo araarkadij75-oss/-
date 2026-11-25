@@ -1469,3 +1469,33 @@ html[data-atmosphere="space"] .app nav.tabs {
 .app #masterShiftPicker .master-week-table thead .is-weekend:not(.is-today) { background:#f0eaf8; color:#4f426a; }
 .app #masterShiftPicker .master-week-table tbody .is-today { border-inline:1px solid #88a8d1; }
 .app #masterShiftPicker .master-day-count { display:block; margin-top:3px; font-size:.73rem; line-height:1.25; font-weight:500; }
+
+/* Arcade palette for the weekly schedule. */
+.app [data-panel=mastershifts] .master-shift-card .section-head {
+  background:radial-gradient(ellipse at top right,#514185,transparent 62%),linear-gradient(115deg,#142344,#243566);
+  border:1px solid #6b75b7; border-radius:12px; box-shadow:inset 0 -3px #7568cf;
+}
+.app [data-panel=mastershifts] .section-head :is(.chart-title,.chart-sub,label,.field > span) { color:#fff; }
+.app #masterShiftPicker tr > :nth-child(2) { --day:#2455ac; }
+.app #masterShiftPicker tr > :nth-child(3) { --day:#5f40aa; }
+.app #masterShiftPicker tr > :nth-child(4) { --day:#087854; }
+.app #masterShiftPicker tr > :nth-child(5) { --day:#966000; }
+.app #masterShiftPicker tr > :nth-child(6) { --day:#aa3863; }
+.app #masterShiftPicker tr > :nth-child(7) { --day:#176780; }
+.app #masterShiftPicker tr > :nth-child(8) { --day:#93428c; }
+.app #masterShiftPicker .master-week-table thead th:nth-child(n+2) {
+  background:var(--day); color:white; border-bottom:3px solid color-mix(in srgb,var(--day),white 45%);
+}
+.app #masterShiftPicker .master-day-today {
+  display:inline-block; padding:1px 6px; border-radius:4px; background:#fff6bc; color:#473208; font-weight:750;
+}
+.app #masterShiftPicker .master-week-check span {
+  border-color:color-mix(in srgb,var(--day),white 44%); border-radius:5px;
+  box-shadow:0 2px 0 color-mix(in srgb,var(--day),white 67%);
+}
+.app #masterShiftPicker .master-week-check input:checked + span {
+  background:var(--day); border-color:var(--day); box-shadow:0 0 0 3px color-mix(in srgb,var(--day),white 76%);
+}
+.app #masterShiftPicker .master-week-table tbody td:has(input:checked) {
+  background:color-mix(in srgb,var(--day),white 88%);
+}
