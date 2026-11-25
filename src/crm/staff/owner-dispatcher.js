@@ -1,6 +1,12 @@
 /* CRM_UNIT:masterWeekDirty-aae79739fe5f */
 let masterWeekDirty=false,masterWeekLoading=false,masterWeekSaving=false,masterWeekReady=false,masterWeekAnchor='',masterWeekRequest=0;/* CRM_END:masterWeekDirty-aae79739fe5f */
-/* CRM_UNIT:isStaffOrderLocked-9c834c4f0bef */function isStaffOrderLocked(r){if(currentUser().role==='owner'||!r)return false;const id=String(r.orderId||'');if(r._reportLockId)return true;if(!id)return false;if(isPickupOrder(r))return (state.shiftReports||[]).some(x=>Array.isArray(x.paidOrderIds)&&x.paidOrderIds.map(String).includes(id));const date=clean(r.callDate||String(r._createdAt||'').slice(0,10));return (state.shiftReports||[]).some(x=>x.date===date&&Array.isArray(x.orderIds)&&x.orderIds.map(String).includes(id))}/* CRM_END:isStaffOrderLocked-9c834c4f0bef */
+/* CRM_UNIT:isStaffOrderLocked-9c834c4f0bef */function isStaffOrderLocked(r){if(currentUser().role==='owner'||!r)return false;const id=String(r.orderId||'');if(r._reportLockId)return true;if(!id)return false;const date=clean(r.callDate||String(r._createdAt||'').slice(0,10));
+return (state.shiftReports||[]).some(report=>{
+  const contains=ids=>Array.isArray(ids)&&ids.some(value=>String(value)===id);
+  if(contains(report.paidOrderIds)||contains(report.lockedOrderIds))return true;
+  if(Array.isArray(report.lockedOrderIds)||isPickupOrder(r))return false;
+  return report.date===date&&contains(report.orderIds);
+})}/* CRM_END:isStaffOrderLocked-9c834c4f0bef */
 /* CRM_UNIT:masterAccountFor-8f573cbf6734 */
 function masterAccountFor(name){const selected=canonicalMasterSelection(name);return (state.settings.staff||[]).find(x=>x.role==='master'&&canonicalKey(x.master||x.name,'master')===canonicalKey(selected,'master'))||null}/* CRM_END:masterAccountFor-8f573cbf6734 */
 /* CRM_UNIT:masterFixedMode-16e066a94e88 */function masterFixedMode(name){const selected=canonicalMasterSelection(name);return !!masterAccountFor(selected)?.fixedMaster||(state.settings.fixedMasters||[]).some(x=>canonicalKey(canonicalMasterSelection(x),'master')===canonicalKey(selected,'master'))}/* CRM_END:masterFixedMode-16e066a94e88 */
