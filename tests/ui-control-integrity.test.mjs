@@ -12,6 +12,21 @@ for(const page of ['index','master','dispatcher-logistic']){
   assert.equal(new Set(ids).size,ids.length,'Duplicate IDs route updates and clicks to the wrong control');
   for(const m of markup.matchAll(/<label\b[^>]*\bfor="([^"]+)"/g))assert.ok(ids.includes(m[1]),`Missing labelled control ${m[1]}`);
  });
+ test(`${page}: login and order dialogs stay visible when role panels are hidden`,()=>{
+  const dialogIds=['loginModal','orderModal','bulkModal','masterReportModal','connectionModal'];
+  let sectionDepth=0;
+  const outsidePanels=[];
+  for(const [tag] of markup.matchAll(/<section\b[^>]*>|<\/section\s*>|<div\b[^>]*>/gi)){
+   if(tag.startsWith('<section'))sectionDepth++;
+   if(tag.startsWith('</section'))sectionDepth--;
+   const id=tag.match(/\bid="([^"]+)"/)?.[1];
+   if(dialogIds.includes(id)){
+    assert.equal(sectionDepth,0,`${id} inherits display:none when a role panel is hidden`);
+    outsidePanels.push(id);
+   }
+  }
+  assert.deepEqual(outsidePanels.sort(),dialogIds.sort());
+ });
  test(`${page}: current shift copy uses this employee and today, despite another latest saved report`,async()=>{
   const share=html.match(/^async function shareShiftReport\(r\).*$/m)?.[0];assert.ok(share);
   const handler=html.match(/\$\('#shareShiftBtn'\)\.onclick=(\(\)=>shareShiftReport\([^;]+);/)[1];
