@@ -1499,3 +1499,52 @@ html[data-atmosphere="space"] .app nav.tabs {
 .app #masterShiftPicker .master-week-table tbody td:has(input:checked) {
   background:color-mix(in srgb,var(--day),white 88%);
 }
+
+/* Orders workspace: distinct destinations, quiet surfaces and a clear selection. */
+.app nav.tabs .tab[data-tab]:not([hidden]) {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 650;
+  gap: .45rem;
+  border: 1px solid color-mix(in srgb, var(--nav-icon-color) 32%, transparent);
+  background: color-mix(in srgb, var(--nav-icon-color) 9%, transparent);
+}
+.app nav.tabs .tab[data-tab]::before {
+  width: 1.08rem;
+  height: 1.08rem;
+  flex-shrink: 0;
+}
+.app nav.tabs .tab.active[data-tab]:not([hidden]) {
+  background: linear-gradient(125deg, #244eaa, #463c95);
+  border-color: #aabaff;
+  color: white;
+  box-shadow: inset 0 -3px #b6c8ff;
+}
+.app nav.tabs .tab[data-tab]:focus-visible,
+.app .orders-toolbar :focus-visible,
+.app .color-audit-item:focus-visible {
+  outline: 3px solid #436ce8;
+  outline-offset: 2px;
+}
+.app .order-dashboard-heading {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+.app .color-audit .color-audit-item {
+  border-inline-start: 3px solid currentColor;
+  font-variant-numeric: tabular-nums;
+}
+.app .color-audit .color-audit-item[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+.app .orders-toolbar {
+  padding: .4rem;
+  border: 1px solid #bbc8df;
+  border-radius: .75rem;
+  background: #edf2fa;
+  box-sizing: border-box;
+}
+.app .orders-toolbar :is(input,select,button) {
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
