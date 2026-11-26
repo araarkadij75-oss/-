@@ -29,7 +29,7 @@ test('release state pins safe environment', () => {
 test('REG.RU release helper stages only an explicit replace allowlist and hashes every payload file', () => {
   const script = read('scripts/prepare-regru-release.mjs');
   const allowlist=JSON.parse('['+script.match(/productionReplaceAllowlist:\s*\[([^\]]+)\]/)[1].replaceAll("'",'"')+']');
-  assert.deepEqual(allowlist,['payroll-intake-accounting.js','avito-profit.js','profit-accounting.js','profit-bridge.js','profit-ui.js','own-payroll.js', 'sheet-order-ui.js','visual-refinement.css', 'rain-courtyard-v1.webp', 'space-panorama-v1.webp', 'mountain-panorama-v1.webp', 'workspace-atmosphere.js','quality-monitor.js','crm-api/quality.php','crm-api/finance.php','crm-api/own-payroll.php', 'crm-api/sheet-order.php', 'crm-api/sheet-order-map.php','crm-api/telegram.php','telegram-ui.js','index.html','dispatcher-logistic.html','master.html','sw.js']);
+  assert.deepEqual(allowlist,['payroll-intake-accounting.js','avito-profit.js','profit-accounting.js','profit-bridge.js','profit-ui.js','own-payroll.js', 'sheet-order-ui.js','visual-refinement.css', 'rain-courtyard-v1.webp', 'space-panorama-v1.webp', 'mountain-panorama-v1.webp', 'workspace-atmosphere.js','quality-monitor.js','crm-api/quality.php','crm-api/finance.php','crm-api/b2b-sync.php','crm-api/own-payroll.php', 'crm-api/sheet-order.php', 'crm-api/sheet-order-map.php','crm-api/telegram.php','telegram-ui.js','index.html','dispatcher-logistic.html','master.html','sw.js']);
   assert.match(script, /protectedPaths:\s*\['cloud-config\.js', 'firestore-regru\.js'/);
   assert.match(script, /createHash\('sha256'\)/);
   const files=script.match(/const files = \[([\s\S]*?)\];/)[1];assert.match(files, /'payroll-intake-accounting\.js'/);

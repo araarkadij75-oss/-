@@ -39,6 +39,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  b2b-sync:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: b2b_sync_test
+          MYSQL_ROOT_PASSWORD: test-only
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=3s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - run: php tests/b2b-sync.test.php
+        env:
+          B2B_TEST_DSN: mysql:host=127.0.0.1;port=3306;dbname=b2b_sync_test
+          B2B_TEST_PASSWORD: test-only
   verify:
     name: Audit and build release
     runs-on: ubuntu-latest
@@ -84,7 +102,7 @@ jobs:
 
   deploy:
     name: Publish verified release over FTPS
-    needs: verify
+    needs: [verify, b2b-sync]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
