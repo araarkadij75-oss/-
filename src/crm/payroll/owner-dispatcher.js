@@ -42,7 +42,67 @@ function legacyShiftSnapshot(date,profile){const rows=shiftOrders(date,profile),
 // Hash domain intake-v2 distinguishes the intake algorithm without altering the v1 report schema. Unprefixed saved reports retain legacy verification.
 function shiftSnapshot(date=today(),profile=currentUser(),reserved=new Set(),validationReport=null,explicitWorkedDay=false){const legacy=!!validationReport&&!String(validationReport.dataHash||'').startsWith('intake-v2:'),intake=legacy?null:payrollIntakeSnapshot().days.find(d=>d.date===date&&d.person===payrollShiftKey({shift:profile.shift,approvedForName:profile.name})),cohortIds=new Set(intake?.orderIds||[]),seen=new Set(),rows=shiftOrders(date,profile),fin=rows.filter(r=>num(r.total)>0),done=rows.filter(r=>derivedStage(r)==='Выполнен'),reviews=rows.filter(r=>truthReview(r.review)).length,payable=legacy?shiftSettlementOrders(date,profile,reserved,validationReport):state.orders.filter(r=>{const id=String(r.orderId||r._id||'');if(!cohortIds.has(id)||seen.has(id)||r._duplicateOf)return false;seen.add(id);return true}),todayCash=payable.filter(r=>(legacy?shiftOrderDate(r):iso(parseDate(r.callDate||'')))===date),deferred=payable.filter(r=>(legacy?shiftOrderDate(r):iso(parseDate(r.callDate||'')))!==date),shiftCash=!legacy&&todayCash.some(r=>r._cashReceipts?.length)?intake.cashCents/100:sum(todayCash,r=>num(r.companyShare)),deferredCash=sum(deferred,r=>num(r.companyShare)),cash=shiftCash+deferredCash,paidOrderIds=payable.map(r=>String(r.orderId)),deferredOrderIds=deferred.map(r=>String(r.orderId)),dataHash=(legacy?'':'intake-v2:')+pinHash(JSON.stringify({rows:rows.map(r=>[r.orderId,r._updatedAt,r.total,r.companyShare,r.review,r.master,r._closeReviewState,r._assignedAt,r._status,derivedStage(r)]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))),paidOrderIds,shiftCash,deferredCash}));if(paidOrderIds.length>500)throw new Error('В начислении больше 500 заказов — требуется отдельная сверка');return{id:date+'-'+(profile.shift||profile.id||'shift'),date,closedBy:profile.id||'',closedByName:profile.name||'',shift:profile.shift||profile.id||'shift',shiftName:shiftName(profile.shift||profile.id),orders:rows.length,financialOrders:fin.length,completed:done.length,active:rows.filter(r=>!['Выполнен','Отказ','Отмена'].includes(derivedStage(r))).length,refused:rows.filter(r=>derivedStage(r)==='Отказ').length,cancelled:rows.filter(r=>derivedStage(r)==='Отмена').length,unassigned:rows.filter(r=>!['Выполнен','Отказ','Отмена'].includes(derivedStage(r))&&(!r.master||isServiceMaster(r.master))).length,reviewPending:rows.filter(r=>r._closeReviewState==='pending'||derivedStage(r)==='На проверке').length,reviews,reviewRate:done.length?reviews/done.length*100:0,turnover:sum(fin,r=>num(r.total)),cash,shiftCash,deferredCash,paidOrderIds,deferredOrderIds,settlementVersion:1,avgCheck:fin.length?sum(fin,r=>num(r.total))/fin.length:0,salary:legacy?shiftPayroll(cash):(intake?.entitlementCents||((date<=today()&&(explicitWorkedDay||(!legacy&&validationReport&&num(validationReport.salary)>=2000)))?200000:0))/100,basePay:num(state.settings.shiftBasePay)||2000,cashThreshold:num(state.settings.shiftCashThreshold)||20000,cashRate:num(state.settings.shiftCashRate)||10,orderIds:rows.map(r=>r.orderId).filter(Boolean).slice(0,500),lockedOrderIds:[...new Set([...rows.filter(r=>!isPickupOrder(r)).map(r=>String(r.orderId||'')),...payable.map(r=>String(r.orderId||'')),...state.orders.filter(r=>isPickupOrder(r)&&['Выполнен','Закрыт','Закрыто'].includes(derivedStage(r))&&(r.closeDate===date||r._cashClosedOn===date)&&orderMatchesDispatcher(r,profile)).map(r=>String(r.orderId||''))].filter(Boolean))].slice(0,500),dataHash}}/* CRM_END:shiftSnapshot-8356621c5670 */
 /* CRM_UNIT:subscribeShiftCenter-65cb1a7c09e6 */
-function subscribeShiftCenter(){window.MasterAICloud?.subscribeShiftReports?.(reports=>{state.shiftReports=reports||[];renderShiftClose();renderWeeklyReports()});window.MasterAICloud?.subscribeWeeklyReports?.(rows=>{state.weeklyShiftReports=rows||[];renderWeeklyReports()});window.MasterAICloud?.subscribeMasterShifts?.(rows=>{const incoming=rows||[],incomingIds=new Set(incoming.map(x=>x.date));mergeMasterShiftCache([...state.masterShifts.filter(x=>!incomingIds.has(x.date)),...incoming],weekDates());fillDatalists();if(!masterWeekDirty)renderMasterShifts();renderRecentMasters()});loadMasterWeek()}/* CRM_END:subscribeShiftCenter-65cb1a7c09e6 */
+function subscribeShiftCenter(){
+  clearInterval(subscribeShiftCenter.timer);
+  let synced=false;
+  const clock=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  function notice(){
+    const old=document.getElementById('shiftEveningNotice'), user=currentUser(), role=currentRole();
+    const [todayMoscow,time]=clock.format(new Date()).split(' ');
+    let date=todayMoscow;
+    let key='',report;
+    if(synced && state.session.user && window.MasterAICloud?.connected && !user.preview && !document.body.classList.contains('auth-locked')){
+      if(role==='owner'){
+        const sinceKey='shift-inbox-since:'+user.id;
+        const since=localStorage.getItem(sinceKey)||clock.format(new Date(Date.now()-86400000)).split(' ')[0];
+        localStorage.setItem(sinceKey,since);
+        report=state.shiftReports.find(r=>r.closureOnly && r.date>=since && !localStorage.getItem('shift-read:'+user.id+':'+r.id));
+        if(report)key='shift-read:'+user.id+':'+report.id;
+      }else if(['dispatcher_logistic','logistic'].includes(role) && payrollShiftKey(user)==='sergey'){
+        const pendingKey='pending-close:'+user.id;
+        const pending=localStorage.getItem(pendingKey);
+        if(pending && !state.shiftReports.some(r=>r.id===pending+'-'+(user.shift||user.id))) date=pending;
+        else localStorage.removeItem(pendingKey);
+        const id=date+'-'+(user.shift||user.id), schedule=payrollSchedule();
+        if((time>='22:00'||date<todayMoscow) && !state.shiftReports.some(r=>r.id===id) && (shiftOrders(date,user).length || payrollScheduledShift(date,schedule.anchor,schedule.first)==='sergey')){key='shift-later:'+user.id+':'+id;localStorage.setItem(pendingKey,date)}
+      }
+    }
+    if(!key){old?.remove();return}
+    const later=!report && localStorage.getItem(key), mode=key+(later?'later':'');
+    if(old?.dataset.mode===mode)return;
+    old?.remove();
+    const panel=document.createElement('aside');
+    panel.id='shiftEveningNotice';panel.dataset.mode=mode;panel.setAttribute('aria-label','Закрытие смены');
+    const button=(label,action)=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=label;b.onclick=action;panel.append(b);return b};
+    if(later){
+      panel.className='later';
+      button('Смена открыта · вернуться',()=>{localStorage.removeItem(key);notice()});
+    }else{
+      const title=document.createElement('strong'),detail=document.createElement('p');
+      panel.append(title,detail);
+      if(report){
+        const profile=(state.settings.staff||[]).find(p=>p.id===report.closedBy)||{id:report.closedBy,shift:report.shift,name:report.closedByName};
+        const day=shiftSnapshot(report.date,profile,new Set(),null,true);
+        title.textContent='Смена закрыта · '+profile.name+' · '+report.date;
+        detail.textContent=['Принято '+day.orders+' · выполнено '+day.completed+' · активных '+day.active,
+          'На проверке '+day.reviewPending+' · отказов '+day.refused+' · отмен '+day.cancelled,
+          'Оборот '+money(day.turnover)+' · средний чек '+money(day.avgCheck),
+          'Касса '+money(day.cash)+' · из неё поздние сдачи '+money(day.deferredCash),
+          'Начисление за день '+money(day.salary)+' · хороших отзывов '+day.reviews,
+          'Заказы при закрытии: '+((report.orderIds||[]).join(', ')||'нет')].join('\n');
+        button('Прочитано',()=>{localStorage.setItem(key,'1');notice()});
+      }else{
+        const day=shiftSnapshot(date,user);
+        title.textContent='Закрыть смену за '+date+'?';
+        detail.textContent='Активных заказов: '+day.active+' · на проверке: '+day.reviewPending;
+        const close=button('Закрыть смену',async()=>{close.disabled=true;try{await closeCurrentShift({confirmedDate:date})}finally{close.disabled=false;notice()}});
+        button('Позже',()=>{localStorage.setItem(key,'1');notice()});
+      }
+    }
+    document.body.append(panel);
+  }
+  subscribeShiftCenter.timer=setInterval(notice,15000);
+window.MasterAICloud?.subscribeShiftReports?.(reports=>{state.shiftReports=reports||[];synced=true;notice();renderShiftClose();renderWeeklyReports()});window.MasterAICloud?.subscribeWeeklyReports?.(rows=>{state.weeklyShiftReports=rows||[];renderWeeklyReports()});window.MasterAICloud?.subscribeMasterShifts?.(rows=>{const incoming=rows||[],incomingIds=new Set(incoming.map(x=>x.date));mergeMasterShiftCache([...state.masterShifts.filter(x=>!incomingIds.has(x.date)),...incoming],weekDates());fillDatalists();if(!masterWeekDirty)renderMasterShifts();renderRecentMasters()});loadMasterWeek()}/* CRM_END:subscribeShiftCenter-65cb1a7c09e6 */
 /* CRM_UNIT:shareShiftReport-ea312222b8dd */
 function shiftHistoryCycles(rows,snapshot,renderDay){
  if(rows.length && !state.orders?.length && !state.session?.cloudEmpty)return '<div class="notice" role="status">Ожидаем данные заказов для сверки смены. Отчёт появится после загрузки.</div>';

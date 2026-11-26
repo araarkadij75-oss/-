@@ -4977,10 +4977,24 @@
         },
         "subscribeShiftCenter-65cb1a7c09e6": {
           "globals": [
+            "Date",
+            "Intl",
             "Set",
+            "clearInterval",
+            "document",
+            "localStorage",
+            "setInterval",
             "window"
           ],
           "crossDomain": [
+            {
+              "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentUser",
+              "domain": "staff"
+            },
             {
               "symbol": "fillDatalists",
               "domain": "ui"
@@ -4996,6 +5010,10 @@
             {
               "symbol": "mergeMasterShiftCache",
               "domain": "staff"
+            },
+            {
+              "symbol": "money",
+              "domain": "core"
             },
             {
               "symbol": "renderMasterShifts",
@@ -13206,10 +13224,24 @@
         },
         "subscribeShiftCenter-65cb1a7c09e6": {
           "globals": [
+            "Date",
+            "Intl",
             "Set",
+            "clearInterval",
+            "document",
+            "localStorage",
+            "setInterval",
             "window"
           ],
           "crossDomain": [
+            {
+              "symbol": "currentRole",
+              "domain": "staff"
+            },
+            {
+              "symbol": "currentUser",
+              "domain": "staff"
+            },
             {
               "symbol": "fillDatalists",
               "domain": "ui"
@@ -13225,6 +13257,10 @@
             {
               "symbol": "mergeMasterShiftCache",
               "domain": "staff"
+            },
+            {
+              "symbol": "money",
+              "domain": "core"
             },
             {
               "symbol": "renderMasterShifts",

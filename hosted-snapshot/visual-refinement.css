@@ -1548,3 +1548,9 @@ html[data-atmosphere="space"] .app nav.tabs {
 .app .orders-toolbar :is(input,select,button) {
   font-family: "Segoe UI", system-ui, sans-serif;
 }
+#shiftEveningNotice {position:fixed;bottom:1rem;right:1rem;z-index:60;max-width:min(27rem,calc(100vw - 2rem));max-height:65vh;overflow:auto;padding:1rem;border:1px solid #849bbc;border-radius:12px;background:#fff;color:#193250;box-shadow:0 5px 28px #172b4b33;font:14px/1.5 "Segoe UI",sans-serif}
+#shiftEveningNotice strong {font-size:17px}
+#shiftEveningNotice p {white-space:pre-line;overflow-wrap:anywhere}
+#shiftEveningNotice button {margin:.2rem .4rem .2rem 0}
+#shiftEveningNotice.later {padding:.2rem .4rem;border-color:#a66916}
+@media(prefers-reduced-motion:no-preference){#shiftEveningNotice.later {animation:shiftReminderPulse 2.8s ease-in-out infinite}@keyframes shiftReminderPulse{50%{box-shadow:0 0 0 4px #df991736}}}
