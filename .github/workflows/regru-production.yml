@@ -50,7 +50,7 @@ jobs:
           MYSQL_ROOT_HOST: '%'
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=3s --health-retries=20
+        options: --health-cmd="mysqladmin --protocol=tcp -h 127.0.0.1 -uroot -ptest-only ping" --health-interval=5s --health-timeout=3s --health-retries=20
     steps:
       - uses: actions/checkout@v4
       - run: php tests/b2b-sync.test.php
