@@ -52,3 +52,22 @@ try {
 }
 echo "Sheet certificate issuance, isolation, and readback checks passed.\n";
 
+$header=['','нпр','Город','Дата Звонка','Время звонка','Дата выезда','Время выезд','Имя','Конт. номер','Адрес','Запрос','Мастер','ЗП','Дисп','ПП','З/Ч','Чистый чек','Общая сумма','Процент мастера','Сдача','отзыв','Дата сдачи заявки','ком'];
+$orders=[]; $rows=[$header];
+foreach (['Д','','С','СД/В','Avito',17] as $i=>$marker) {
+    $id='case-'.$i;
+    $order=['callDate'=>'2026-11-24','phone'=>'7999000000'.$i,'address'=>'Адрес '.$i,'request'=>'Заказ'];
+    $orders[$id]=$order;
+    $rows[]=[0=>$marker,3=>'24.11.2026',8=>$order['phone'],9=>$order['address'],10=>$order['request']];
+}
+$orders['missing']=['callDate'=>'2026-11-22'];
+$orders['stored']=['callDate'=>'2026-11-22','a0'=>'Д'];
+$rows[]=[0=>'',3=>'24.11.2026',13=>'Диспетчер'];
+$channels=sheet_source_map($orders,[],$rows);
+check_sheet_send(array_values($channels)===['direct','avito','seo','other','avito','other','unknown','direct'],'Classify verified A values, preserve mixed codes, never infer a missing source');
+$orders['second']=$orders['case-0'];
+check_sheet_send(sheet_source_map($orders,[],$rows)['case-0']==='unknown','Duplicate CRM orders must not inherit one paid source');
+unset($orders['second']);$rows[]=$rows[1];
+check_sheet_send(sheet_source_map($orders,[],$rows)['case-0']==='unknown','Ambiguous sheet rows must stay unresolved');
+check_sheet_send(sheet_source_map($orders,['case-0'=>[2]],$rows)['case-0']==='direct','Verified order identity disambiguates duplicate historical sheet rows');
+check_sheet_send(sheet_source_map($orders,['other-id'=>[3]],$rows)['case-1']==='unknown','Never assign a row already linked to another order');
