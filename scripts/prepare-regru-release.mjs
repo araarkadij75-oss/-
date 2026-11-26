@@ -24,7 +24,7 @@ const files = [
   'profit-ui.js', 'own-payroll.js', 'sheet-order-ui.js',
   'visual-refinement.css', 'rain-courtyard-v1.webp', 'space-panorama-v1.webp', 'mountain-panorama-v1.webp', 'workspace-atmosphere.js',
   'quality-monitor.js',
-  'crm-api/quality.php', 'crm-api/finance.php', 'crm-api/own-payroll.php', 'crm-api/sheet-order.php', 'crm-api/sheet-order-map.php',
+  'crm-api/quality.php', 'crm-api/finance.php', 'crm-api/b2b-sync.php', 'crm-api/own-payroll.php', 'crm-api/sheet-order.php', 'crm-api/sheet-order-map.php',
   'telegram-ui.js',
   'crm-api/telegram.php',
   'cloud-config.js',
@@ -51,7 +51,7 @@ const manifest = {
   source: 'hosted-snapshot',
   createdAt: new Date().toISOString(),
   productionTarget: '/var/www/u3680049/data/www/crm.remontpkspb.ru/candidate',
-  productionReplaceAllowlist: ['payroll-intake-accounting.js', 'avito-profit.js', 'profit-accounting.js', 'profit-bridge.js', 'profit-ui.js', 'own-payroll.js', 'sheet-order-ui.js', 'visual-refinement.css', 'rain-courtyard-v1.webp', 'space-panorama-v1.webp', 'mountain-panorama-v1.webp', 'workspace-atmosphere.js', 'quality-monitor.js', 'crm-api/quality.php', 'crm-api/finance.php', 'crm-api/own-payroll.php', 'crm-api/sheet-order.php', 'crm-api/sheet-order-map.php', 'crm-api/telegram.php', 'telegram-ui.js', 'index.html', 'dispatcher-logistic.html', 'master.html', 'sw.js'],
+  productionReplaceAllowlist: ['payroll-intake-accounting.js', 'avito-profit.js', 'profit-accounting.js', 'profit-bridge.js', 'profit-ui.js', 'own-payroll.js', 'sheet-order-ui.js', 'visual-refinement.css', 'rain-courtyard-v1.webp', 'space-panorama-v1.webp', 'mountain-panorama-v1.webp', 'workspace-atmosphere.js', 'quality-monitor.js', 'crm-api/quality.php', 'crm-api/finance.php', 'crm-api/b2b-sync.php', 'crm-api/own-payroll.php', 'crm-api/sheet-order.php', 'crm-api/sheet-order-map.php', 'crm-api/telegram.php', 'telegram-ui.js', 'index.html', 'dispatcher-logistic.html', 'master.html', 'sw.js'],
   protectedPaths: ['cloud-config.js', 'firestore-regru.js', 'premium-v181721.css', 'quota-safe-v181719.js', 'icon.svg', 'manifest.json', 'manifest-dispatcher-logistic.json', 'manifest-master.json'],
   files: {},
 };
