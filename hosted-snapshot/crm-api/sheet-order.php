@@ -193,9 +193,75 @@ function sheet_orders(PDO $pdo,array $ids):array {
     }
     return $orders;
 }
+function sheet_source_key($marker): string {
+    $marker=sheet_order_text($marker);
+    if ($marker==='' || preg_match('/^(?:авито|avito)$/iuD',$marker)) return 'avito';
+    if (preg_match('/^(?:д|директ|яндекс директ|yandex direct)$/iuD',$marker)) return 'direct';
+    if (preg_match('/^(?:с|seo|сео)$/iuD',$marker)) return 'seo';
+    return 'other';
+}
+
+// Use the sheet day index to keep one verified match per order, even if rows moved.
+function sheet_source_map(array $orders,array $verified,array $rows): array {
+    sheet_order_header($rows[0]??[]);
+    $days=[]; $claims=[]; $metadata=[]; $sources=[];
+    foreach ($rows as $i=>$row) {
+        $day=$i ? sheet_order_day($row[3]??'') : '';
+        if ($day!=='' && (sheet_order_text($row[7]??'')!=='' || sheet_order_text($row[8]??'')!=='' || sheet_order_text($row[10]??'')!=='')) $days[$day][$i]=$row;
+    }
+    foreach ($verified as $id=>$indexes) foreach ($indexes as $n) $metadata[$n][]=(string)$id;
+    foreach ($orders as $id=>$order) {
+        $id=(string)$id;
+        // Only a nonempty stored marker can classify an order with no sheet match.
+        $stored=sheet_order_text($order['a0']??'');
+        $sources[$id]=$stored==='' ? 'unknown' : sheet_source_key($stored);
+        $day=sheet_order_day($order['callDate']??'');
+        if ($day==='' || !isset($days[$day])) continue;
+        $candidates=$days[$day];
+        if (isset($verified[$id])) {
+            if (count($verified[$id])!==1) { $sources[$id]='unknown'; continue; }
+            $index=$verified[$id][0]-1;
+            if (!isset($candidates[$index])) { $sources[$id]='unknown'; continue; }
+            $candidates=[$index=>$candidates[$index]];
+        }
+        try { $n=sheet_order_find($order,[0=>$rows[0]]+$candidates); }
+        catch (UnexpectedValueException $e) { $sources[$id]='unknown'; continue; }
+        if ($n!==null) $claims[$n][]=$id;
+    }
+    foreach ($claims as $n=>$ids) {
+        if (count($ids)!==1 || (isset($metadata[$n]) && $metadata[$n]!==$ids)) {
+            foreach ($ids as $id) $sources[$id]='unknown';
+            continue;
+        }
+        $sources[$ids[0]]=sheet_source_key($rows[$n-1][0]??'');
+    }
+    return $sources;
+}
+
+function sheet_sources(PDO $pdo,array $actor): array {
+    fin_order_amount_actor($actor);
+    $ws=tg_workspace(); $args=[$ws,'workspaces/'.$ws.'/orders'];
+    $sql='SELECT o.document_id,o.data_json FROM crm_documents o WHERE o.workspace_id=? AND o.collection_path=?';
+    if ($actor['role']!=='owner') {
+        $sql.=' AND EXISTS (SELECT 1 FROM crm_documents d WHERE d.workspace_id=o.workspace_id AND d.document_id=o.document_id AND d.collection_path=?)';
+        $args[]='workspaces/'.$ws.'/dispatcherOrders';
+    }
+    $q=$pdo->prepare($sql.' LIMIT 20001'); $q->execute($args);
+    $orders=[];
+    foreach ($q as $row) {
+        $o=json_decode($row['data_json'],true);
+        if (!is_array($o)) throw new RuntimeException('invalid_stored_order');
+        if (empty($o['_duplicateOf'])) $orders[$row['document_id']]=$o;
+        if (count($orders)>20000) throw new LengthException('order_capacity');
+    }
+    [, $verified,$rows]=sheet_snapshot(sheet_token());
+    return ['ok'=>true,'sources'=>(object)sheet_source_map($orders,$verified,$rows)];
+}
+
 function sheet_dispatch(PDO $pdo,array $actor,array $input):array {
     fin_order_amount_actor($actor);
     $action=$input['action']??'send';
+    if ($action==='sources') return sheet_sources($pdo,$actor);
     if (!in_array($action,['send','status'],true)) throw new InvalidArgumentException('invalid_action');
     $ids=$action==='status'?($input['orderIds']??null):[$input['orderId']??null];
     if (!is_array($ids)||count($ids)<1||count($ids)>100) throw new InvalidArgumentException('invalid_order_ids');

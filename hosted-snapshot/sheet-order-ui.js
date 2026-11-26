@@ -53,6 +53,62 @@
     return data;
   }
 
+  const sourceNames = {
+    direct:'Директ', avito:'Авито', seo:'SEO', other:'Другая отметка', unknown:'Не сверено'
+  };
+  let sourceByOrder = new Map();
+  let sourceRevision = -1;
+  let sourceCheckedAt = 0;
+  let sourceBusy = false;
+  let sourceError = false;
+
+  function sourceKey(order) {
+    if (sourceRevision === generation && session === currentSession()) {
+      const key = sourceByOrder.get(String(order.orderId || ''));
+      if (key) return key;
+    }
+    return 'unknown';
+  }
+
+  function sourceLabel(order) {
+    return sourceNames[sourceKey(order)];
+  }
+
+  async function refreshSources(revision) {
+    const filter = document.getElementById?.('orderSourceFilter');
+    if (!filter || !session) return;
+    if (sourceRevision !== revision) {
+      sourceRevision = revision;
+      sourceByOrder.clear();
+      sourceCheckedAt = 0;
+      sourceBusy = false;
+      sourceError = false;
+    }
+    if (sourceBusy || Date.now() - sourceCheckedAt < (sourceError ? 30000 : 120000)) return;
+    const status = document.getElementById('orderSourceStatus');
+    if (status) status.textContent = 'Сверяем источники…';
+    sourceBusy = true;
+    try {
+      const data = await request({action:'sources'});
+      if (revision !== generation || session !== currentSession()) return;
+      if (!data.sources || typeof data.sources !== 'object' || Array.isArray(data.sources)) throw Error('invalid_sources');
+      sourceByOrder = new Map(Object.entries(data.sources).filter(([,key]) => Object.hasOwn(sourceNames,key)));
+      sourceError = false;
+      if (status) status.textContent = '';
+    } catch {
+      if (revision !== generation || session !== currentSession()) return;
+      sourceByOrder.clear();
+      sourceError = true;
+      if (status) status.textContent = 'Источники временно недоступны';
+    } finally {
+      if (revision === generation && session === currentSession()) {
+        sourceBusy = false;
+        sourceCheckedAt = Date.now();
+        window.dispatchEvent(new Event('masterai:order-sources'));
+      }
+    }
+  }
+
   function paint(slot) {
     const id = slot.dataset.sheetOrder;
     const record = records.get(id);
@@ -118,6 +174,7 @@
 
   function refresh() {
     const revision = startSession();
+    void refreshSources(revision);
     paintAll();
     clearTimeout(timer);
     timer = setTimeout(() => {
@@ -160,7 +217,7 @@
       }
     }
   });
-  window.MasterAISheetOrders = {refresh};
+  window.MasterAISheetOrders = {refresh, sourceKey, sourceLabel};
   window.addEventListener('masterai:session', refresh);
   window.addEventListener('focus', refresh);
   refresh();

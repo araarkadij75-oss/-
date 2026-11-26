@@ -2215,7 +2215,8 @@
             "Intl",
             "Number",
             "String",
-            "arguments"
+            "arguments",
+            "window"
           ],
           "crossDomain": [
             {
@@ -10927,7 +10928,8 @@
             "Intl",
             "Number",
             "String",
-            "arguments"
+            "arguments",
+            "window"
           ],
           "crossDomain": [
             {
@@ -19077,7 +19079,8 @@
             "Intl",
             "Number",
             "String",
-            "arguments"
+            "arguments",
+            "window"
           ],
           "crossDomain": [
             {

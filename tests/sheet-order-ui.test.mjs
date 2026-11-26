@@ -79,3 +79,26 @@ test('ambiguous/failed status and missing write confirmation never display a gre
   await ui.click('check');
   assert.equal(ui.desktop.dataset.state, 'verified');
 });
+test('source classifications update only for the active staff session and never turn missing records into Avito', async () => {
+  const control={}, status={}, events=[];
+  const document={getElementById:id=>({orderSourceFilter:control,orderSourceStatus:status}[id]),
+    querySelectorAll:()=>[], addEventListener(){}};
+  const cloud={connected:true,profile:{uid:'staff1'},getIdToken:async()=>'mock'};
+  const window={MasterAICloud:cloud,addEventListener(){},dispatchEvent:e=>events.push(e.type)};
+  let calls=0;
+  vm.runInNewContext(source,{document,window,Date,Event,setTimeout:()=>1,clearTimeout(){},fetch:async()=>{
+    calls++;
+    return {ok:true,json:async()=>({ok:true,sources:{old:'direct',blank:'avito',other:'other'}})};
+  }});
+  await new Promise(resolve=>setImmediate(resolve));
+  const api=window.MasterAISheetOrders;
+  assert.equal(api.sourceLabel({orderId:'old'}),'Директ');
+  assert.equal(api.sourceLabel({orderId:'blank'}),'Авито');
+  assert.equal(api.sourceLabel({orderId:'other'}),'Другая отметка');
+  assert.equal(api.sourceKey({orderId:'missing'}),'unknown');
+  api.refresh();
+  assert.equal(calls,1);
+  cloud.profile.uid='staff2';
+  assert.equal(api.sourceKey({orderId:'old'}),'unknown');
+  assert.deepEqual(events,['masterai:order-sources']);
+});
