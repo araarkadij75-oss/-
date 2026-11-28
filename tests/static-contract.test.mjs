@@ -488,7 +488,13 @@ test('external inbox and API entrypoints are disconnected from beta',()=>{for(co
 test('owner and dispatcher Firestore sessions expose live sync health and retry failed listeners',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.match(html,/cloud\.subscribe=\(profile,onRows,retrying=false\)/);assert.match(html,/includeMetadataChanges:true/);assert.match(html,/cloud\.syncRetryTimer=setTimeout/);assert.match(html,/cloud\.subscribe\(profile,onRows,true\)/);assert.match(html,/Общая очередь диспетчеров:/);assert.match(html,/ownerSyncState/);assert.doesNotMatch(html,/Онлайн · изменения синхронизируются/);assert.match(html,/updateViaCache:'none'/);assert.match(html,/reg\.update\(\)/)}assert.match(read('sw.js'),/shell-v59/);assert.match(read('preview/v18.17.21/sw.js'),/shell-v71/)});
  test('orders use Saint Petersburg as the fixed city and have no district workflow',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.ok(html.includes('cities:[\"СПб\"]')); assert.match(html,/id=\"f_city\"[^>]*value=\"СПб\" readonly/);assert.doesNotMatch(html,/Район|cityFilter|Выручка по районам/)}});
 test('orders can be filtered by visit date today without replacing other filters',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html'])for(const file of [page,'preview/v18.17.21/'+page]){const html=read(file);assert.match(html,/id=\"todayOrdersFilter\"/);assert.match(html,/iso\(parseDate\(r\.visitDate\)\)===day/)}});
-test('orders can be filtered by visit date tomorrow with an exclusive quick filter',()=>{for(const page of ['index.html','dispatcher-logistic.html','master.html']){const html=read(page);assert.match(html,/id="tomorrowOrdersFilter"/);assert.match(html,/targetDate\.setDate\(targetDate\.getDate\(\)\+1\)/);assert.match(html,/setVisitDateFilter\('tomorrowOrdersFilter','todayOrdersFilter'\)/)}});
+test('all roles offer three exclusive visit days',()=>{
+ for(const page of ['index.html','dispatcher-logistic.html','master.html']){
+  const html=read('hosted-snapshot/'+page);
+  for(const day of ['yesterday','today','tomorrow'])assert.ok(html.includes('id="'+day+'OrdersFilter"'));
+  assert.ok(html.includes("String(enable&&other===id)"));
+ }
+});
 test('weekly schedule ignores stale loads and locks edits while saving', () => {
   for (const page of ['index.html', 'dispatcher-logistic.html']) {
     const html = read(page);
